@@ -76,7 +76,7 @@ export state
 include("generate_state.jl")
 
 # Problems
-export LdagL_spmat_prob, LdagL_sop_prob, LdagLProblem, LdagLFullProblem, LdagL_L_Problem, LdagL_Lmat_prob
+export LdagL_spmat_prob, LdagL_sop_prob, LdagLProblem, LdagLFullProblem, LdagL_L_prob, LdagL_L_Problem, LdagL_Lmat_prob
 include("Problems/LdagL_spmat_prob.jl")
 include("Problems/LdagL_sop_prob.jl")
 include("Problems/ObservablesProblem.jl")
