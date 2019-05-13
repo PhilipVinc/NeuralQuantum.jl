@@ -1,6 +1,14 @@
-using NeuralQuantumBase
+#using NeuralQuantumBase
 using Test
 
-@testset "NeuralQuantumBase.jl" begin
-    # Write your own tests here.
+@testset "NeuralQuantumBase" begin
+
+    @testset "Machines" begin
+    	@test true == true
+        include("machines.jl")
+    end
+
+    @testset "Problem & algs" begin
+        include("problem_algs.jl")
+    end
 end
