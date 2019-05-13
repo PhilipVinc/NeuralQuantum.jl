@@ -13,7 +13,8 @@ end
 """
     ObservablesProblem([T=Float64], obs1, obs2, ....)
 
-Constructs an ObservablesProblem from the observables provided.
+Constructs an ObservablesProblem from the observables provided. 
+Userd to compute observables.
 """
 ObservablesProblem(args...) = ObservablesProblem(Float32, args...)
 ObservablesProblem(T::Type{<:Number}, args...) = ObservablesProblem(T, [(Symbol("obs_", i), obs) for (i,obs)=enumerate(args)])

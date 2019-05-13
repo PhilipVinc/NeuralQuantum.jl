@@ -94,6 +94,10 @@ random_input_state(cnet::CachedNet) = random_input_state(cnet.net)
 is_analytic(cnet::CachedNet) = is_analytic(cnet.net)
 num_params(cnet::CachedNet) = num_params(cnet.net)
 
+# Visualization
+Base.show(io::IO, ::MIME"text/plain", m::CachedNet) = print(io,
+"Cached Network : ", m.net)
+
 
 ## Particoular kinds of networks
 # Thing for Matrix Neural Network

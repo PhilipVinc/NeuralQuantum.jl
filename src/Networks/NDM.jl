@@ -31,6 +31,13 @@ random_input_state(net::NDM{VT,MT}) where {VT,MT} =
     (eltype(VT).([rand(0:1) for i=1:length(net.b_μ)]), eltype(VT).([rand(0:1) for i=1:length(net.b_μ)]))
 is_analytic(net::NDM) = true
 
+Base.show(io::IO, m::NDM) = print(io,
+    "NDM($(eltype(m.b_μ)), n=$(length(m.b_μ)), αₕ=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)))")
+
+Base.show(io::IO, ::MIME"text/plain", m::NDM) = print(io,
+    "NDM($(eltype(m.b_μ)), n=$(length(m.b_μ)), α=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)))")
+
+
 @inline (net::NDM)(σ::State) = net(config(σ)...)
 @inline (net::NDM)(σ::Tuple) = net(σ...)
 function (W::NDM)(σr, σc)

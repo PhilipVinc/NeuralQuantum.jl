@@ -19,7 +19,7 @@ end
 
 function ValueHistoriesLogger.preprocess(name, val::SREvaluation, data)
     ValueHistoriesLogger.preprocess(name*"/Loss", val.L, data)
-    ValueHistoriesLogger.preprocess(name*"/Loss", val.LVals, data)
+    ValueHistoriesLogger.preprocess(name*"/Loss_Convergence", val.LVals, data)
     data
 end
 

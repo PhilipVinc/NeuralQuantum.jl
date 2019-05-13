@@ -14,11 +14,11 @@ end
 """
     MTIterativeSampler(net, sampler, algorithm, prob)
 
-Creates a multithreaded iterative samnpler
+Creates a multithreaded iterative sampler.
 """
 function MTIterativeSampler(net,
                             sampl,
-                            prob, 
+                            prob,
                             algo=prob)
     sampl = multithread(sampl)
 

@@ -15,13 +15,13 @@ end
     IterativeSampler(net, sampler, algorithm, problem)
 
 Create a single-thread iterative sampler for the quantities defined
-by algorithm. 
+by algorithm.
 """
 function IterativeSampler(net,
                           sampl,
-                          prob, 
+                          prob,
                           algo=prob)
-#
+
     evaluated_vals = EvaluatedNetwork(algo, net)
     itercache      = SamplingCache(algo, prob, net)
     v              = state(prob, net)

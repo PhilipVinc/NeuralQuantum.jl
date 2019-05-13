@@ -8,7 +8,10 @@ export SR, sr_none, sr_multiplicative, sr_shift
     SR([use_iterative=true, ϵ=0.001, λ0=100, b=0.95, λmin=1e-4, precondition_type=sr_shift)
 
 Stochastic Reconfiguration preconditioner which corrects the gradient according
-to the natural gradient computed as S^-1 F.
+to the natural gradient computed as S^-1 ∇C. Using this algorithm will lead to
+the computation of the S matrix together with the gradient of the cost function
+∇C. To compute the natural gradient S^-1∇C an iterative scheme (Minres-QLP) or
+a direct inversion is used.
 
 If `use_iterative=true` the inverse matrix `S^-1` is not computed, and an iterative
 MINRES-QLP algorithm is used to compute the product S^-1*F
@@ -19,7 +22,6 @@ S --> S+ϵ*identity
 If `precondition_type=sr_multiplicative` then a diagonal multiplicative shift is added to S
 S --> S + max(λ0*b^n,λmin)*Diagonal(diag(S)) where n is the number of the iteration.
 """
-# Stochastic Reconfiguration:
 struct SR{T1,T2,T3,TP} <: Algorithm
     sr_diag_shift::T1  # cutoff
     sr_diag_mult::T2
