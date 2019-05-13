@@ -8,34 +8,22 @@ State of such NonEquilibrium Quantum Systems by montecarlo sampling.
 To Install `NeuralQuantum.jl`, please run the following commands to install all
 dependencies:
 ```
-] add QuantumOptics#master
-] add Zygote#master
-] add https://github.com/PhilipVinc/QuantumLattices.jl
-] add https://github.com/PhilipVinc/ValueHistoriesLogger.jl
-] add https://github.com/PhilipVinc/TensorBoardLogger.jl
-] add IterativeSolvers
-] add https://github.com/PhilipVinc/Optimisers.jl
-] add https://github.com/PhilipVinc/NeuralQuantumBase.jl
-```
-If you also want `MPI` support then you should also install the following
-repository. Check it's documentation to run simulations on an `MPI` cluster.
-```
-] add https://github.com/PhilipVinc/NeuralQuantumMPI.jl
+using Pkg
+pkg"add https://github.com/PhilipVinc/QuantumLattices.jl"
+pkg"add https://github.com/PhilipVinc/ValueHistoriesLogger.jl"
+pkg"add https://github.com/PhilipVinc/Optimisers.jl"
+pkg"add https://github.com/PhilipVinc/NeuralQuantumBase.jl"
 ```
 If you are wondering what all those packages are for, here's an explanation:
- - `QuantumOptics#master` is needed because some tensor product operations have not yet been released
- - `Zygote#master` is needed for complex-valued AD, which is still experimental
  - `QuantumLattices` is a custom package that allows defining new types of operators on a lattice. It's not needed natively but it is usefull to define hamiltonians on a lattice.
- - `IterativeSolvers`, my branch because it includes the `minres-qlp` solver, which is needed for ill-defined highly singular linear algebra problems found in Natural gradient descent.
  - `Optimisers`, a custom version of the still unreleased `FluxML/Optimisers.jl`, with features that are not yet released in the original branch.
  - `ValueHistoriesLogger` custom logger for logging arbitrary values
- - `TensorBoardLogger` tensorboard support.
 
 ## Example
 ```
 # Load dependencies
 using NeuralQuantumBase, QuantumLattices, Optimisers, Logging
-using LoggingExtras, Printf, ValueHistoriesLogger, Logging, ValueHistories
+using Printf, ValueHistoriesLogger, Logging, ValueHistories
 
 # Select the numerical precision
 T      = Float64
@@ -67,7 +55,8 @@ cnet = cached(net)
 # Chose a sampler. Options are FullSumSampler() which sums over the whole space
 # ExactSampler() which does exact sampling or MCMCSamler which does a markov
 # chain.
-sampl = MCMCSampler(Metropolis(), 3000, burn=50)
+# This is a markov chain of length 1000 where the first 50 samples are trashed.
+sampl = MCMCSampler(Metropolis(), 1000, burn=50)
 # Chose a sampler for the observables.
 osampl = FullSumSampler()
 
@@ -86,7 +75,7 @@ log = MVLogger()
 global_logger(log)
 
 # Solve iteratively the problem
-for i=1:5
+for i=1:50
     # Sample the gradient
     grad_data  = sample!(is)
     obs_data = sample!(ois)
