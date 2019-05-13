@@ -10,15 +10,15 @@ rescaled_normal(T::Type, scale::Real, dims::Integer...) = randn(T, dims...) .* T
 
 # Utils
 
-@inline ℒ2(value::T) where T= T(2.0)*cosh(value)
-@inline ∂logℒ2(value::T) where T = tanh(value)
-@inline logℒ2(value::T) where T<:Real =
-    log(T(2.0))+ (abs(value)<= T(12.0) ? log(cosh(value)) : abs(value) - log(T(2.0)))
+@inline ℒ2(x) = 2one(x)*cosh(x)
+@inline ∂logℒ2(x) = tanh(x)
+@inline logℒ2(x::T) where T<:Real =
+    log(2one(x))+ (abs(x)<= T(12.0) ? log(cosh(x)) : abs(x) - log(2one(X)))
 @inline logℒ2(value::Complex{T}) where T<:Real =
-    log(T(2.0))+ (abs(value)<= T(12.0) ? log(cosh(value)) : abs(value) - log(T(2.0)))
+    log(T(2.0))+ (abs(x)<= T(12.0) ? log(cosh(x)) : abs(x) - log(2one(x)))
 
 
 
-@inline ℒ(value::T) where T= T(1.0) + exp(value)
-@inline ∂logℒ(value::T) where T = T(1.0)/(T(1.0)+exp(-value))
-@inline logℒ(value::T) where T = log(T(1.0) + exp(value))
+@inline ℒ(x) = one(x) + exp(x)
+@inline ∂logℒ(x) where T = one(x)/(one(x)+exp(-x))
+@inline logℒ(x) where T = log1p(exp(x))#log(one(x) + exp(x))
