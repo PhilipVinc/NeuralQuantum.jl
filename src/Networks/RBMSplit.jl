@@ -1,11 +1,11 @@
 export RBMSplit
 
-struct RBMSplit{T} <: MatrixNeuralNetwork
-    ar::Vector{T}
-    ac::Vector{T}
-    b::Vector{T}
-    Wr::Matrix{T}
-    Wc::Matrix{T}
+struct RBMSplit{VT,MT} <: MatrixNeuralNetwork
+    ar::VT
+    ac::VT
+    b::VT
+    Wr::MT
+    Wc::MT
 end
 
 RBMSplit(in::Int, α::Number, args...) = RBMSplit(ComplexF32, in, α, args...)
@@ -17,18 +17,18 @@ RBMSplit(T::Type, in, α,
              initb(convert(Int, α*in)),
              initW(convert(Int, α*in), in), initW(convert(Int, α*in), in))
 
-input_type(net::RBMSplit{T}) where T = real(T)
+input_type(net::RBMSplit)  = real(eltype(net.ar))
 weight_type(net::RBMSplit) = out_type(net)
-out_type(net::RBMSplit{T}) where T = Complex{real(T)}
+out_type(net::RBMSplit)    = eltype(net.Wr)
 input_shape(net::RBMSplit) = (length(net.ar), length(net.ac))
-random_input_state(net::RBMSplit{T}) where T =
-    (T.([rand(0:1) for i=1:length(net.ar)]), T.([rand(0:1) for i=1:length(net.ar)]))
+random_input_state(net::RBMSplit) =
+    (eltype(net.ar).([rand(0:1) for i=1:length(net.ar)]), eltype(net.ar).([rand(0:1) for i=1:length(net.ar)]))
 is_analytic(net::RBMSplit) = true
 
 
 (net::RBMSplit)(σ::State) = net(config(σ)...)
-(net::RBMSplit{T})(σr, σc) where T = transpose(net.ar)*σr .+ transpose(net.ac)*σc .+ sum(logℒ.(net.b .+
-                                                net.Wr*σr .+ net.Wc*σc))
+(net::RBMSplit)(σr, σc)   = transpose(net.ar)*σr .+ transpose(net.ac)*σc .+ sum(logℒ.(net.b .+
+                                                        net.Wr*σr .+ net.Wc*σc))
 
 
 function Base.show(io::IO, m::RBMSplit)
@@ -38,17 +38,17 @@ Base.show(io::IO, ::MIME"text/plain", m::RBMSplit) = print(
 "RBMSplit($(eltype(m.ar)), n=$(length(m.ar)), α=$(length(m.b)/length(m.ar)))")
 
 # Cached version
-mutable struct RBMSplitCache{T} <: NNCache{RBMSplit{T}}
-    θ::Vector{T}
-    θ_tmp::Vector{T}
-    logℒθ::Vector{T}
+mutable struct RBMSplitCache{VT} <: NNCache{RBMSplit}
+    θ::VT
+    θ_tmp::VT
+    logℒθ::VT
     valid::Bool # = false
 end
 
-cache(net::RBMSplit{T}) where T =
-    RBMSplitCache(Vector{T}(undef,length(net.b)),
-                  Vector{T}(undef,length(net.b)),
-                  Vector{T}(undef,length(net.b)),
+cache(net::RBMSplit) =
+    RBMSplitCache(similar(net.b),
+                  similar(net.b),
+                  similar(net.b),
                   false)
 
 (net::RBMSplit)(c::RBMSplitCache, σ) = net(c, config(σ)...)
@@ -64,9 +64,6 @@ function (net::RBMSplit)(c::RBMSplitCache, σr,σc)
     mul!(θ, net.Wr, σr)
     mul!(θ_tmp, net.Wc, σc)
     θ .+= net.b .+ θ_tmp
-    #LinearAlgebra.BLAS.blascopy!(length(net.b), net.b, 1, θ, 1)
-    #LinearAlgebra.BLAS.gemv!('N', one(T), net.Wr, σr, one(T), θ)
-    #LinearAlgebra.BLAS.gemv!('N', one(T), net.Wc, σc, one(T), θ)
 
     logℒθ .= logℒ.(θ)
     logψ = dot(σr,net.ar) + dot(σc,net.ac) + sum(logℒθ)
