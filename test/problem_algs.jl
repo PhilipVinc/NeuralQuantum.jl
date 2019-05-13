@@ -68,6 +68,8 @@ prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
     @test all([l≈r for (l,r)=zip(SREval.F, SREvalL.F)])
 end
 
+using SparseArrays, Random
+
 # random
 prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
 @testset "LdagL random problem: $prob_T" for prob_T=prob_types
@@ -77,6 +79,7 @@ prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
 
     Ham  = SparseOperator(lind.H)
     Ham.data.=sprand(ComplexF64, size(Ham.data,1),size(Ham.data,2),0.5)
+    Ham.data .= Ham.data + Ham.data'
     cops = jump_operators(lind)
     prob = prob_T(T, Ham, cops);
 

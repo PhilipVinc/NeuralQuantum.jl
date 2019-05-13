@@ -21,10 +21,7 @@ function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
     _der = back(Int8(1))[1]
 
     for key=keys(_der)
-        #der[key] .= conj.(_der[key])
         conj!(_der[key])
-        #@info "$key" out=der[key] comp=_der[key]
-        #println(_der[key])
         copyto!(der[key], _der[key])
     end
     return y, der
