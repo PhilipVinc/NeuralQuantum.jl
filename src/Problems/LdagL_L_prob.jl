@@ -56,7 +56,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_L_prob, net::MatrixNet, σ, l
       # Compute the log(ψ(σ)/ψ(σ')), by only computing differences.
       lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, σp)
       # Conj because I am taking the transpose... see the note above.
-      C_loc_i = conj(ℒ.nzval[row_id]) * exp(lnψ_i - lnψ) #TODO check
+      C_loc_i = (ℒ.nzval[row_id]) * exp(lnψ_i - lnψ) #TODO check
 
       C_loc  += C_loc_i
       for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
