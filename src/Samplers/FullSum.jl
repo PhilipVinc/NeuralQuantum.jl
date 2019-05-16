@@ -13,7 +13,8 @@ _sampler_cache(s::FullSumSampler, v::FiniteBasisState, net, part) =
 
 function init_sampler!(sampler::FullSumSampler, net, σ::FiniteBasisState, c::FullSumSamplerCache)
     c.last_position = 1
-    set_index!(σ, c.interval[1])
+    # only initialize if it's really bigger.
+    length(c.interval) >0 && set_index!(σ, c.interval[1])
     return c
 end
 
