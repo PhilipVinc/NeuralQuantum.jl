@@ -4,9 +4,9 @@ authors = ["Filippo Vicentini <filippovicentini@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+IterativeSolvers = "42fd0dbc-a981-5370-80f2-aaf504508153"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
-IterativeSolvers = "42fd0dbc-a981-5370-80f2-aaf504508153"
 Optimisers = "3bd65402-5787-11e9-1adc-39752487f4e2"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 QuantumLattices = "78ae1a1f-1d5d-5174-b61c-66e31b2346dc"

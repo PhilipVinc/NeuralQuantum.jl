@@ -22,7 +22,7 @@ If you are wondering what all those packages are for, here's an explanation:
 ## Example
 ```
 # Load dependencies
-using NeuralQuantumBase, QuantumLattices, Optimisers, Logging
+using NeuralQuantumBase, QuantumLattices, Optimisers
 using Printf, ValueHistoriesLogger, Logging, ValueHistories
 
 # Select the numerical precision
@@ -72,21 +72,22 @@ ois = MTIterativeSampler(cnet, osampl, oprob, oprob)
 
 # Create the logger to store all output data
 log = MVLogger()
-global_logger(log)
 
 # Solve iteratively the problem
-for i=1:50
-    # Sample the gradient
-    grad_data  = sample!(is)
-    obs_data = sample!(ois)
+with_logger(log) do
+    for i=1:50
+        # Sample the gradient
+        grad_data  = sample!(is)
+        obs_data = sample!(ois)
 
-    # Logging
-    @printf "%4i -> %+2.8f %+2.2fi --\t \t-- %+2.5f\n" i real(grad_data.L) imag(grad_data.L) real(obs_data.ObsAve[1])
-    @info "" optim=grad_data obs=obs_data
+        # Logging
+        @printf "%4i -> %+2.8f %+2.2fi --\t \t-- %+2.5f\n" i real(grad_data.L) imag(grad_data.L) real(obs_data.ObsAve[1])
+        @info "" optim=grad_data obs=obs_data
 
-    succ = precondition!(cnet.der.tuple_all_weights, algo , grad_data, i)
-    !succ && break
-    Optimisers.update!(optimizer, cnet, cnet.der)
+        succ = precondition!(cnet.der.tuple_all_weights, algo , grad_data, i)
+        !succ && break
+        Optimisers.update!(optimizer, cnet, cnet.der)
+    end
 end
 
 # Optional: compute the exact solution
