@@ -61,3 +61,9 @@ function sample!(is::MTIterativeSampler)
     evaluation_post_sampling!(is.sampled_values, is.itercache)
     return is.sampled_values
 end
+
+Base.show(io::IO, is::MTIterativeSampler) = print(io,
+    "MTIterativeSampler for parallel sampling with $(Threads.nthreads()) threads:"*
+    "\n\tnet\t\t: $(is.net)"*
+    "\n\tproblem\t: $(is.problem)"*
+    "\n\tsampler\t: $(is.sampler)")
