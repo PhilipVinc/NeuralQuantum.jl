@@ -13,7 +13,7 @@ end
 """
     ObservablesProblem([T=Float64], obs1, obs2, ....)
 
-Constructs an ObservablesProblem from the observables provided. 
+Constructs an ObservablesProblem from the observables provided.
 Userd to compute observables.
 """
 ObservablesProblem(args...) = ObservablesProblem(Float32, args...)
@@ -43,3 +43,7 @@ basis(prob::ObservablesProblem) = prob.basis
 
 state(T::Type{<:Number}, prob::ObservablesProblem, net) =
     DiagonalStateWrapper(state(T, basis(prob), net))
+
+Base.show(io::IO, p::ObservablesProblem) = print(io,
+    "ObservablesProblem on space : $(basis(p)) for the observables:"*
+    prod(["\n\t$obj" for obj=p.Names]))

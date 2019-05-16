@@ -47,6 +47,10 @@ recompute_params!(s::MTSampler) = _mt_recompute_sampler_params!(getfield(s, :sam
 get_sampler(s::MTSampler) = getfield(s, :sampler)
 sampler_list(s::MTSampler) = getfield(s, :samplers)
 
+function Base.show(io::IO, s::MTSampler)
+    print(io, "MTSampler ($(length(sampler_list(s))) threads) of $(get_sampler(s))")
+end
+
 ##
 """
     MTSamplerCache

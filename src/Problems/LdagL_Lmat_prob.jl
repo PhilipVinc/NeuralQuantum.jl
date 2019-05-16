@@ -143,3 +143,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lmat_prob, net::MatrixNet, �
     end
     C_loc
 end
+
+# pretty printing
+Base.show(io::IO, p::LdagL_Lmat_prob) = print(io,
+    "LdagL_Lmat_prob on space : $(basis(p))")

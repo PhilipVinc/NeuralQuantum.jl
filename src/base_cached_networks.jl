@@ -95,9 +95,11 @@ is_analytic(cnet::CachedNet) = is_analytic(cnet.net)
 num_params(cnet::CachedNet) = num_params(cnet.net)
 
 # Visualization
-Base.show(io::IO, ::MIME"text/plain", m::CachedNet) = print(io,
-"Cached Network : ", m.net)
+function Base.show(io::IO, m::CachedNet)
+    print(io, "CachedNet{$(m.net)}")
+end
 
+Base.show(io::IO, ::MIME"text/plain", m::CachedNet) = print(io, "CachedNet{$(m.net)}")
 
 ## Particoular kinds of networks
 # Thing for Matrix Neural Network
@@ -144,9 +146,3 @@ function logψ_and_∇logψ(n::CachedNet{<:KetNeuralNetwork}, σ)
     lψ, ∇ψ = logψ_and_∇logψ(n.der, n.cache, n.net, config(σ));
     return (lψ, n.der)
 end
-
-function Base.show(io::IO, m::CachedNet)
-    print(io, "CachedNet{$(m.net)}")
-end
-
-Base.show(io::IO, ::MIME"text/plain", m::CachedNet) = print(io, "CachedNet{$(m.net)}")

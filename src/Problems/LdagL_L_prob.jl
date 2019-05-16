@@ -35,7 +35,6 @@ basis(prob::LdagL_L_prob) = prob.HilbSpace
 
 function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_L_prob, net::MatrixNet, σ, lnψ=net(σ), σp=deepcopy(σ))
     ℒ = prob.L
-    σp  = deepcopy(σ)
     LLO_i = LLO_i
 
     for el=LLO_i
@@ -63,5 +62,9 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_L_prob, net::MatrixNet, σ, l
         LLOave .+= C_loc_i .* (_∇lnψ)
       end
     end
-    C_loc
+    return C_loc
 end
+
+# pretty printing
+Base.show(io::IO, p::LdagL_L_prob) = print(io,
+    "LdagL_L_prob on space $(basis(p))")
