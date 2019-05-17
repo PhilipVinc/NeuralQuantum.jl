@@ -125,6 +125,7 @@ include("utils/densitymatrix.jl")
 include("utils/expectation_values.jl")
 include("utils/translational_symm.jl")
 include("utils/logging.jl")
+include("utils/loading.jl")
 
 # interface
 include("IterativeInterface/BaseIterativeSampler.jl")
