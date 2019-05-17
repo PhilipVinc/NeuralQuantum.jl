@@ -2,11 +2,9 @@
 export Metropolis
 struct Metropolis <: MCMCRule end
 
-function samplenext!(σ, s::MCMCSampler{Metropolis}, net::MatrixNet, c)
-    # Check termination condition, and return if verified
-    done(s, σ, c) && return false
-
-    logψ_σ = 2*real(net(σ)) #log_prob_ψ(net, σ)
+function markov_chain_step!(σ, s::MCMCSampler{Metropolis}, net::MatrixNet, c)
+    # the denominator
+    logψ_σ = 2*real(net(σ))
 
     # 1- Flip a spin
     sites_to_flip = 1:nsites(σ)

@@ -4,7 +4,7 @@ struct Nagy{T<:Vector} <: MCMCRule
     adjacency_list::T
 end
 
-function samplenext!(σ, s::MCMCSampler{N}, net::MatrixNet, c) where N<:Nagy
+function markov_chain_step!(σ, s::MCMCSampler{N}, net::MatrixNet, c) where N<:Nagy
     # Check termination condition, and return if verified
     done(s, σ, c) && return false
 
@@ -14,7 +14,7 @@ function samplenext!(σ, s::MCMCSampler{N}, net::MatrixNet, c) where N<:Nagy
 
     n_moves = 5+4 #+ length(first(adjacency_matrix))*2
     # 1- Flip a spin
-    move_type = rand(c.rng, 1:n_moves)
+    move_type = rand(c.rng, 5:9)#1:n_moves)
     if move_type == 1 || move_type == 2                 # hopping in σ
         flipat_r1 = rand(c.rng, 1:nsites(row(σ)))
         flipat_r2 = rand(c.rng, adj_list[flipat_r1])
@@ -110,7 +110,7 @@ function samplenext!(σ, s::MCMCSampler{N}, net::MatrixNet, c) where N<:Nagy
         #    setat!(row(σ), flipat_r, old_val_r)
         #    setat!(col(σ), flipat_c, old_val_c)
         #else
-            c.steps_accepted += 1 
+            c.steps_accepted += 1
         #end
     end
 

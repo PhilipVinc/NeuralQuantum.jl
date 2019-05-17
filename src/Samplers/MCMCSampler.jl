@@ -28,7 +28,7 @@ function init_sampler!(s::MCMCSampler, net, σ, c::MCMCSamplerCache)
     set_index!(σ, rand(c.rng, 1:spacedimension(σ)))
 
     while c.steps_done < s.burn_length
-        samplenext!(σ, s, net, c)
+        markov_chain_step!(σ, s, net, c)
     end
     c.steps_done = 0
 
@@ -37,6 +37,18 @@ end
 
 done(s::MCMCSampler, σ, c) = c.steps_done >= s.chain_length
 
+function samplenext!(σ, s::MCMCSampler, net, c)
+    # Check termination condition, and return if verified
+    done(s, σ, c) && return false
+    return markov_chain_step!(σ, s, net, c)
+end
+
+"""
+    markov_chain_step!(state, sampler, net, sampler_cache)
+
+performs one step of markov chain
+"""
+function markov_chain_step!(σ, s::MCMCSampler, net, c) end
 
 ## Mulithreading
 function _mt_recompute_sampler_params!(samplers, s::MCMCSampler)
