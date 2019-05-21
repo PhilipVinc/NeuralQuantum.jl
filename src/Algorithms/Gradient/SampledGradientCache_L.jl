@@ -1,7 +1,7 @@
 ################################################################################
 ######      Cache holding the information generated along a sampling      ######
 ################################################################################
-mutable struct MCMCGradientLEvaluationCache{T,T2,TV,TD} <: EvaluationSamplingCache
+mutable struct MCMCGradientLEvaluationCache{T,T2,TV,TD,S} <: EvaluationSamplingCache
     Oave::TV#Vector{T}
     Eave::T
     EOave::TV#Vector{T}
@@ -14,9 +14,10 @@ mutable struct MCMCGradientLEvaluationCache{T,T2,TV,TD} <: EvaluationSamplingCac
     LLO_i::TV
     ∇lnψ::TD
     ∇lnψ2::TD
+    σ::S
 end
 
-function MCMCGradientLEvaluationCache(net)
+function MCMCGradientLEvaluationCache(net::NeuralNetwork, prob)
     TC = Complex{real(out_type(net))}
     der_vec = grad_cache(net).tuple_all_weights
 
@@ -33,11 +34,12 @@ function MCMCGradientLEvaluationCache(net)
                                   Vector{TC}(),
                                   LLO_i,
                                   grad_cache(net),
-                                  grad_cache(net))
+                                  grad_cache(net),
+                                  state(prob, net))
     zero!(cache)
 end
 
-SamplingCache(alg::Gradient, prob::LRhoSquaredProblem, net) = MCMCGradientLEvaluationCache(net)
+SamplingCache(alg::Gradient, prob::LRhoSquaredProblem, net) = MCMCGradientLEvaluationCache(net, prob)
 
 function zero!(comp_vals::MCMCGradientLEvaluationCache)
     comp_vals.Eave   = 0.0

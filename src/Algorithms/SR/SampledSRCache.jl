@@ -1,7 +1,7 @@
 ################################################################################
 ######      Cache holding the information generated along a sampling      ######
 ################################################################################
-mutable struct MCMCSREvaluationCache{T,T2,TV,TM,TD} <: EvaluationSamplingCache
+mutable struct MCMCSREvaluationCache{T,T2,TV,TM,TD,S} <: EvaluationSamplingCache
     Oave::TV#Vector{T}
     OOave::TM#Matrix{T}
     Eave::T
@@ -10,9 +10,12 @@ mutable struct MCMCSREvaluationCache{T,T2,TV,TM,TD} <: EvaluationSamplingCache
 
     Evalues::Vector{T}
     ∇lnψ::TD
+
+    # caches
+    σ::S
 end
 
-function MCMCSREvaluationCache(net::NeuralNetwork)
+function MCMCSREvaluationCache(net::NeuralNetwork, prob)
     TC = Complex{real(out_type(net))}
     der_vec = grad_cache(net).tuple_all_weights
 
@@ -26,12 +29,13 @@ function MCMCSREvaluationCache(net::NeuralNetwork)
                                   EOave,
                                   zero(real(TC)),
                                   Vector{TC}(),
-                                  grad_cache(net))
+                                  grad_cache(net),
+                                  state(prob, net))
     zero!(cache)
 end
 
-SamplingCache(alg::SR, prob::HermitianMatrixProblem, net) = MCMCSREvaluationCache(net)
-SamplingCache(alg::SR, prob::OpenTimeEvolutionProblem, net) = MCMCSREvaluationCache(net)
+SamplingCache(alg::SR, prob::HermitianMatrixProblem, net)   = MCMCSREvaluationCache(net, prob)
+SamplingCache(alg::SR, prob::OpenTimeEvolutionProblem, net) = MCMCSREvaluationCache(net, prob)
 
 
 function zero!(comp_vals::MCMCSREvaluationCache)

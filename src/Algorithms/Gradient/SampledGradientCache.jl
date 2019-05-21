@@ -1,7 +1,7 @@
 ################################################################################
 ######      Cache holding the information generated along a sampling      ######
 ################################################################################
-mutable struct MCMCGradientEvaluationCache{T,T2,TV,TD} <: EvaluationSamplingCache
+mutable struct MCMCGradientEvaluationCache{T,T2,TV,TD, S} <: EvaluationSamplingCache
     Oave::TV#Vector{T}
     Eave::T
     EOave::TV#Vector{T}
@@ -9,9 +9,10 @@ mutable struct MCMCGradientEvaluationCache{T,T2,TV,TD} <: EvaluationSamplingCach
 
     Evalues::Vector{T}
     ∇lnψ::TD
+    σ::S
 end
 
-function MCMCGradientEvaluationCache(net)
+function MCMCGradientEvaluationCache(net::NeuralNetwork, prob)
     TC = Complex{real(out_type(net))}
     der_vec = grad_cache(net).tuple_all_weights
 
@@ -23,10 +24,12 @@ function MCMCGradientEvaluationCache(net)
                                         EOave,
                                         zero(real(TC)),
                                         Vector{TC}(),
-                                        grad_cache(net))
+                                        grad_cache(net),
+                                        state(prob, net))
     zero!(cache)
 end
-SamplingCache(alg::Gradient, prob::HermitianMatrixProblem, net) = MCMCGradientEvaluationCache(net)
+SamplingCache(alg::Gradient, prob::HermitianMatrixProblem,   net) = MCMCGradientEvaluationCache(net, prob)
+SamplingCache(alg::Gradient, prob::OpenTimeEvolutionProblem, net) = throw(ErrorException("Can't do time evolution with gradient. need SR."))
 
 
 function zero!(comp_vals::MCMCGradientEvaluationCache)

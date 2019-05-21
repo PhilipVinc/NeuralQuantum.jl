@@ -5,7 +5,7 @@ function sample_network_wholespace!(
   net, σ)
 
   lnψ, ∇lnψ = logψ_and_∇logψ!(res.∇lnψ, net, σ)
-  E         = compute_Cloc(prob, net, σ, lnψ)
+  E         = compute_Cloc(prob, net, σ, lnψ, res.σ)
 
   prob = exp(2*real(lnψ))
   res.Zave   += prob
@@ -27,7 +27,7 @@ function sample_network!(
   net, σ)
 
   lnψ, ∇lnψ = logψ_and_∇logψ!(res.∇lnψ, net, σ)
-  E         = compute_Cloc(prob, net, σ, lnψ)
+  E         = compute_Cloc(prob, net, σ, lnψ, res.σ)
 
   res.Eave   += E
   res.Zave   += 1.0 #exp(2*real(lnψ))
@@ -46,7 +46,7 @@ function sample_network!(res::MCMCSRLEvaluationCache, prob::LRhoSquaredProblem,
   CLO_i = res.LLO_i
 
   lnψ, ∇lnψ = logψ_and_∇logψ!(res.∇lnψ, net, σ)
-  C_loc = compute_Cloc!(CLO_i, res.∇lnψ2, prob, net, σ)
+  C_loc = compute_Cloc!(CLO_i, res.∇lnψ2, prob, net, σ, lnψ, res.σ)
 
   prob = wholespace ? exp(2*real(lnψ)) : 1.0
   E = abs(C_loc)^2

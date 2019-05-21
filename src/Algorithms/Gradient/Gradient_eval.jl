@@ -3,7 +3,7 @@ function sample_network!(res::MCMCGradientEvaluationCache,
   prob::Union{LdagL_sop_prob, LdagL_spmat_prob, Ham_spmat_prob}, net, σ, wholespace=false)
 
   lnψ, ∇lnψ = logψ_and_∇logψ!(res.∇lnψ, net, σ)
-  E         = compute_Cloc(prob, net, σ, lnψ)
+  E         = compute_Cloc(prob, net, σ, lnψ, res.σ)
 
   prob = wholespace ? exp(2*real(lnψ)) : 1.0
   res.Zave   += prob
@@ -22,7 +22,7 @@ function sample_network!(res::MCMCGradientLEvaluationCache, prob::Union{LdagL_L_
   CLO_i = res.LLO_i
 
   lnψ, ∇lnψ = logψ_and_∇logψ!(res.∇lnψ, net, σ)
-  C_loc = compute_Cloc!(CLO_i, res.∇lnψ2, prob, net, σ)
+  C_loc = compute_Cloc!(CLO_i, res.∇lnψ2, prob, net, σ, lnψ, res.σ)
 
   prob = wholespace ? exp(2*real(lnψ)) : 1.0
   E = abs(C_loc)^2

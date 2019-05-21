@@ -36,6 +36,7 @@ basis(prob::LdagL_L_prob) = prob.HilbSpace
 function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_L_prob, net::MatrixNet, σ, lnψ=net(σ), σp=deepcopy(σ))
     ℒ = prob.L
     LLO_i = LLO_i
+    set_index!(σp, index(σ))
 
     for el=LLO_i
       el .= 0.0
