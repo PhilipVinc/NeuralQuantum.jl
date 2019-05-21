@@ -20,5 +20,5 @@ rescaled_normal(T::Type, scale::Real, dims::Integer...) = randn(T, dims...) .* T
 
 
 @inline ℒ(x) = one(x) + exp(x)
-@inline ∂logℒ(x) where T = one(x)/(one(x)+exp(-x))
-@inline logℒ(x) where T = log1p(exp(x))#log(one(x) + exp(x))
+@inline ∂logℒ(x) = one(x)/(one(x)+exp(-x))
+@inline logℒ(x) = log1p(exp(x))#log(one(x) + exp(x))
