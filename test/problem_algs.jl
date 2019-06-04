@@ -1,6 +1,6 @@
-using NeuralQuantumBase
+using NeuralQuantum
 using Test
-using NeuralQuantumBase: LdagL_L_prob, LdagL_Lmat_prob
+using NeuralQuantum: LdagL_L_prob, LdagL_Lmat_prob
 Nsites = 4
 T = Float64
 
@@ -18,12 +18,12 @@ prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
     rho   = dm(net, prob, false).data
     rhov  = vec(rho)
 
-    ic = NeuralQuantumBase.MCMCSREvaluationCache(net); zero!(ic)
+    ic = NeuralQuantum.MCMCSREvaluationCache(net); zero!(ic)
 
     Clocs_ex  = (LdagL*rhov)./rhov
     for i=1:spacedimension(v)
         set_index!(v, i)
-        NeuralQuantumBase.sample_network!(ic, prob, net, v)
+        NeuralQuantum.sample_network!(ic, prob, net, v)
     end
     Clocs_net_S = ic.Evalues
 
@@ -39,7 +39,7 @@ prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
     net  = cached(rNDM(T, Nsites, 2, 1))
     net  = (rNDM(T, Nsites, 2, 1))
 
-    prob = NeuralQuantumBase.LdagL_sop_prob(T, lind);
+    prob = NeuralQuantum.LdagL_sop_prob(T, lind);
     probL = prob_T(T, lind);
 
     v    = state(prob, net)
@@ -49,14 +49,14 @@ prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
     rho   = dm(net, prob, false).data
     rhov  = vec(rho)
 
-    ic = NeuralQuantumBase.MCMCSREvaluationCache(net); zero!(ic)
-    icL = NeuralQuantumBase.MCMCSRLEvaluationCache(net); zero!(icL)
+    ic = NeuralQuantum.MCMCSREvaluationCache(net); zero!(ic)
+    icL = NeuralQuantum.MCMCSRLEvaluationCache(net); zero!(icL)
 
     Clocs_ex  = (LdagL*rhov)./rhov
     for i=1:spacedimension(v)
         set_index!(v, i)
-        NeuralQuantumBase.sample_network_wholespace!(ic, prob, net, v)
-        NeuralQuantumBase.sample_network_wholespace!(icL, probL, net, v)
+        NeuralQuantum.sample_network_wholespace!(ic, prob, net, v)
+        NeuralQuantum.sample_network_wholespace!(icL, probL, net, v)
     end
 
     SREval = EvaluatedNetwork(SR(), net)
@@ -90,12 +90,12 @@ prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
     rho   = dm(net, prob, false).data
     rhov  = vec(rho)
 
-    ic = NeuralQuantumBase.MCMCSREvaluationCache(net); zero!(ic)
+    ic = NeuralQuantum.MCMCSREvaluationCache(net); zero!(ic)
 
     Clocs_ex  = (LdagL*rhov)./rhov
     for i=1:spacedimension(v)
         set_index!(v, i)
-        NeuralQuantumBase.sample_network!(ic, prob, net, v)
+        NeuralQuantum.sample_network!(ic, prob, net, v)
     end
     Clocs_net_S = ic.Evalues
 

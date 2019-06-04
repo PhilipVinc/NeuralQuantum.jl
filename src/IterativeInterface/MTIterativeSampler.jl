@@ -56,7 +56,7 @@ function sample!(is::MTIterativeSampler)
     # Add results of all threads
     zero!(is.itercache);
     for ic=is.mitercache
-        NeuralQuantumBase.add!(is.itercache, ic)
+        NeuralQuantum.add!(is.itercache, ic)
     end
     evaluation_post_sampling!(is.sampled_values, is.itercache)
     return is.sampled_values

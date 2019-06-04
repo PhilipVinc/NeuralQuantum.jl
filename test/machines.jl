@@ -1,4 +1,4 @@
-using NeuralQuantumBase, Test
+using NeuralQuantum, Test
 num_types = [Float32, Float64]
 
 @testset "NDM" begin
@@ -26,10 +26,10 @@ num_types = [Float32, Float64]
         end
         @test vals ≈ cvals
         @test all(grads)
-        @test NeuralQuantumBase.input_type(net) == real(T)
-        @test NeuralQuantumBase.out_type(net) == Complex{real(T)}
-        @test NeuralQuantumBase.input_shape(net) == (N, N)
-        @test NeuralQuantumBase.is_analytic(net)
+        @test NeuralQuantum.input_type(net) == real(T)
+        @test NeuralQuantum.out_type(net) == Complex{real(T)}
+        @test NeuralQuantum.input_shape(net) == (N, N)
+        @test NeuralQuantum.is_analytic(net)
     end
 
 end
@@ -62,10 +62,10 @@ end
         end
         @test vals ≈ cvals
         @test all(grads)
-        @test NeuralQuantumBase.input_type(net) == real(T)
-        @test NeuralQuantumBase.out_type(net) == Complex{real(T)}
-        @test NeuralQuantumBase.input_shape(net) == (N, N)
-        @test NeuralQuantumBase.is_analytic(net)
+        @test NeuralQuantum.input_type(net) == real(T)
+        @test NeuralQuantum.out_type(net) == Complex{real(T)}
+        @test NeuralQuantum.input_shape(net) == (N, N)
+        @test NeuralQuantum.is_analytic(net)
     end
 
 end
@@ -97,10 +97,10 @@ end
         end
         @test vals ≈ cvals
         @test all(grads)
-        @test NeuralQuantumBase.input_type(net) == real(T)
-        @test NeuralQuantumBase.out_type(net) == Complex{real(T)}
-        @test NeuralQuantumBase.input_shape(net) == (N, N)
-        @test NeuralQuantumBase.is_analytic(net)
+        @test NeuralQuantum.input_type(net) == real(T)
+        @test NeuralQuantum.out_type(net) == Complex{real(T)}
+        @test NeuralQuantum.input_shape(net) == (N, N)
+        @test NeuralQuantum.is_analytic(net)
     end
 
 end

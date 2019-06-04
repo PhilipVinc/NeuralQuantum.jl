@@ -1,7 +1,7 @@
-#using NeuralQuantumBase
+#using NeuralQuantum
 using Test
 
-@testset "NeuralQuantumBase" begin
+@testset "NeuralQuantum" begin
 
     @testset "Machines" begin
     	@test true == true

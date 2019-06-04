@@ -1,4 +1,4 @@
-module NeuralQuantumBase
+module NeuralQuantum
 
 # Using statements
 using Reexport
@@ -51,11 +51,24 @@ include("base_networks.jl")
 include("base_cached_networks.jl")
 include("tuple_logic.jl")
 
+# Linear Operators
+import Base: +
+include("Operators/BaseOperators.jl")
+include("Operators/OpConnection.jl")
+include("Operators/KLocalOperator.jl")
+include("Operators/KLocalOperatorSum.jl")
+include("Operators/GraphConversion.jl")
+export OpConnection
+export KLocalOperator, KLocalOperatorSum, KLocalOperatorRow, operators
+export row_valdiff, col_valdiff, sites, conn_type
+export duplicate
+
 # Basic states for uniform systems
 include("States/NAryState.jl")
 include("States/DoubleState.jl")
 include("States/PurifiedState.jl")
 include("States/DiagonalStateWrapper.jl")
+export local_index
 
 # Neural Networks
 include("Networks/utils.jl")
@@ -82,6 +95,8 @@ include("Problems/LdagL_sop_prob.jl")
 include("Problems/ObservablesProblem.jl")
 include("Problems/LdagL_L_prob.jl")
 include("Problems/LdagL_Lmat_prob.jl")
+include("Problems/time_evo/time_Evo_L.jl")
+include("Problems/Operators/LdagL_Lrho_op_prob.jl")
 const LdagLFullProblem = LdagL_sop_prob
 const LdagLProblem = LdagL_spmat_prob
 const LdagL_L_Problem = LdagL_Lmat_prob
