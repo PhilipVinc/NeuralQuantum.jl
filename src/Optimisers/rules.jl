@@ -1,3 +1,5 @@
+# Code taken from FluxML/Optimisers.jl
+
 """
     Descent(η)
 

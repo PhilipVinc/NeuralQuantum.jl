@@ -1,3 +1,5 @@
+# Code taken from FluxML/Optimisers.jl
+
 const Param{T<:Number} = Union{AbstractArray{T},T}
 
 _apply(opt, x, x̄, state) = apply(opt, x, x̄, state)
