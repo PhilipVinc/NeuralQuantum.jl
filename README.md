@@ -1,8 +1,8 @@
-# NeuralQuantumBase
+# NeuralQuantum
 
 **NeuralQuantum** is a numerical framework written in [Julia] to investigate
 Neural-Network representations of mixed quantum states and to find the Steady-
-State of such NonEquilibrium Quantum Systems by montecarlo sampling.
+State of dissipative Quantum Systems with variational Montecarlo schemes.
 
 ## Installation
 To Install `NeuralQuantum.jl`, please run the following commands to install all
@@ -11,8 +11,7 @@ dependencies:
 using Pkg
 pkg"add https://github.com/PhilipVinc/QuantumLattices.jl"
 pkg"add https://github.com/PhilipVinc/ValueHistoriesLogger.jl"
-pkg"add https://github.com/PhilipVinc/Optimisers.jl"
-pkg"add https://github.com/PhilipVinc/NeuralQuantumBase.jl"
+pkg"add https://github.com/PhilipVinc/NeuralQuantum.jl"
 ```
 If you are wondering what all those packages are for, here's an explanation:
  - `QuantumLattices` is a custom package that allows defining new types of operators on a lattice. It's not needed natively but it is usefull to define hamiltonians on a lattice.
@@ -22,7 +21,7 @@ If you are wondering what all those packages are for, here's an explanation:
 ## Example
 ```
 # Load dependencies
-using NeuralQuantumBase, QuantumLattices, Optimisers
+using NeuralQuantum, QuantumLattices, Optimisers
 using Printf, ValueHistoriesLogger, Logging, ValueHistories
 
 # Select the numerical precision

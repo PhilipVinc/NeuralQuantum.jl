@@ -4,26 +4,30 @@ module NeuralQuantum
 using Reexport
 
 using QuantumOptics
-@reexport using QuantumLattices
 using LightGraphs
-using Optimisers
+
+using Zygote: gradient, forward
+using Random: AbstractRNG, MersenneTwister, GLOBAL_RNG
+using LinearAlgebra, SparseArrays
 
 include("IterativeSolvers/minresqlp.jl")
 using .MinresQlp
 
-using Zygote: gradient, forward
+# Quantum Lattices, used to construct lattice hamiltonians (custom package)
+@reexport using QuantumLattices
 
-using Random: AbstractRNG, MersenneTwister, GLOBAL_RNG
-using LinearAlgebra, SparseArrays
+# Optimisers, that will be split in a separate package at some point
+include("Optimisers/Optimisers.jl")
+using .Optimisers
+import .Optimisers: update, update!
+export Optimisers
 
 # Logging
 using TensorBoardLogger, ValueHistoriesLogger
 
-
 # Imports
 import Base: length, UInt, eltype, copy, deepcopy, iterate
 import Random: rand!
-import Optimisers: update, update!, apply!
 import QuantumOptics: basis
 
 # Abstract Types
@@ -38,6 +42,8 @@ abstract type HermitianMatrixProblem <: SteadyStateProblem end
 abstract type LRhoSquaredProblem <: SteadyStateProblem end
 abstract type OpenTimeEvolutionProblem <: SteadyStateProblem end
 abstract type OperatorEstimationProblem <: Problem end
+
+abstract type Sampler end
 
 # Type describing the parallel backend used by a solver.
 abstract type ParallelType end
@@ -106,11 +112,13 @@ export HamProblem
 include("Problems/Ham_spmat_prob.jl")
 const HamProblem = Ham_spmat_prob
 
-# Algs
+# Algorithms
 abstract type Algorithm end
 abstract type EvaluatedAlgorithm end
 abstract type EvaluationSamplingCache end
 include("Algorithms/base_algorithms.jl")
+export EvaluatedNetwork, evaluation_post_sampling!, precondition!, SamplingCache
+
 # SR
 include("Algorithms/SR/SR.jl")
 include("Algorithms/SR/SampledSRCache.jl")
@@ -129,6 +137,9 @@ include("Algorithms/Observables/Obs_eval.jl")
 # Sampling
 include("Samplers/base_samplers.jl")
 include("Samplers/base_samplers_parallel.jl")
+export cache, init_sampler!, done, samplenext!
+export get_sampler, sampler_list, multithread
+
 include("Samplers/Exact.jl")
 include("Samplers/FullSum.jl")
 include("Samplers/MCMCSampler.jl")
@@ -146,5 +157,6 @@ include("utils/loading.jl")
 include("IterativeInterface/BaseIterativeSampler.jl")
 include("IterativeInterface/IterativeSampler.jl")
 include("IterativeInterface/MTIterativeSampler.jl")
+export sample!
 
 end # module

@@ -1,4 +1,5 @@
-export IterativeSampler, sample!
+export IterativeSampler
+
 mutable struct IterativeSampler{N,P,IC,EC,S,SC,V} <: AbstractIterativeSampler
     net::N
     problem::P

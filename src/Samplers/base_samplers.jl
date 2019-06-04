@@ -1,6 +1,3 @@
-export cache, init_sampler!, done, samplenext!
-
-abstract type Sampler end
 abstract type MonteCarloSampler <: Sampler end
 abstract type FullSpaceSampler <: Sampler end
 

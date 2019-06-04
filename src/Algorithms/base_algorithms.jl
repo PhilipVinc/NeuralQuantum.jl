@@ -1,12 +1,5 @@
-export EvaluatedNetwork, evaluation_post_sampling!, precondition!, SamplingCache
-export EvaluatedNetwork
-
-#abstract type Algorithm end
-
-#abstract type EvaluatedAlgorithm end
 add!(a::EvaluatedAlgorithm, b::EvaluatedAlgorithm) = error("NOT IMPLEMENTED: add!($(typeof(a)), $(typeof(b)))")
 
-#abstract type EvaluationSamplingCache end
 #zero!
 #add!
 
@@ -43,5 +36,3 @@ Constructs the cache to hold quantities necessary to sample the `problem` with
 the given `algorithm`.
 """
 function SamplingCache end
-
-abstract type AlgorithmCache end

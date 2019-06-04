@@ -1,5 +1,3 @@
-export get_sampler, sampler_list, multithread
-
 """
     MTSampler{ST} <: Sampler where ST<:Sampler
 

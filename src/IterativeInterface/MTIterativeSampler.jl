@@ -1,4 +1,5 @@
 export MTIterativeSampler
+
 mutable struct MTIterativeSampler{N,P,IC,MIC,EC,S,SC,V} <: AbstractIterativeSampler
     net::N
     problem::P
