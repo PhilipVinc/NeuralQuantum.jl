@@ -42,6 +42,13 @@ mutable struct RBMSplitCache{VT} <: NNCache{RBMSplit}
     θ::VT
     θ_tmp::VT
     logℒθ::VT
+
+    # complex sigmas
+    σr::VT
+    σc::VT
+
+    # LookUpTable
+
     valid::Bool # = false
 end
 
@@ -49,14 +56,20 @@ cache(net::RBMSplit) =
     RBMSplitCache(similar(net.b),
                   similar(net.b),
                   similar(net.b),
+                  similar(net.b, length(net.ar)),
+                  similar(net.b, length(net.ar)),
                   false)
 
 (net::RBMSplit)(c::RBMSplitCache, σ) = net(c, config(σ)...)
-function (net::RBMSplit)(c::RBMSplitCache, σr,σc)
+function (net::RBMSplit)(c::RBMSplitCache, σr_r, σc_r)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
     T = eltype(θ)
+
+    # copy the states to complex valued states for the computations.
+    σr = c.σr; copy!(σr, σr_r)
+    σc = c.σc; copy!(σc, σc_r)
 
     #θ .= net.b .+
     #        net.Wr*σr .+
@@ -70,11 +83,15 @@ function (net::RBMSplit)(c::RBMSplitCache, σr,σc)
     return logψ
 end
 
-function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, σr,σc)
+function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, σr_r, σc_r)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
     T = eltype(θ)
+
+    # copy the states to complex valued states for the computations.
+    σr = c.σr; copy!(σr, σr_r)
+    σc = c.σc; copy!(σc, σc_r)
 
     #θ .= net.b .+
     #        net.Wr*σr .+
