@@ -59,3 +59,6 @@ function compute_Cloc(prob::LdagL_sop_prob, net::MatrixNet, σ, lnψ=net(σ), σ
     end
     C_loc
 end
+
+Base.show(io::IO, p::LdagL_spmat_prob) = print(io,
+    "LdagL_spmat_prob on space : $(basis(p)), computing the energy of LdagL with the sparse liouvillian")

@@ -146,4 +146,4 @@ end
 
 # pretty printing
 Base.show(io::IO, p::LdagL_Lmat_prob) = print(io,
-    "LdagL_Lmat_prob on space : $(basis(p))")
+    "LdagL_Lmat_prob on space : $(basis(p)) computing the variance of Lrho using sparse H, c_ops")

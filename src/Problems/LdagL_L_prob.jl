@@ -68,4 +68,4 @@ end
 
 # pretty printing
 Base.show(io::IO, p::LdagL_L_prob) = print(io,
-    "LdagL_L_prob on space $(basis(p))")
+    "LdagL_L_prob on space $(basis(p)) computing the variance of Lrho using the sparse liouvillian")

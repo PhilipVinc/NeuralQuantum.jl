@@ -279,3 +279,6 @@ function compute_Cloc(prob::LdagL_spmat_prob, net::MatrixNet, 𝝝, lnψ=net(�
 
     return C_loc
 end
+
+Base.show(io::IO, p::LdagL_spmat_prob) = print(io,
+    "LdagL_spmat_prob on space : $(basis(p)), computing the energy of LdagL with H, jump_ops")
