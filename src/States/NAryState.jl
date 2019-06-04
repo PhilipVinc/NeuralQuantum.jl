@@ -109,6 +109,20 @@ IntegerToState(n_sites, loc_dim, val, T::Type{<:Number}) =
     end
     arr
 end
+
+# --- Indexing function for local spaces used in operators
+local_index(s::NAryState, i::T) where {T<:Integer} =
+    T(s.σ[i])+1
+
+function local_index(s::NAryState{T,Nb}, is::Vector{T2}) where {T,Nb,T2<:Integer}
+    idx = 0
+    for (i, j)=enumerate(reverse(is))
+        idx += T2(s.σ[i]) * Nb^(j-1)
+    end
+    return idx + 1
+end
+# -- end
+
 # -------------- Base.show extension for nice printing -------------- #
 Base.show(io::IO, ::MIME"text/plain", bs::NAryState) = print(io, "NAryState(",bs.n,") : ", String(bs.σ,false),
                                            " = ", bs.i_σ)

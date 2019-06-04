@@ -4,8 +4,10 @@
 Neural-Network representations of mixed quantum states and to find the Steady-
 State of dissipative Quantum Systems with variational Montecarlo schemes.
 
+This code has been developed while working on [Variational neural network ansatz for steady states in open quantum systems](https://arxiv.org/abs/1902.10104)
+
 ## Installation
-To Install `NeuralQuantum.jl`, please run the following commands to install all
+To Install `NeuralQuantum.jl`, run the following commands to install all
 dependencies:
 ```
 using Pkg
@@ -13,15 +15,14 @@ pkg"add https://github.com/PhilipVinc/QuantumLattices.jl"
 pkg"add https://github.com/PhilipVinc/ValueHistoriesLogger.jl"
 pkg"add https://github.com/PhilipVinc/NeuralQuantum.jl"
 ```
-If you are wondering what all those packages are for, here's an explanation:
+Those packages are needed for the following reasons:
  - `QuantumLattices` is a custom package that allows defining new types of operators on a lattice. It's not needed natively but it is usefull to define hamiltonians on a lattice.
- - `Optimisers`, a custom version of the still unreleased `FluxML/Optimisers.jl`, with features that are not yet released in the original branch.
  - `ValueHistoriesLogger` custom logger for logging arbitrary values
 
 ## Example
 ```
 # Load dependencies
-using NeuralQuantum, QuantumLattices, Optimisers
+using NeuralQuantum, QuantumLattices
 using Printf, ValueHistoriesLogger, Logging, ValueHistories
 
 # Select the numerical precision
