@@ -18,7 +18,6 @@ script:
                             println("Installed [QuantumLattices, ValueHistoriesLogger]");
                             Pkg.instantiate();
                             println("Instantiated");
-                            Pkg.develop(PackageSpec(path=pwd()));
                             println("Developed");
                             Pkg.test(coverage=true)';
 after_success:
