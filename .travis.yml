@@ -13,6 +13,7 @@ notifications:
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
     - julia --color=yes -e 'using Pkg;
+                            Pkg.activate();
                             Pkg.add([PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"), PackageSpec(url="https://github.com/PhilipVinc/ValueHistoriesLogger.jl")]);
                             println("Installed [QuantumLattices, ValueHistoriesLogger]");
                             Pkg.instantiate();
