@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Basics · NeuralQuantum.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><a href="../index.html"><img class="logo" src="../assets/logo.png" alt="NeuralQuantum.jl logo"/></a><h1>NeuralQuantum.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Home</a></li><li><span class="toctext">Manual</span><ul><li class="current"><a class="toctext" href>Basics</a><ul class="internal"><li><a class="toctext" href="#Setting-up-the-problem-1">Setting up the problem</a></li><li><a class="toctext" href="#Choosing-the-Ansatz-1">Choosing the Ansatz</a></li><li><a class="toctext" href="#Solving-for-the-steady-state-1">Solving for the steady state</a></li><li><a class="toctext" href="#Logging-observables-during-the-evolution-1">Logging observables during the evolution</a></li><li><a class="toctext" href="#Summary-1">Summary</a></li></ul></li><li><a class="toctext" href="../problems/">Problems</a></li><li><a class="toctext" href="../algorithms/">Algorithms</a></li><li><a class="toctext" href="../networks/">Networks</a></li><li><a class="toctext" href="../optimizers/">Optimizers</a></li></ul></li><li><span class="toctext">Internals</span><ul><li><a class="toctext" href="../states/">States</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Manual</li><li><a href>Basics</a></li></ul><a class="edit-page" href="https://github.com/PhilipVinc/NeuralQuantum.jl/blob/master/docs/src/basics.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Basics</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Basics-1" href="#Basics-1">Basics</a></h1><h2><a class="nav-anchor" id="Setting-up-the-problem-1" href="#Setting-up-the-problem-1">Setting up the problem</a></h2><p>NeuralQuantum&#39;s aim is to compute the steady state of an Open Quantum System. As such, the first step must be defining the elements that make up the lindbladaian, namely the Hilbert space, the Hamiltonian and the Loss operators.</p><p>While it is possible to specify an arbitrary quantum system, the easiest way is to use one of the alredy-implemented systems. </p><pre><code class="language-none">using NeuralQuantum
+
+Nspins = 5 # The number of spins in the system
+
+# Compute the Hamiltonian and the list of jump operators.
+sys = quantum_ising_system(Nspins, V=0.2, g=1.0, gamma=0.1, PBC=true)</code></pre><p>Next, we need to define the quantity that we wish to minimize variationally to find the steady state. This will be <span>$\langle\rho|\mathcal{L}^\dagger\mathcal{L }|\rho\rangle$</span>. I call this quantity the <em>problem</em>.</p><pre><code class="language-none">prob = LdagLProblem(sys, compute_ss=false)</code></pre><h2><a class="nav-anchor" id="Choosing-the-Ansatz-1" href="#Choosing-the-Ansatz-1">Choosing the Ansatz</a></h2><p>The next step consists in creating the network-based ansatz for the density matrix. In this example we will use a 64-bit floating point precision translational invariant Neural Density Matrix, with <span>$N_\text{spins}$</span> spins in the visible layer, 3 features in the hidden layer (~ <span>$3N_\text{spins}$</span> spins) and 3 features in the ancilla. To increase the expressive power of the network, one may increase freely the number of features. For a complete list of all possible ansatzes refer to section <a href="../networks/#Networks-1">Networks</a>.</p><pre><code class="language-none">net_initial = TINDM{Float64}(Nspins, 3, 3)</code></pre><p>When you create a network, it has all it&#39;s weights initialized to zero. It is usually a good idea to initialize them to some gaussian distribution. of width <span>$~0.1$</span>. Often, in the machine learning community, they are initialized according to a uniform distribution between <span>$[-\frac{1}{\sqrt{N}}, \frac{1}{\sqrt{N}}]$</span> [ref?].</p><pre><code class="language-none"># Load the package with random numbers
+using Random
+
+# For reproducible results, choose a seed
+rng = MersenneTwister(12345)
+
+# Initialize the weights according to a gaussian distribution of width 1
+randn!(rng, net_initial.weights)
+
+# Set the width to 0.3
+net_initial.weights .*= 0.3</code></pre><h2><a class="nav-anchor" id="Solving-for-the-steady-state-1" href="#Solving-for-the-steady-state-1">Solving for the steady state</a></h2><p>Having specified the quantity to minimize and the ansatz, we only need to choose the sampler and the optimization scheme.</p><p>The sampler is the algorithm that selects the states in the hilbert space to be summed over. Options are <code>Exact</code>, which performs an exact sum over all possible vectors in the hilbert space, <code>ExactDistrib</code>, which samples a certain number of elements according to the exact distribution, and <code>Metropolis</code>, which performs a Markov Chain according to the Metropolis rule. For this example we will chose an exact sum over all the hilbert space.</p><p>The Optimizer is instead the algorithm that, given the gradient, updates the variational weights of the ansatz. In this example we will use a simple gradient descent scheme with step size <code>lr=0.01</code>. Many more optimizers are described in Sec. <a href="../optimizers/#Optimizers-1">Optimizers</a>.</p><pre><code class="language-none"># Initialize an Exact Sum Sampler
+sampler = Exact()
+
+# Initialize a GD optimizer with learning rate (step size) 0.01
+optim = GD(lr=0.1)
+
+# Optimize the weights of the neural network for 100 iterations
+sol = solve(net_initial, prob, sampling_alg=sampler, optimizer=optim, max_iter=100)</code></pre><p>After running the <code>solve</code> command you should see in the temrinal a list of the loss function updating over time, and how much it varies across iterations, such as this:</p><pre><code class="language-none">  iter -&gt; E= &lt;rho| LdagL |rho&gt;/&lt;rho|rho&gt;     → ΔE = variation since last iter
+     3 -&gt; E=(+7.199784e-01 +im+8.558472e-18) → ΔE = -1.20e-01
+     4 -&gt; E=(+6.173014e-01 +im-5.918733e-18) → ΔE = -1.03e-01
+     5 -&gt; E=(+4.952037e-01 +im-5.480910e-18) → ΔE = -1.22e-01</code></pre><p>If the optimization goes well, <code>ΔE</code> should almost always be negative as to converge towards the minimum.</p><p>## The solution object The <code>solve</code> command returns a structure holding several important data:</p><ul><li><code>sol.net_initial</code> stores the initial configuration of the network</li><li><code>sol.net_end</code> stores the configuration of the network at the end of the optimization</li><li><code>sol.data</code> stores the data of the observables and other quantities of interest</li></ul><p>To access, for example, the value of <span>$\langle\rho|\mathcal{L}^\dagger\mathcal{L }|\rho\rangle$</span> along the optimization, one can simply do</p><pre><code class="language-none">sol[:Energy].iterations
+sol[:Energy].values</code></pre><p>where <code>iterations</code> is a vector containing the information at which iterations the corresponding <code>value</code> was logged.</p><h2><a class="nav-anchor" id="Logging-observables-during-the-evolution-1" href="#Logging-observables-during-the-evolution-1">Logging observables during the evolution</a></h2><p>It can be usefull to store also some other observables during the evolution. To do so, one can pass additional keyword-arguments to the solve command:</p><ul><li><code>observables</code>: A list of tuples, containing the observables and a symbol to name it, such as</li></ul><p><code>[(:obs1, obs1), (:obs2, obs2)]</code></p><ul><li><code>log_skip_steps</code>, an integer specifing every how many iterations the observable should be computed</li><li><code>log_weights</code> saves the weights.</li><li><code>log_fidelity</code>, logs the fidelity of the state w.r.t the target state. WARNING:</li></ul><p>computing the fidelity is a very computationally demanding task, and as such you    should not usually use this feature</p><p>For example, to store the observables <span>$m_x$</span>, <span>$m_y$</span> and <span>$m_z$</span>  every 2 optimization step, we can do the following:</p><pre><code class="language-none"># Compute the operator for the average magnetization
+mx, my, mz = magnetization([:x, :y, :z], sys)./Nspins
+
+# Create the list of observables and symbols
+obs = [(:mx, mx), (:my, my), (:mz, mz)];
+
+# Create the logger
+sol = solve(net_initial, prob, max_iter=100, observables=obs, save_at=2)</code></pre><p>The <code>magnetization([::Symbols], ::System)</code> function returns the total magnetization operator along the specified axis for the given system. For more information on this function refer to <a href="@ref">Systems</a>.</p><h4><a class="nav-anchor" id="Using-the-Logger-1" href="#Using-the-Logger-1">Using the Logger</a></h4><p>Once you have solution, you can plot it with:</p><pre><code class="language-none">using Plots
+
+pl_E = plot(sol[:Energy])
+pl_x = plot(sol[:mx])
+pl_y = plot(sol[:my])
+pl_z = plot(sol[:mz])
+pl(pl_E, pl_x, pl_y, pl_z)</code></pre><p>Quantities inside the logger are stored as :</p><pre><code class="language-none">sol[:OBSERVABLE].iterations -&gt;
+sol[:OBSERVABLE].values     -&gt;</code></pre><p>You can also concatenate several different solutions. This will return a MVHistory object holding the evolution of all quantities of interest and observables, but it won&#39;t hold anymore information on the weights.</p><h2><a class="nav-anchor" id="Summary-1" href="#Summary-1">Summary</a></h2><pre><code class="language-none">using NeuralQuantum, Random
+
+Nspins = 5 # The number of spins in the system
+
+# Compute the Hamiltonian and the list of jump operators.
+sys = quantum_ising_system(Nspins, V=0.2, g=1.0, gamma=0.1, PBC=true)
+
+# Compute the operator for the average magnetization
+mx, my, mz = magnetization([:x, :y, :z], sys)./Nspins
+
+# Create the list of observables and symbols
+obs = [(:mx, mx), (:my, my), (:mz, mz)];
+
+# Define the quantity to be minimised (the loss function)
+prob = LdagLProblem(sys, compute_ss=false)
+
+# Translational-Invariant Neural Density Matrix with 3 hidden, 3 auxiliary features
+# and Binary activation function.
+net_initial = TINDMBinaryExact{Float64}(Nspins, 3, 3)
+
+# For reproducible results, choose a seed
+rng = MersenneTwister(12345)
+
+# Initialize the weights according to a gaussian distribution of width 1
+randn!(rng, net_initial.weights)
+
+# Set the width to 0.3
+net.weights .*= 0.3
+
+# Initialize an Exact Sum Sampler
+sampler = Exact()
+
+# Initialize a GD optimizer with learning rate (step size) 0.01
+optim = GD(lr=0.1)
+
+# Optimize the weights of the neural network for 100 iterations
+net_optimized = solve(net_initial, prob, sampling_alg=sampler, optimizer=optim,
+                      max_iter=100, observables=obs, save_at=1)</code></pre><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../problems/"><span class="direction">Next</span><span class="title">Problems</span></a></footer></article></body></html>
