@@ -13,9 +13,9 @@ notifications:
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
     - julia --color=yes -e 'using Pkg;
+                            Pkg.activate();
                             Pkg.add(PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"));
                             Pkg.add(PackageSpec(url="https://github.com/PhilipVinc/ValueHistoriesLogger.jl"));
-                            Pkg.activate();
                             Pkg.instantiate();
                             Pkg.test(coverage=true)';
 after_success:
