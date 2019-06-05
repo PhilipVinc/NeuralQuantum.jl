@@ -14,9 +14,13 @@ script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
     - julia --color=yes -e 'using Pkg;
                             Pkg.add(PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"));
-                            Pkg.add(PackageSpec(url="https://github.com/PhilipVinc/ValueHistoriesLogger.jl"));
+                            println("Installed QuantumLattices")
+                            Pkg.develop(PackageSpec(url="https://github.com/PhilipVinc/ValueHistoriesLogger.jl"));
+                            println("Installed ValueHistoriesLogger")
                             Pkg.instantiate();
+                            println("Instantiated")
                             Pkg.develop(PackageSpec(path=pwd()));
+                            println("Developed")
                             Pkg.test(coverage=true)';
 after_success:
     - julia -e 'using Pkg; cd(Pkg.dir("NeuralQuantum")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
