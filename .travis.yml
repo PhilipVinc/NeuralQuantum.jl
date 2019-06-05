@@ -1,0 +1,33 @@
+language: julia
+os:
+    - osx
+    - linux
+julia:
+    - 1.1
+    - nightly
+matrix:
+    allow_failures:
+        - julia: nightly
+notifications:
+    email: false
+script:
+    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+    - julia --color=yes -e 'using Pkg;
+                            Pkg.add(PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"));
+                            Pkg.add(PackageSpec(url="https://github.com/PhilipVinc/ValueHistoriesLogger.jl"));
+                            Pkg.activate();
+                            Pkg.instantiate();
+                            Pkg.test(coverage=true)';
+after_success:
+    - julia -e 'using Pkg; cd(Pkg.dir("NeuralQuantum")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+
+jobs:
+  include:
+    - stage: "Documentation"
+      julia: 1.1
+      os: linux
+      script:
+        - julia --project=docs/ -e 'using Pkg; Pkg.add("Documenter"); Pkg.develop(PackageSpec(path=pwd()));
+                                    Pkg.instantiate()'
+        - julia --project=docs/ docs/make.jl
+      after_success: skip

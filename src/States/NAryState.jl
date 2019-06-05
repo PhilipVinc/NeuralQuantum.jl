@@ -54,6 +54,12 @@ end=#
 
 
 # Operations
+"""
+    flipat!(rng, state, site) -> (old_val, new_val)
+
+Flips `state[site]` to a random new state. The old value is returned together
+with the new value.
+"""
 function flipat!(rng::AbstractRNG, state::NAryState{T, N}, i::Int) where {T, N}
     old_val = state.σ[i]
 
@@ -70,6 +76,11 @@ function flipat!(rng::AbstractRNG, state::NAryState{T, N}, i::Int) where {T, N}
     return (old_val, new_val)
 end
 
+"""
+    setat!(state, site, value) -> old_val
+
+Sets `state[site] = value`. Returns the old value of `state[site]`
+"""
 function setat!(state::NAryState{T, N}, i::Int, val::T) where {T, N}
     old_val = state.σ[i]
 

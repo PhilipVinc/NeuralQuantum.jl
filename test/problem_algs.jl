@@ -18,7 +18,7 @@ prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
     rho   = dm(net, prob, false).data
     rhov  = vec(rho)
 
-    ic = NeuralQuantum.MCMCSREvaluationCache(net); zero!(ic)
+    ic = NeuralQuantum.MCMCSREvaluationCache(net, prob); zero!(ic)
 
     Clocs_ex  = (LdagL*rhov)./rhov
     for i=1:spacedimension(v)
@@ -49,8 +49,8 @@ prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
     rho   = dm(net, prob, false).data
     rhov  = vec(rho)
 
-    ic = NeuralQuantum.MCMCSREvaluationCache(net); zero!(ic)
-    icL = NeuralQuantum.MCMCSRLEvaluationCache(net); zero!(icL)
+    ic = NeuralQuantum.MCMCSREvaluationCache(net, prob); zero!(ic)
+    icL = NeuralQuantum.MCMCSRLEvaluationCache(net, probL); zero!(icL)
 
     Clocs_ex  = (LdagL*rhov)./rhov
     for i=1:spacedimension(v)
@@ -90,9 +90,39 @@ prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
     rho   = dm(net, prob, false).data
     rhov  = vec(rho)
 
-    ic = NeuralQuantum.MCMCSREvaluationCache(net); zero!(ic)
+    ic = NeuralQuantum.MCMCSREvaluationCache(net, prob); zero!(ic)
 
     Clocs_ex  = (LdagL*rhov)./rhov
+    for i=1:spacedimension(v)
+        set_index!(v, i)
+        NeuralQuantum.sample_network!(ic, prob, net, v)
+    end
+    Clocs_net_S = ic.Evalues
+
+    @test Clocs_ex ≈ Clocs_net_S
+end
+
+prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
+@testset "LdagL random problem: $prob_T" for prob_T=prob_types
+    Nsites=2
+    lind = quantum_ising_lind(SquareLattice([Nsites],PBC=false), g=1.6, V=2.0, γ=1.0)
+    net  = cached(rNDM(T, Nsites, 2, 1))
+
+    Ham  = SparseOperator(lind.H)
+    Ham.data.=sprand(ComplexF64, size(Ham.data,1),size(Ham.data,2),0.5)
+    Ham.data .= Ham.data + Ham.data'
+    cops = jump_operators(lind)
+    prob = prob_T(T, Ham, cops);
+
+    v    = state(prob, net)
+
+    L=liouvillian(Ham, cops)
+    rho   = dm(net, prob, false).data
+    rhov  = vec(rho)
+
+    ic = NeuralQuantum.MCMCSRLEvaluationCache(net, prob); zero!(ic)
+
+    Clocs_ex  = abs.((L.data*rhov)./rhov).^2
     for i=1:spacedimension(v)
         set_index!(v, i)
         NeuralQuantum.sample_network!(ic, prob, net, v)

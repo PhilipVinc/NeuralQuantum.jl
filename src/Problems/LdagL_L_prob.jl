@@ -30,6 +30,8 @@ LdagL_L_prob(T::Type{<:Number}, gl::GraphLindbladian) =
     LdagL_L_prob(T, liouvillian(gl))
 LdagL_L_prob(T::Type{<:Number}, Liouv::SparseSuperOperator) =
     LdagL_L_prob(first(Liouv.basis_l), sparse(transpose(Liouv.data)), 0.0)
+LdagL_L_prob(T::Type{<:Number}, Ham::DataOperator, cops::Vector) =
+    LdagL_L_prob(T, liouvillian(Ham, cops))
 
 basis(prob::LdagL_L_prob) = prob.HilbSpace
 

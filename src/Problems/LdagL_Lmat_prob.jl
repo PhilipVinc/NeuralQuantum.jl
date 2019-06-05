@@ -109,7 +109,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lmat_prob, net::MatrixNet, �
       i_σ_p = HnH.rowval[row_id]
       set_index!(𝝝p_col, i_σ_p)
       lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
-      C_loc_i  =  1.0im * conj(HnH.nzval[row_id]) * exp(lnψ_i - lnψ)
+      C_loc_i  =  1.0im * conj(HnH_t.nzval[row_id]) * exp(lnψ_i - lnψ)
 
       for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
         LLOave .+= C_loc_i .* _∇lnψ
