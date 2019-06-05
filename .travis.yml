@@ -29,7 +29,10 @@ jobs:
       julia: 1.1
       os: linux
       script:
-        - julia --project=docs/ -e 'using Pkg; Pkg.add("Documenter"); Pkg.develop(PackageSpec(path=pwd()));
+        - julia --project=docs/ -e 'using Pkg;
+                                    Pkg.add([PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"), PackageSpec(url="https://github.com/PhilipVinc/ValueHistoriesLogger.jl")]);
+                                    Pkg.add("Documenter");
+                                    Pkg.develop(PackageSpec(path=pwd()));
                                     Pkg.instantiate()'
         - julia --project=docs/ docs/make.jl
       after_success: skip

@@ -1,4 +1,5 @@
 # NeuralQuantum
+[![Build Status](https://travis-ci.org/PhilipVinc/NeuralQuantum.jl.svg?branch=master)](https://travis-ci.org/PhilipVinc/NeuralQuantum.jl) [![DOI](https://zenodo.org/badge/186389926.svg)](https://zenodo.org/badge/latestdoi/186389926)
 
 **NeuralQuantum** is a numerical framework written in [Julia] to investigate
 Neural-Network representations of mixed quantum states and to find the Steady-
