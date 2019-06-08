@@ -43,5 +43,10 @@ using Test
         setat!(s, i, old)
         @test config(s)[i] == v
     end
+end
 
+@test "localindex" begin
+    import NeuralQuantum: NAryState, flipat!, setat!
+
+    v = NAryState(2,4)
 end

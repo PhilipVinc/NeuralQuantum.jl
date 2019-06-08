@@ -8,10 +8,16 @@ using Test
     end
 
     @testset "Problem & algs" begin
-        include("problem_algs.jl")
+        include("Problems/problem_algs.jl")
+        include("Problems/problem_ops.jl")
     end
 
     @testset "States" begin
         include("states.jl")
     end
+
+    @testset "Operators" begin
+        include("states.jl")
+    end
+
 end

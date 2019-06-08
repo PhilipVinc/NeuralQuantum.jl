@@ -81,6 +81,8 @@ prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
     Ham.data.=sprand(ComplexF64, size(Ham.data,1),size(Ham.data,2),0.5)
     Ham.data .= Ham.data + Ham.data'
     cops = jump_operators(lind)
+    c1 = first(cops)
+    c1.data = sprand(ComplexF64, size(c1.data,1),size(c1.data,2),0.1)
     prob = prob_T(T, Ham, cops);
 
     v    = state(prob, net)
@@ -112,6 +114,8 @@ prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
     Ham.data.=sprand(ComplexF64, size(Ham.data,1),size(Ham.data,2),0.5)
     Ham.data .= Ham.data + Ham.data'
     cops = jump_operators(lind)
+    c1 = first(cops)
+    c1.data = sprand(ComplexF64, size(c1.data,1),size(c1.data,2),0.1)
     prob = prob_T(T, Ham, cops);
 
     v    = state(prob, net)
