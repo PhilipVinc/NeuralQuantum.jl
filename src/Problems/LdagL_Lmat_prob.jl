@@ -131,6 +131,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lmat_prob, net::MatrixNet, �
         for int_row_id = Ld.colptr[i_σt]:(Ld.colptr[i_σt+1]-1)
           i_σt_p = Ld.rowval[int_row_id]
           set_index!(𝝝p_col, i_σt_p)
+
           lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
           C_loc_i  =  val_σ_p * Ld.nzval[int_row_id] *  exp(lnψ_i - lnψ)
 
@@ -141,6 +142,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lmat_prob, net::MatrixNet, �
         end
       end
     end
+    
     return C_loc
 end
 

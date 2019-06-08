@@ -56,7 +56,7 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector)
         op        = KLocalOperatorRow(nz_sites, hilb_dims, L_nz.data)
 
         op_hnh    = KLocalOperatorRow(nz_sites, hilb_dims,
-                                      -im*(L_nz'*L_nz).data)
+                                      -im/2*(L_nz'*L_nz).data)
 
         sum!(H, op_hnh)
         push!(loss_ops, op)
