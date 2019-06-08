@@ -71,8 +71,8 @@ function KLocalOperatorRow(sites::Vector, hilb_dims::Vector, operator)
             nwvls = eltype(mel_els)[]
             for (i, (v, vn)) = enumerate(zip(config(st), config(st1)))
                 if v != vn
-                    push!(cngd, i)
-                    push!(nwvls, vn[i])
+                    push!(cngd, sites[i])
+                    push!(nwvls, vn)
                 end
             end
             push!(mel_els, val)
