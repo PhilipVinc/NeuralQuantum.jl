@@ -47,6 +47,8 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector)
             push!(nz_sites, j)
         end
 
+        isempty(nz_sites) && continue
+
         hilb_dims = length.(basis.(L.LocalOperators[nz_sites]))
 
         L_nz      = tensor(L.LocalOperators[nz_sites]...)
@@ -61,8 +63,10 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector)
         push!(loss_ops_t, transpose(op))
     end
 
-    loss_ops   = Vector{typeof(first(loss_ops))}(loss_ops)
-    loss_ops_t = Vector{typeof(first(loss_ops))}(loss_ops_t)
+    T = isempty(loss_ops) ? Nothing : typeof(first(loss_ops))
+
+    loss_ops   = Vector{T}(loss_ops)
+    loss_ops_t = Vector{T}(loss_ops_t)
 
     return (H, loss_ops, loss_ops_t)
 end

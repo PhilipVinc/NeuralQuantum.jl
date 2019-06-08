@@ -61,12 +61,12 @@ function KLocalOperatorRow(sites::Vector, hilb_dims::Vector, operator)
             push!(new_values_els, eltype(mel_els)[])
         end
 
-        set!(st, r)
+        set_index!(st, r)
         for (c, val) = enumerate(row)
             r == c && continue
             abs(val) < 10e-6 && continue
 
-            set!(st1, c)
+            set_index!(st1, c)
             cngd = Int[]
             nwvls = eltype(mel_els)[]
             for (i, (v, vn)) = enumerate(zip(config(st), config(st1)))
