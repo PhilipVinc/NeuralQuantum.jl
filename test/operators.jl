@@ -80,8 +80,6 @@ for i=1:spacedimension(v)
 end
 @test check == mat12
 
-
-
 op3 = KLocalOperatorRow([2], hilb_dims, mat2)
 m3 = kron(mat2, Matrix(I, 2, 2))
 ms = kron(Matrix(I, 2, 2), matsum)

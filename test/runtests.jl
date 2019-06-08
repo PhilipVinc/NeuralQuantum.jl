@@ -9,7 +9,7 @@ using Test
 
     @testset "Problem & algs" begin
         include("Problems/problem_algs.jl")
-        include("Problems/problem_ops.jl")
+        include("Problems/problem_operators.jl")
     end
 
     @testset "States" begin

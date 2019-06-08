@@ -45,7 +45,7 @@ using Test
     end
 end
 
-@test "localindex" begin
+@testset "localindex" begin
     import NeuralQuantum: NAryState, flipat!, setat!
 
     v = NAryState(2,4)

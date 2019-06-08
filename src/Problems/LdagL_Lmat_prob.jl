@@ -10,7 +10,7 @@ struct LdagL_Lmat_prob{B, SM} <: LRhoSquaredProblem where {B<:Basis,
                                                  SM<:SparseMatrixCSC}
     HilbSpace::B            # 0
     HnH::SM
-    HnH_h::SM
+    HnH_t::SM
     L_ops::Vector{SM}       # 4
     L_ops_h::Vector{SM}     # 4
     L_ops_t::Vector{SM}     # 5
@@ -69,7 +69,7 @@ basis(prob::LdagL_Lmat_prob) = prob.HilbSpace
 function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lmat_prob, net::MatrixNet, 𝝝,
                       lnψ=net(𝝝), 𝝝p=deepcopy(𝝝))
     HnH = prob.HnH
-    HnH_t = prob.HnH_h
+    HnH_t = prob.HnH_t
     c_ops = prob.L_ops
     c_ops_h = prob.L_ops_h
     c_ops_trans = prob.L_ops_t
@@ -141,7 +141,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lmat_prob, net::MatrixNet, �
         end
       end
     end
-    C_loc
+    return C_loc
 end
 
 # pretty printing
