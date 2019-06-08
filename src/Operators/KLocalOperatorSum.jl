@@ -2,7 +2,7 @@
     KLocalOperatorSum
 
 A KLocalOperator representing the sum of several KLocalOperator-s. Internally,
-the sum is stored as a vector of local operators acting on some sites. 
+the sum is stored as a vector of local operators acting on some sites.
 """
 struct KLocalOperatorSum{VS<:AbstractVector,VOp} <: AbsLinearOperator
     # list of sites in this sum
@@ -34,6 +34,13 @@ end
 function row_valdiff!(conn::OpConnection, op::KLocalOperatorSum, v::State)
     for _op=operators(op)
         row_valdiff!(conn, _op, v)
+    end
+    conn
+end
+
+function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperatorSum, v::State)
+    for _op=operators(op)
+        row_valdiff_index!(conn, _op, v)
     end
     conn
 end

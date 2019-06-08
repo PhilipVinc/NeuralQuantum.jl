@@ -1,6 +1,6 @@
 ## Matrix whole space
 function sample_network!(res::MCMCGradientEvaluationCache,
-  prob::Union{LdagL_sop_prob, LdagL_spmat_prob, Ham_spmat_prob}, net, σ, wholespace=false)
+  prob::HermitianMatrixProblem, net, σ, wholespace=false)
 
   lnψ, ∇lnψ = logψ_and_∇logψ!(res.∇lnψ, net, σ)
   E         = compute_Cloc(prob, net, σ, lnψ, res.σ)
@@ -17,7 +17,7 @@ function sample_network!(res::MCMCGradientEvaluationCache,
   return res
 end
 
-function sample_network!(res::MCMCGradientLEvaluationCache, prob::Union{LdagL_L_prob,LdagL_Lmat_prob},
+function sample_network!(res::MCMCGradientLEvaluationCache, prob::LRhoSquaredProblem,
                          net, σ, wholespace=false)
   CLO_i = res.LLO_i
 

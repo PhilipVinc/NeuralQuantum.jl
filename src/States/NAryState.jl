@@ -126,11 +126,11 @@ local_index(s::NAryState, i::T) where {T<:Integer} =
     T(s.σ[i])+1
 
 function local_index(s::NAryState{T,Nb}, is::Vector{T2}) where {T,Nb,T2<:Integer}
-    idx = 0
-    for (i, j)=enumerate(reverse(is))
-        idx += T2(s.σ[i]) * Nb^(j-1)
+    idx = 1
+    for (i,j)=enumerate(is)
+        idx += T2(s.σ[j]) * Nb^(i-1)
     end
-    return idx + 1
+    return idx
 end
 # -- end
 

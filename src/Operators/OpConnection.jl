@@ -28,7 +28,6 @@ function Base.push!(c::OpConnection, (m_els, to_change, new_values))
 end
 
 function Base.append!(c::OpConnection, (m_els, to_change, new_values))
-    println(m_els)
 
     append!(c.mel, m_els)
     append!(c.to_change, to_change)

@@ -61,12 +61,13 @@ include("tuple_logic.jl")
 import Base: +
 include("Operators/BaseOperators.jl")
 include("Operators/OpConnection.jl")
+include("Operators/OpConnectionIndex.jl")
 include("Operators/KLocalOperator.jl")
 include("Operators/KLocalOperatorSum.jl")
 include("Operators/GraphConversion.jl")
 export OpConnection
 export KLocalOperator, KLocalOperatorSum, KLocalOperatorRow, operators
-export row_valdiff, col_valdiff, sites, conn_type
+export row_valdiff, row_valdiff_index, col_valdiff, sites, conn_type
 export duplicate
 
 # Basic states for uniform systems
@@ -102,7 +103,7 @@ include("Problems/ObservablesProblem.jl")
 include("Problems/LdagL_L_prob.jl")
 include("Problems/LdagL_Lmat_prob.jl")
 #include("Problems/time_evo/time_Evo_L.jl")
-#include("Problems/Operators/LdagL_Lrho_op_prob.jl")
+include("Problems/Operators/LdagL_Lrho_op_prob.jl")
 const LdagLFullProblem = LdagL_sop_prob
 const LdagLProblem = LdagL_spmat_prob
 const LdagL_L_Problem = LdagL_Lmat_prob
