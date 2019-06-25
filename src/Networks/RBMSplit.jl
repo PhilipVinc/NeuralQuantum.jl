@@ -42,18 +42,20 @@ mutable struct RBMSplitCache{VT} <: NNCache{RBMSplit}
     θ::VT
     θ_tmp::VT
     logℒθ::VT
+    ∂logℒθ::VT
 
     # complex sigmas
     σr::VT
     σc::VT
 
-    # LookUpTable
+    # states
 
     valid::Bool # = false
 end
 
 cache(net::RBMSplit) =
     RBMSplitCache(similar(net.b),
+                  similar(net.b),
                   similar(net.b),
                   similar(net.b),
                   similar(net.b, length(net.ar)),
@@ -84,10 +86,11 @@ function (net::RBMSplit)(c::RBMSplitCache, σr_r, σc_r)
 end
 
 function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, σr_r, σc_r)
-    θ = c.θ
-    θ_tmp = c.θ_tmp
-    logℒθ = c.logℒθ
-    T = eltype(θ)
+    θ      = c.θ
+    θ_tmp  = c.θ_tmp
+    logℒθ  = c.logℒθ
+    ∂logℒθ = c.∂logℒθ
+    T      = eltype(θ)
 
     # copy the states to complex valued states for the computations.
     σr = c.σr; copy!(σr, σr_r)
@@ -100,14 +103,15 @@ function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, σr_r, �
     mul!(θ_tmp, net.Wc, σc)
     θ .+= net.b .+ θ_tmp
 
-    logℒθ .= logℒ.(θ)
-    logψ = dot(σr,net.ar) + dot(σc,net.ac) + sum(logℒθ)
+    logℒθ  .= logℒ.(θ)
+    ∂logℒθ .= ∂logℒ.(θ)
 
     ∇logψ.ar .= σr
     ∇logψ.ac .= σc
-    ∇logψ.b  .= ∂logℒ.(θ)
-    ∇logψ.Wr .= ∂logℒ.(θ) .* transpose(σr)
-    ∇logψ.Wc .= ∂logℒ.(θ) .* transpose(σc)
+    ∇logψ.b  .= ∂logℒθ
+    ∇logψ.Wr .= ∂logℒθ .* transpose(σr)
+    ∇logψ.Wc .= ∂logℒθ .* transpose(σc)
 
+    logψ = dot(σr,net.ar) + dot(σc,net.ac) + sum(logℒθ)
     return logψ, ∇logψ
 end

@@ -171,7 +171,7 @@ function (W::NDM)(c::NDMCache, σr, σc)
     LinearAlgebra.BLAS.blascopy!(length(W.h_λ), W.h_λ, 1, θλ_σp, 1)
     LinearAlgebra.BLAS.gemv!('N', T(1.0), W.w_λ, σc, T(1.0), θλ_σp)
     LinearAlgebra.BLAS.blascopy!(length(W.h_μ), W.h_μ, 1, θμ_σp, 1)
-    LinearAlgebra.BLAS.gemv!('N', T(1.0), W.w_μ, σc, T(1.0), θμ_σp);
+    LinearAlgebra.BLAS.gemv!('N', T(1.0), W.w_μ, σc, T(1.0), θμ_σp)
 
     #∑logℒ_λ_σp = sum(logℒ.(θλ_σp, (NT(),)))
     c.θλ_σp_tmp .= logℒ.(θλ_σp)

@@ -81,7 +81,6 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
 
     # L rho Ldag H #ok
     # -im ⟨σ|L ρ Lᴴ|σt⟩
-    println("[B] : begin = $C_loc")
     for L=c_ops
         diffs_r = row_valdiff(L, row(𝝝))
         diffs_c = row_valdiff(L, col(𝝝))
@@ -97,6 +96,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
                 for (site,val)=zip(tcn_c, nv_c)
                     setat!(𝝝p_col, site, val)
                 end
+
                 lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
                 C_loc_i  =  (mel_r) * conj(mel_c) *  exp(lnψ_i - lnψ)
 
@@ -104,11 +104,9 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
                   LLOave .+= C_loc_i .* _∇lnψ
                 end
                 C_loc  += C_loc_i
-                println("[B] : $𝝝p mel_r = $mel_r \t mel_c = $(conj(mel_c)) \t\t and C_loc_i = $C_loc_i -> $C_loc")
             end
         end
     end
-    println("[B] : end = $C_loc")
 
     return C_loc
 end
