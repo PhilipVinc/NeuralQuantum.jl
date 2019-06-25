@@ -15,7 +15,6 @@ end
 Creates a tuple holding all derivatives of the network N.
 """
 grad_cache(net::NeuralNetwork) = derivative_tuple(net)
-#grad_cache(net)  = ∇logψ(net, random_input_state(net))
 
 """
     invalidate_cache!(net)
@@ -24,6 +23,7 @@ Invalidates the cache of a cached Neural Network. Usually called when weights
 are changed to signal the fact that lookup tables must be cleared.
 """
 @inline invalidate_cache!(net::NNCache) = net.valid = false
+@inline invalidate_cache!(net::Nothing) = nothing # if not implemented
 
 """
     CachedNet{N, NC}
@@ -32,11 +32,9 @@ A Cached Version of Neural Network `N` using Cache `NC`. It behaves the same as
 the network `N`, but uses a preallocated cache to speed up computation of the
 gradient and the function.
 """
-struct CachedNet{N, NC, ND, NDV} <: NeuralNetwork
+struct CachedNet{N, NC}#=, ND, NDV}=# <: NeuralNetwork
     net::N
     cache::NC
-    der::ND
-    der_vec::NDV
 end
 
 """
@@ -46,12 +44,10 @@ Constructs a cached version of the neural network `net`, preallocating several
 arrays for intermediate results for improved performance. This object will
 behave identically to a standard network `net`.
 """
-cached(net::NeuralNetwork) = CachedNet(net, cache(net),
-                                grad_cache(net),
-                                nothing)
+cached(net::NeuralNetwork) = CachedNet(net, cache(net))
 
 # When copying shallow copy the net but deepcopy the der_vec
-copy(cnet::CachedNet) = CachedNet(cnet.net, deepcopy(cnet.cache), deepcopy(cnet.der), deepcopy(cnet.der_vec))
+copy(cnet::CachedNet) = CachedNet(cnet.net, deepcopy(cnet.cache))
 
 """
     cache(net)
@@ -60,6 +56,14 @@ Constructs the `NNCache{typeof(net)}` object that holds the cache for this netwo
 If it has not been implemented returns nothing.
 """
 cache(net) = nothing
+
+"""
+    lookup(net)
+
+Constructs the `NNCache{typeof(net)}` object that holds the cache for this network.
+If it has not been implemented returns nothing.
+"""
+lookup(net) = nothing
 
 weights(net) = net
 weights(cnet::CachedNet) = cnet.net
@@ -72,7 +76,7 @@ grad_cache(net::CachedNet)     = grad_cache(net.net)
 function logψ_and_∇logψ(n::CachedNet, σ)
     @warn "Inefficient calling logψ_and_∇logψ for cachedNet"
     ∇lnψ = grad_cache(n)
-    lψ, ∇ψ = logψ_and_∇logψ!(∇lnψ, n.net, n.cache, config(σ)...);
+    lψ, ∇ψ = logψ_and_∇logψ!(∇lnψ, n, σ);
     return (lψ, ∇ψ)
 end
 
