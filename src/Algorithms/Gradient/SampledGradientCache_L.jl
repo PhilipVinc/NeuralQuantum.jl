@@ -102,6 +102,7 @@ function evaluation_post_sampling!(out::GradientEvaluation,
      end
 end
 
+#=
 function sample_network!(res::MCMCGradientLEvaluationCache, prob::LRhoSquaredProblem,
                          net, σ, wholespace=false)
   CLO_i = res.LLO_i
@@ -123,3 +124,4 @@ function sample_network!(res::MCMCGradientLEvaluationCache, prob::LRhoSquaredPro
   end
   return res
 end
+=#
