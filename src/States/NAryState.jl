@@ -77,6 +77,10 @@ function flipat!(rng::AbstractRNG, state::NAryState{T, N}, i::Int) where {T, N}
     return (old_val, new_val)
 end
 
+# For Nary states the fast method is equivalent to the standard one
+flipat_fast!(rng::AbstractRNG, state::NAryState, i::Int) =
+    flipat!(rng, state, i)
+
 """
     setat!(state, site, value) -> old_val
 
@@ -134,6 +138,14 @@ function local_index(s::NAryState{T,Nb}, is::Vector{T2}) where {T,Nb,T2<:Integer
     return idx
 end
 # -- end
+
+function apply!(state::NAryState, changes::StateChanges)
+    for (id, val)=changes
+        setat!(state, id, val)
+    end
+    return state
+end
+
 
 # -------------- Base.show extension for nice printing -------------- #
 Base.show(io::IO, ::MIME"text/plain", bs::NAryState) = print(io, "NAryState(",bs.n,") : ", String(bs.σ,false),

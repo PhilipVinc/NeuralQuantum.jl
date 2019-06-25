@@ -1,5 +1,9 @@
 export cached, vectorize_gradient, weights, grad_cache
 
+abstract type NNLookUp
+    #valid
+end
+
 """
     NNCache{N}
 

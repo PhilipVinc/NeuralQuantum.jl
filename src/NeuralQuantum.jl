@@ -71,11 +71,14 @@ export row_valdiff, row_valdiff_index, col_valdiff, sites, conn_type
 export duplicate
 
 # Basic states for uniform systems
+include("States/StateChanges.jl")
 include("States/NAryState.jl")
 include("States/DoubleState.jl")
 include("States/PurifiedState.jl")
 include("States/DiagonalStateWrapper.jl")
 export local_index
+include("States/ModifiedState.jl")
+export ModifiedState
 
 # Neural Networks
 include("Networks/utils.jl")
@@ -91,10 +94,6 @@ const rNDMSymm = NDMSymm; export rNDMSymm;
 #
 include("Networks/ClosedSystems/RBM.jl")
 
-# gen state
-export state
-include("generate_state.jl")
-
 # Problems
 export LdagL_spmat_prob, LdagL_sop_prob, LdagLProblem, LdagLFullProblem, LdagL_L_prob, LdagL_L_Problem, LdagL_Lmat_prob
 include("Problems/LdagL_spmat_prob.jl")
@@ -102,11 +101,14 @@ include("Problems/LdagL_sop_prob.jl")
 include("Problems/ObservablesProblem.jl")
 include("Problems/LdagL_L_prob.jl")
 include("Problems/LdagL_Lmat_prob.jl")
-#include("Problems/time_evo/time_Evo_L.jl")
 include("Problems/Operators/LdagL_Lrho_op_prob.jl")
 const LdagLFullProblem = LdagL_sop_prob
 const LdagLProblem = LdagL_spmat_prob
 const LdagL_L_Problem = LdagL_Lmat_prob
+
+# gen state
+export state, state_lut
+include("generate_state.jl")
 
 #
 export HamProblem

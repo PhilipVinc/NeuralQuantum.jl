@@ -48,8 +48,22 @@ function flipat!(rng::AbstractRNG, v::DoubleState, i::Int)
     i > v.n ? flipat!(rng, v.σ_row, i-v.n) : flipat!(rng, v.σ_col, i)
 end
 
+function flipat_fast!(rng::AbstractRNG, v::DoubleState, i::Int)
+    i > v.n ? flipat_fast!(rng, v.σ_row, i-v.n) : flipat_fast!(rng, v.σ_col, i)
+end
+
 function setat!(v::DoubleState, i::Int, val)
     i > v.n ? setat!(v.σ_row, i-v.n, val) : setat!(v.σ_col, i, val)
+end
+
+function apply!(state::DoubleState, changes::DoubleStateChanges)
+    for (id, val)=row(changes)
+        setat!(row(state), id, val)
+    end
+    for (id, val)=col(changes)
+        setat!(col(state), id, val)
+    end
+    return state
 end
 
 set_index!(v::DoubleState, i::Integer) = set!(v, index_to_int(v, i))
