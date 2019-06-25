@@ -23,24 +23,25 @@ end
 
 export NAryState
 
+# custom accessors
+@inline config(state::NAryState) = state.σ
+
 ## Property Accessors
 @inline spacedimension(st::NAryState) = st.space_dim
+@inline nsites(state::NAryState) = state.n
+@inline local_dimension(state::Type{NAryState{T,N}}) where {T,N} = N
+@inline local_dimension(state::NAryState{T,N}) where {T,N} = local_dimension(typeof(state))
+@inline eltype(state::NAryState{T,N}) where {T,N} = T
+
 @inline toint(state::NAryState) = state.i_σ
 @inline index(state::NAryState) = toint(state)+1
 @inline index_to_int(state::NAryState, id) = id - 1
-@inline nsites(state::NAryState) = state.n
-@inline local_dimension(state::NAryState{T,N}) where {T,N} = N
-
-# custom accessors
-@inline config(state::NAryState) = state.σ
-@inline eltype(state::NAryState{T,N}) where {T,N} = T
 
 # checks
-same_basis(s1::NAryState{T,N}, s2::NAryState{T2,N2}) where {T,T2,N,N2} =
-    N==N2 && s1.n == s2.n
+same_basis(s1::NAryState, s2::NAryState)  =
+    nsites(s1)==nsites(s2) && local_dimension(s1) == local_dimension(s2) && eltype(s1) == eltype(s2)
 
 # Operations on tuples
-
 @inline _toint(left::NAryState{T,N}, right::NAryState{T,N}) where {T,N} =
     toint(left) * spacedimension(right) + toint(right)
 #@inline index(row::NAryState, col::NAryState) = toint(row, col) + 1
