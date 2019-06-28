@@ -89,6 +89,9 @@ include("Networks/NDM.jl")
 include("Networks/NDMComplex.jl")
 include("Networks/NDMSymm.jl")
 
+# LT
+include("Networks/RBMSplitLT.jl")
+
 const rRBMSplit = RBMSplit; export rRBMSplit;
 const rNDM = NDM; export rNDM;
 const rNDMSymm = NDMSymm; export rNDMSymm;
