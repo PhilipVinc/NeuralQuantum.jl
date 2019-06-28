@@ -7,7 +7,7 @@ basis as `mat`. For every row of `mat` there are several non-zero values contain
 in `mel`, and to each of those, `to_change` contains the sites that must change the basis
 new value, contained in `new_value`
 """
-struct KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv} <: AbsLinearOperator
+struct KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOperator
     # list of sites on which this operator acts
     sites::SV
 
@@ -25,6 +25,9 @@ struct KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv} <: AbsLinearOperator
 
     # List of values of that should be changed
     new_values::Vector{Vtv}
+
+    # Connections
+    op_conns::Vector{OC}
 
     # List of state indices corresponding to mel
     # This is redundant, and equivalent to specifying to_change and new_values
@@ -46,6 +49,9 @@ function KLocalOperatorRow(sites::Vector, hilb_dims::Vector, operator)
     new_indices = Vector{Vector{Int}}()
     to_change   = Vector{Vector{Vector{eltype(Int)}}}()
     new_values  = Vector{Vector{Vector{eltype(st)}}}()
+    op_conns    = Vector{OpConnection{Vector{eltype(operator)},
+                        Vector{eltype(Int)}, Vector{eltype(st)}}}()
+    #SCT = StateChanges{eltype(to_change_els), eltype(new_values_els)}
 
     for (r, row) = enumerate(eachrow(operator))
         # create the containers for this row
@@ -53,12 +59,14 @@ function KLocalOperatorRow(sites::Vector, hilb_dims::Vector, operator)
         mel_indices    = Int[]
         to_change_els  = Vector{Vector{Int}}()
         new_values_els = Vector{Vector{eltype(mel_els)}}()
+        conns_els      = eltype(op_conns)()
 
         if abs(row[r]) > 10e-6
             push!(mel_els, row[r])
             push!(mel_indices, r)
             push!(to_change_els, Int[])
-            push!(new_values_els, eltype(mel_els)[])
+            push!(new_values_els, eltype(st)[])
+            push!(conns_els, (row[r], Int[], eltype(st)[]))
         end
 
         set_index!(st, r)
@@ -68,7 +76,7 @@ function KLocalOperatorRow(sites::Vector, hilb_dims::Vector, operator)
 
             set_index!(st1, c)
             cngd = Int[]
-            nwvls = eltype(mel_els)[]
+            nwvls = eltype(st)[]
             for (i, (v, vn)) = enumerate(zip(config(st), config(st1)))
                 if v != vn
                     push!(cngd, sites[i])
@@ -79,29 +87,32 @@ function KLocalOperatorRow(sites::Vector, hilb_dims::Vector, operator)
             push!(mel_indices, c)
             push!(to_change_els, cngd)
             push!(new_values_els, nwvls)
+            push!(conns_els, (val, cngd, nwvls))
         end
 
         push!(mel, mel_els)
         push!(new_indices, mel_indices)
         push!(to_change, to_change_els)
         push!(new_values, new_values_els)
+        push!(op_conns, conns_els)
     end
-    KLocalOperator(sites, hilb_dims, operator |> collect, mel, to_change, new_values, new_indices)
+    KLocalOperator(sites, hilb_dims, operator |> collect, mel, to_change, new_values, op_conns, new_indices)
 end
 
 ## Accessors
 sites(op::KLocalOperator) = op.sites
 
-conn_type(top::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv}}) where {SV, M, Vel, Vti, Vtc, Vtv} =
-    OpConnection{Vel, Vtc, Vtv}
-conn_type(op::KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv}) where {SV, M, Vel, Vti, Vtc, Vtv} =
-    OpConnection{Vel, Vtc, Vtv}
+conn_type(top::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {SV, M, Vel, Vti, Vtc, Vtv, OC} =
+    OpConnection{Vel, eltype(Vtc), eltype(Vtv)}
+conn_type(op::KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}) where {SV, M, Vel, Vti, Vtc, Vtv, OC} =
+    OpConnection{Vel, eltype(Vtc), eltype(Vtv)}
 
 # Copy
 function duplicate(op::KLocalOperator)
     KLocalOperator(deepcopy(op.sites), deepcopy(op.hilb_dims), deepcopy(op.mat),
                     deepcopy(op.mel), deepcopy(op.to_change),
-                    deepcopy(op.new_values), deepcopy(op.new_indices))
+                    deepcopy(op.new_values), deepcopy(op.op_conns),
+                    deepcopy(op.new_indices))
 end
 
 ##
@@ -110,11 +121,12 @@ function row_valdiff!(conn::OpConnection, op::KLocalOperator, v::State)
     r = local_index(v, sites(op))
 
     # Return values
-    mel = op.mel[r]
-    tc  = op.to_change[r]
-    nv  = op.new_values[r]
+#mel = op.mel[r]
+#    tc  = op.to_change[r]
+#    nv  = op.new_values[r]
 
-    append!(conn, (mel, tc, nv))
+#    append!(conn, (mel, tc, nv))
+    append!(conn, op.op_conns[r])
 end
 
 function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperator, v::State)
@@ -138,7 +150,8 @@ function sum_samesite!(op_l::KLocalOperator, op_r::KLocalOperator)
     n = length(op_l.mel)
     for (i, (mel_vals_l, mel_vals_r)) = enumerate(zip(op_l.mel, op_r.mel))
 
-        for (mel, ids, tch, nv) = zip(op_r.mel[i], op_r.new_indices[i], op_r.to_change[i], op_r.new_values[i])
+        for (mel, ids, tch, nv) = zip(op_r.mel[i], op_r.new_indices[i],
+                                      op_r.to_change[i], op_r.new_values[i])
             found = 0
             # if mel_val_l is empty, then for sure there is nothing in here
             if !isempty(mel_vals_l)
@@ -161,6 +174,10 @@ function sum_samesite!(op_l::KLocalOperator, op_r::KLocalOperator)
             end
         end
     end
+
+    for (i, (connsᵢ_l , connsᵢ_r)) = enumerate(zip(op_l.op_conns, op_r.op_conns))
+        add!(connsᵢ_l, connsᵢ_r)
+    end
     return op_l
 end
 
@@ -172,6 +189,7 @@ Base.transpose(op::KLocalOperator) = KLocalOperatorRow(deepcopy(op.sites),
 
 function Base.conj!(op::KLocalOperator)
     conj!(op.mat)
+    conj!(op.op_conns)
     for el=op.mel
         conj!.(el)
     end

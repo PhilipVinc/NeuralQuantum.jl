@@ -48,9 +48,12 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
     # ⟨σ|Hρ|σt⟩ (using hermitianity of HdH)
     diffs_hnh = row_valdiff(HnH, row(𝝝))
     set_index!(𝝝p_col, index(col(𝝝)))
-    for (mel, tcn, nv)=diffs_hnh
+    display(diffs_hnh)
+    for (mel, changes)=diffs_hnh
+        display(changes)
+
         set_index!(𝝝p_row, index(row(𝝝)))
-        for (site,val)=zip(tcn, nv)
+        for (site,val)=changes
             setat!(𝝝p_row, site, val)
         end
 
@@ -65,9 +68,9 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
     # ⟨σ|ρHᴴ|σt⟩
     diffs_hnh = row_valdiff(HnH, col(𝝝))
     set_index!(𝝝p_row, index(row(𝝝)))
-    for (mel, tcn, nv)=diffs_hnh
+    for (mel, changes)=diffs_hnh
         set_index!(𝝝p_col, index(col(𝝝)))
-        for (site,val)=zip(tcn, nv)
+        for (site,val)=changes
             setat!(𝝝p_col, site, val)
         end
 
@@ -85,15 +88,15 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
         diffs_r = row_valdiff(L, row(𝝝))
         diffs_c = row_valdiff(L, col(𝝝))
 
-        for (mel_r, tcn_r, nv_r)=diffs_r
+        for (mel_r, changes_r)=diffs_r
             set_index!(𝝝p_row, index(row(𝝝)))
-            for (site,val)=zip(tcn_r, nv_r)
+            for (site,val)=changes_r
                 setat!(𝝝p_row, site, val)
             end
 
-            for (mel_c, tcn_c, nv_c)=diffs_c
+            for (mel_c, changes_c)=diffs_c
                 set_index!(𝝝p_col, index(col(𝝝)))
-                for (site,val)=zip(tcn_c, nv_c)
+                for (site,val)=changes_c
                     setat!(𝝝p_col, site, val)
                 end
 
