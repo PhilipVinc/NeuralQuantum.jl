@@ -4,7 +4,7 @@ using Test
 @testset "NeuralQuantum" begin
 
     @testset "Machines" begin
-        include("machines.jl")
+        include("Machines/test_grad.jl")
     end
 
     @testset "Problem & algs" begin
@@ -13,11 +13,12 @@ using Test
     end
 
     @testset "States" begin
-        include("states.jl")
+        include("States/states.jl")
+        include("States/modified_states.jl")
     end
 
     @testset "Operators" begin
-        include("states.jl")
+        include("operators.jl")
     end
 
 end

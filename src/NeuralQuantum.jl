@@ -57,6 +57,16 @@ include("base_networks.jl")
 include("base_cached_networks.jl")
 include("tuple_logic.jl")
 
+# Basic states for uniform systems
+include("States/StateChanges.jl")
+include("States/NAryState.jl")
+include("States/DoubleState.jl")
+include("States/PurifiedState.jl")
+include("States/DiagonalStateWrapper.jl")
+export local_index
+include("States/ModifiedState.jl")
+export ModifiedState
+
 # Linear Operators
 import Base: +
 include("Operators/BaseOperators.jl")
@@ -70,15 +80,6 @@ export KLocalOperator, KLocalOperatorSum, KLocalOperatorRow, operators
 export row_valdiff, row_valdiff_index, col_valdiff, sites, conn_type
 export duplicate
 
-# Basic states for uniform systems
-include("States/StateChanges.jl")
-include("States/NAryState.jl")
-include("States/DoubleState.jl")
-include("States/PurifiedState.jl")
-include("States/DiagonalStateWrapper.jl")
-export local_index
-include("States/ModifiedState.jl")
-export ModifiedState
 
 # Neural Networks
 include("Networks/utils.jl")

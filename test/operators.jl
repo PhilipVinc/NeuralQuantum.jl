@@ -19,6 +19,7 @@ ops2 = ops + op2
 @test first(operators(ops2)).mat == matsum
 display(matsum)
 
+# Check that index works for a single site
 check = sparse(zeros(size(matsum)))
 v = NAryState(2, 1)
 for i=1:spacedimension(v)
@@ -30,13 +31,14 @@ for i=1:spacedimension(v)
 end
 @test check == matsum
 
+# check that the reconstructed matrix is fine
 check = sparse(zeros(size(matsum)))
 v = NAryState(Float64, 2, 1)
 for i=1:spacedimension(v)
     set_index!(v, i)
-    for (mel, to_cng, new_vls) = row_valdiff(ops2, v)
+    for (mel, changes) = row_valdiff(ops2, v)
         set_index!(v, i)
-        for (id,val)=zip(to_cng, new_vls)
+        for (id,val) = changes
             setat!(v, id, val)
         end
         j = index(v)
@@ -45,15 +47,16 @@ for i=1:spacedimension(v)
 end
 @test check == matsum
 
+# check that by kroneckering times identity it's fine
 ms = kron(Matrix(I, 2, 2), matsum)
+#ms = kron(matsum, Matrix(I, 2, 2))
 check = sparse(zeros(size(ms)))
 v = NAryState(Float64, 2, 2)
 for i=1:spacedimension(v)
     set_index!(v, i)
-    for (mel, to_cng, new_vls) = row_valdiff(ops2, v)
+    for (mel, changes) = row_valdiff(ops2, v)
         set_index!(v, i)
-        println(mel, to_cng, new_vls)
-        for (id,val)=zip(to_cng, new_vls)
+        for (id,val)=changes
             setat!(v, id, val)
         end
         j = index(v)
@@ -62,16 +65,15 @@ for i=1:spacedimension(v)
 end
 @test check == ms
 
-mat12 = kron(mat2, mat2)
+mat12 = kron(mat1, mat2)
 op12 = KLocalOperatorRow([1,2], [2,2], mat12)
 check = sparse(zeros(size(mat12)))
 v = NAryState(Float64, 2, 2)
 for i=1:spacedimension(v)
     set_index!(v, i)
-    for (mel, to_cng, new_vls) = row_valdiff(op12, v)
+    for (mel, changes) = row_valdiff(op12, v)
         set_index!(v, i)
-        println(mel, to_cng, new_vls)
-        for (id,val)=zip(to_cng, new_vls)
+        for (id,val)=changes
             setat!(v, id, val)
         end
         j = index(v)
@@ -91,10 +93,9 @@ check = sparse(zeros(size(mtot)))
 v = NAryState(Float64, 2, 2)
 for i=1:spacedimension(v)
     set_index!(v, i)
-    for (mel, to_cng, new_vls) = row_valdiff(opstot, v)
+    for (mel, changes) = row_valdiff(opstot, v)
         set_index!(v, i)
-        println(mel, " - ", to_cng,  " - " , new_vls)
-        for (id,val)=zip(to_cng, new_vls)
+        for (id,val)=changes
             setat!(v, id, val)
         end
         j = index(v)

@@ -1,24 +1,48 @@
-state(prob, net, args...) = state(input_type(net), prob, net, args...)
-state(T::Type{<:Number}, prob, net) = state(T, basis(prob), net)
+state(prob::Problem, net, args...) = state(input_type(net), prob, net, args...)
+state(T::Type{<:Number}, prob::Problem, net) = state(T, basis(prob), net)
+state(T::Type{<:Number}, prob::LdagL_Lrho_op_prob, net) = state_lut(T, basis(prob), net)
 function state(T::Type{<:Number}, hilb::Basis, net)
-    is_homogeneous(hilb) && return _homogeneous_state(T, first(hilb.bases), length(hilb.bases), net)
+    !is_homogeneous(hilb) && error("Could not generate a state.")
+    sys_state = _homogeneous_system_state(T, first(hilb.bases),
+                                          length(hilb.bases), net)
 
-    error("Could not generate a state.")
+    state = _network_state(sys_state, net)
+    return state
 end
 
-function _homogeneous_state(T::Type{<:Number}, hilb::Basis, nsites, net::MatrixNet)
-    loc_size = first(hilb.shape)
-    v = NAryState(T, loc_size, nsites)
-    return DoubleState(v)
+function state_lut(T::Type{<:Number}, hilb::Basis, net)
+    !is_homogeneous(hilb) && error("Could not generate a state.")
+    sys_state = _homogeneous_system_state(T, first(hilb.bases),
+                                          length(hilb.bases), net)
+
+    state = _lut_state(sys_state, net)
+    return state
 end
 
-function _homogeneous_state(T::Type{<:Number}, hilb::Basis, nsites, net::PureNet)
-    loc_size = first(hilb.shape)
-    v = NAryState(T, loc_size, nsites)
-    return DoubleState(v)
+function _lut_state(T::Type{<:Number}, hilb::Basis, net::MatrixNet)
+    bare_state = state(T, basis(prob), net)
+    state = DoubleState(ModifiedState(row(bare_state)))
+    lut   = lookup(net)
+
+    isnothing(lut) && return state
+    return LUState(state, lut)
 end
 
-function _homogeneous_state(T::Type{<:Number}, hilb::Basis, nsites, net::KetNet)
+function _homogeneous_system_state(T::Type{<:Number}, hilb::Basis, nsites, net::MatrixNet)
     loc_size = first(hilb.shape)
     return NAryState(T, loc_size, nsites)
+end
+
+_network_state(sys_state::State, net::Union{MatrixNet, PureNet}) =
+    DoubleState(sys_state)
+
+_network_state(sys_state::State, net::KetNet) =
+    return sys_state
+
+function _lut_state(sys_state::State, net::Union{MatrixNet, PureNet})
+    state = DoubleState(ModifiedState(sys_state))
+    lut   = lookup(net)
+
+    isnothing(lut) && return state
+    return LUState(state, lut)
 end
