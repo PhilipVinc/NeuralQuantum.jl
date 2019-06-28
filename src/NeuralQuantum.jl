@@ -65,6 +65,7 @@ include("States/PurifiedState.jl")
 include("States/DiagonalStateWrapper.jl")
 export local_index
 include("States/ModifiedState.jl")
+include("States/LUState.jl")
 export ModifiedState
 
 # Linear Operators
@@ -149,6 +150,8 @@ include("Samplers/FullSum.jl")
 include("Samplers/MCMCSampler.jl")
 include("Samplers/MCMCRules/Metropolis.jl")
 include("Samplers/MCMCRules/Nagy.jl")
+
+include("base_diffeval.jl")
 
 # other
 include("utils/densitymatrix.jl")

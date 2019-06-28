@@ -2,7 +2,7 @@ export logψ, ∇logψ, ∇logψ!, logψ_and_∇logψ, logψ_and_∇logψ!, grad
 
 # abstract type NeuralNetwork end
 @inline logψ(net::NeuralNetwork, σ) = net(σ)
-@inline log_prob_ψ(net, σ...)          = 2.0*real(net(σ...))
+@inline log_prob_ψ(net, σ...)       = 2.0*real(net(σ...))
 @inline ∇logψ(args...)              = logψ_and_∇logψ(args...)[2]
 @inline ∇logψ!(args...)             = logψ_and_∇logψ!(args...)[2]
 

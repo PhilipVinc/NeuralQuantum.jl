@@ -5,6 +5,7 @@ using Test
 
     @testset "Machines" begin
         include("Machines/test_grad.jl")
+        include("Machines/test_lut.jl")
     end
 
     @testset "Problem & algs" begin
