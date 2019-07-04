@@ -41,9 +41,11 @@ function sample_network!(
   return res
 end
 
-function sample_network!(res::MCMCSRLEvaluationCache, prob::LRhoSquaredProblem,
+function sample_network!(res::MCMCSRLEvaluationCache,
+                         prob::LRhoSquaredProblem,
                          net, σ, wholespace=false)
   CLO_i = res.LLO_i
+  update_lookup!(σ, net)
 
   lnψ, ∇lnψ = logψ_and_∇logψ!(res.∇lnψ, net, σ)
   C_loc = compute_Cloc!(CLO_i, res.∇lnψ2, prob, net, σ, lnψ, res.σ)
@@ -64,7 +66,8 @@ function sample_network!(res::MCMCSRLEvaluationCache, prob::LRhoSquaredProblem,
   return res
 end
 
-function sample_network!(res::MCMCSREvaluationCache, prob::OpenTimeEvolutionProblem,
+function sample_network!(res::MCMCSREvaluationCache,
+                         prob::OpenTimeEvolutionProblem,
                          net, σ, wholespace=false)
   lnψ, ∇lnψ = logψ_and_∇logψ!(res.∇lnψ, net, σ)
   E         = compute_Cloc(prob, net, σ, lnψ)

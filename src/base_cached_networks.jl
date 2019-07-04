@@ -67,7 +67,8 @@ cache(net) = nothing
 Constructs the `NNCache{typeof(net)}` object that holds the cache for this network.
 If it has not been implemented returns nothing.
 """
-lookup(net) = nothing
+lookup(net::NeuralNetwork) = nothing
+lookup(net::CachedNet) = lookup(net.net)
 
 weights(net) = net
 weights(cnet::CachedNet) = cnet.net
@@ -78,7 +79,7 @@ grad_cache(net::CachedNet)     = grad_cache(net.net)
 
 #@inline ∇logψ(n::CachedNet, σ) = logψ_and_∇logψ(n, σ)[2]
 function logψ_and_∇logψ(n::CachedNet, σ)
-    @warn "Inefficient calling logψ_and_∇logψ for cachedNet"
+    #@warn "Inefficient calling logψ_and_∇logψ for cachedNet"
     ∇lnψ = grad_cache(n)
     lψ, ∇ψ = logψ_and_∇logψ!(∇lnψ, n, σ);
     return (lψ, ∇ψ)

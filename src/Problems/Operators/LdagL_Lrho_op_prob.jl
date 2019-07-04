@@ -117,3 +117,66 @@ end
 # pretty printing
 Base.show(io::IO, p::LdagL_Lrho_op_prob) = print(io,
     "LdagL_Lrho_op_prob on space $(basis(p)) computing the variance of Lrho using the sparse liouvillian")
+
+function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
+                       net::MatrixNet, 𝝝::LUState,
+                       _lnψ=nothing, _𝝝p=nothing)
+    # hey
+    HnH = prob.HnH
+    c_ops = prob.L_ops
+    c_ops_trans = prob.L_ops_t
+
+    for el=LLO_i
+      el .= 0.0
+    end
+    𝝝s = state(𝝝)
+    no_changes = changes(row(𝝝s))
+
+    C_loc = zero(Complex{real(out_type(net))})
+
+    # ⟨σ|Hρ|σt⟩ (using hermitianity of HdH)
+    diffs_hnh = row_valdiff(HnH, raw_state(row(𝝝s)))
+    for (mel, changes)=diffs_hnh
+        Δ_lnψ, ∇lnψ_i = Δ_logψ_and_∇logψ!(∇lnψ, net, 𝝝, changes, no_changes)
+
+        C_loc_i  =  -1.0im * mel * exp(Δ_lnψ)
+        for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
+          LLOave .+= C_loc_i .* _∇lnψ
+        end
+        C_loc  += C_loc_i
+    end
+
+    # ⟨σ|ρHᴴ|σt⟩
+    diffs_hnh = row_valdiff(HnH, raw_state(col(𝝝s)))
+    for (mel, changes)=diffs_hnh
+        Δ_lnψ, ∇lnψ_i = Δ_logψ_and_∇logψ!(∇lnψ, net, 𝝝, no_changes, changes)
+
+        C_loc_i  =  1.0im * conj(mel) * exp(Δ_lnψ)
+        for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
+          LLOave .+= C_loc_i .* _∇lnψ
+        end
+        C_loc  += C_loc_i
+    end
+
+    # L rho Ldag H #ok
+    # -im ⟨σ|L ρ Lᴴ|σt⟩
+    for L=c_ops
+        diffs_r = row_valdiff(L, raw_state(row(𝝝s)))
+        diffs_c = row_valdiff(L, raw_state(col(𝝝s)))
+
+        for (mel_r, changes_r)=diffs_r
+
+            for (mel_c, changes_c)=diffs_c
+                Δ_lnψ, ∇lnψ_i = Δ_logψ_and_∇logψ!(∇lnψ, net, 𝝝, changes_r, changes_c)
+
+                C_loc_i  =  (mel_r) * conj(mel_c) *  exp(Δ_lnψ)
+                for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
+                  LLOave .+= C_loc_i .* _∇lnψ
+                end
+                C_loc  += C_loc_i
+            end
+        end
+    end
+
+    return C_loc
+end

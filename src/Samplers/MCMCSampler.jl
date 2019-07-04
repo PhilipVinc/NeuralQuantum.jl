@@ -26,6 +26,7 @@ function init_sampler!(s::MCMCSampler, net, σ, c::MCMCSamplerCache)
     c.steps_done = 0
     c.steps_accepted = 0
     set_index!(σ, rand(c.rng, 1:spacedimension(σ)))
+    init_lut!(σ, net)
 
     while c.steps_done < s.burn_length
         markov_chain_step!(σ, s, net, c)

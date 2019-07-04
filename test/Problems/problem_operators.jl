@@ -1,12 +1,13 @@
 using NeuralQuantum
 using Test
 using NeuralQuantum: LdagL_L_prob, LdagL_Lmat_prob, LdagL_Lrho_op_prob
+using NeuralQuantum: init_lut!
 Nsites = 4
 T = Float64
 
 lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=1.3, V=2.0, γ=1.0)
 
-@testset "LdagL problem: LdagL_Lrho_op_prob" begin
+@testset "LdagL problem: LdagL_Lrho_op_prob as fallback" begin
 net  = cached(rNDM(T, Nsites, 2, 1))
 
 prob = LdagL_Lmat_prob(T, lind);

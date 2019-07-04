@@ -102,7 +102,6 @@ function setat_fast!(state::ModifiedState, i::Int, val)
 end
 
 
-
 set_index!(s::ModifiedState, val) = (zero!(changes(s)); set_index!(raw_state(s), val))
 set!(s::ModifiedState, val) = (zero!(changes(s)); set!(raw_state(s), val); return s)
 add!(s::ModifiedState, val) = add!(apply_warn_raw!(state), val)

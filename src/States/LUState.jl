@@ -10,14 +10,19 @@ export LUState
 # accessors
 state(s::LUState) = s.state
 lut(s::LUState)   = s.lookup
-valid(s::LUState) = s.valid
+isvalid(s::LUState) = s.valid
 
 raw_state(s::LUState) = raw_state(state(s))
-
+invalidate!(s::LUState) = s.valid = false
+validate!(s::LUState) = s.valid = true
 # Modifiers
 init_lut!(s::LUState, net::NeuralNetwork) = begin
+    if isvalid(s)
+        return update_lut!(s, net)
+    end 
     apply_chages!(state(s))
     prepare_lut!(s, net)
+    validate!(s)
     return s
 end
 
@@ -33,7 +38,7 @@ end
 clear_changes!(s::LUState) = clear_changes!(state(s))
 
 ## State Interface : custom accessors
-@inline config(s::LUState) = config(state(s))
+@inline config(s::LUState) = (invalidate!(s); config(state(s)) )
 
 ## State Interface : Property Accesors
 @inline spacedimension(s::LUState) = spacedimension(state(s))
@@ -41,9 +46,9 @@ clear_changes!(s::LUState) = clear_changes!(state(s))
 @inline local_dimension(s::LUState) = local_dimension(state(s))
 @inline eltype(s::LUState) = eltype(state(s))
 
-toint(s::LUState) = toint(state(s))
-index(s::LUState) = (s.valid = false; return index(state(s)))
-index_to_int(s::LUState) = (s.valid = false; index_to_int(state(s)))
+toint(s::LUState) = (invalidate!(s); toint(state(s)))
+index(s::LUState) = (invalidate!(s); return index(state(s)))
+index_to_int(s::LUState) = (invalidate!(s); index_to_int(state(s)))
 
 ## State Interface : Checks
 same_basis(s1::LUState, s2::LUState) =
@@ -51,23 +56,27 @@ same_basis(s1::LUState, s2::LUState) =
 
 ## State Interface : flip operations
 # This is the standard method, that applies all exhisting transformations
-flipat!(rng::AbstractRNG, s::LUState, args...) = (s.valid = false;
-    flipat!(rng, state(s), args...))
+flipat!(rng::AbstractRNG, s::LUState, args...) = (invalidate!(s);
+    flipat!(rng, state(s), args...); s)
 
-flipat_fast!(rng::AbstractRNG, s::LUState, args...) = (s.valid = true;
-    flipat_fast!(rng, state(s), args...))
+flipat_fast!(rng::AbstractRNG, s::LUState, args...) = (
+    flipat_fast!(rng, state(s), args...); s)
 
-setat!(s::LUState, args...) = (s.valid = false;
-    setat!(state(s), args...))
+setat!(s::LUState, args...) = (invalidate!(s);
+    setat!(state(s), args...); s)
 
-set_index!(s::LUState, val) = (s.valid = false;
-    set_index!(state(s), val))
-set!(s::LUState, val) = (s.valid = false;
-    set!(state(s), val))
-add!(s::LUState, val) = (s.valid = false;
-    add!(state(state), val))
-rand!(rng, s::LUState) = (s.valid = false;
-    rand!(rng, state(s)))
+set_index!(s::LUState, val) = (invalidate!(s);
+    set_index!(state(s), val); s)
+
+set!(s::LUState, val) = begin
+    invalidate!(s)
+    set!(state(s), val)
+    s
+end
+add!(s::LUState, val) = (invalidate!(s);
+    add!(state(state), val); s)
+rand!(rng, s::LUState) = (invalidate!(s);
+    rand!(rng, state(s)); s)
 
 Base.show(io::IO, ::MIME"text/plain", s::LUState) =
     print(io, "LUState: $(state(s)) valid: $(s.valid)")

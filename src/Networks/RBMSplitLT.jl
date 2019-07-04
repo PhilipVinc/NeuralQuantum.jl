@@ -119,7 +119,7 @@ function Δ_logψ(net::RBMSplit, c::RBMSplitCache, lt::RBMSplitLUT, σr_r, σc_r
     return logvaldiff
 end
 
-function Δ_logψ_and_∇logψ_diff!(∇logψ, net::RBMSplit, c::RBMSplitCache, lt::RBMSplitLUT,
+function Δ_logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, lt::RBMSplitLUT,
                          σr_r, σc_r, changes_r, changes_c)
     σr = c.σr; copy!(σr, σr_r)
     σc = c.σc; copy!(σc, σc_r)

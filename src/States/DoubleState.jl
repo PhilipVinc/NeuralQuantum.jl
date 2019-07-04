@@ -56,7 +56,7 @@ function setat!(v::DoubleState, i::Int, val)
     i > v.n ? setat!(v.σ_row, i-v.n, val) : setat!(v.σ_col, i, val)
 end
 
-function apply!(state::DoubleState, changes::DoubleStateChanges)
+#=function apply!(state::DoubleState, changes::DoubleStateChanges)
     for (id, val)=row(changes)
         setat!(row(state), id, val)
     end
@@ -64,7 +64,7 @@ function apply!(state::DoubleState, changes::DoubleStateChanges)
         setat!(col(state), id, val)
     end
     return state
-end
+end=#
 
 set_index!(v::DoubleState, i::Integer) = set!(v, index_to_int(v, i))
 function set!(v::DoubleState, i::Integer)
@@ -73,7 +73,7 @@ function set!(v::DoubleState, i::Integer)
 
     set!(v.σ_col, row) #i
     set!(v.σ_row, col) #j
-    v
+    return v
 end
 set!(v::DoubleState, i_row, i_col) = (set!(row(v), i_row); set!(col(v), i_col);  v)
 
