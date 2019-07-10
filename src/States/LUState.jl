@@ -19,7 +19,7 @@ validate!(s::LUState) = s.valid = true
 init_lut!(s::LUState, net::NeuralNetwork) = begin
     if isvalid(s)
         return update_lut!(s, net)
-    end 
+    end
     apply_chages!(state(s))
     prepare_lut!(s, net)
     validate!(s)
@@ -56,11 +56,14 @@ same_basis(s1::LUState, s2::LUState) =
 
 ## State Interface : flip operations
 # This is the standard method, that applies all exhisting transformations
-flipat!(rng::AbstractRNG, s::LUState, args...) = (invalidate!(s);
-    flipat!(rng, state(s), args...); s)
+function flipat!(rng::AbstractRNG, s::LUState, args...)
+    invalidate!(s)
+    return flipat!(rng, state(s), args...)
+end
 
-flipat_fast!(rng::AbstractRNG, s::LUState, args...) = (
-    flipat_fast!(rng, state(s), args...); s)
+function flipat_fast!(rng::AbstractRNG, s::LUState, args...)
+    return flipat_fast!(rng, state(s), args...)
+end
 
 setat!(s::LUState, args...) = (invalidate!(s);
     setat!(state(s), args...); s)
