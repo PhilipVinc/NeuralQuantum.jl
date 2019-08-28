@@ -48,9 +48,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
     # ⟨σ|Hρ|σt⟩ (using hermitianity of HdH)
     diffs_hnh = row_valdiff(HnH, row(𝝝))
     set_index!(𝝝p_col, index(col(𝝝)))
-    display(diffs_hnh)
     for (mel, changes)=diffs_hnh
-        display(changes)
 
         set_index!(𝝝p_row, index(row(𝝝)))
         for (site,val)=changes

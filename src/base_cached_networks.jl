@@ -72,7 +72,7 @@ lookup(net::CachedNet) = lookup(net.net)
 
 weights(net) = net
 weights(cnet::CachedNet) = cnet.net
-grad_cache(net::CachedNet)     = grad_cache(net.net)
+grad_cache(net::CachedNet) = grad_cache(net.net)
 
 @inline (cnet::CachedNet)(σ...) = logψ(cnet, σ...)
 @inline logψ(cnet::CachedNet, σ...) = cnet.net(cnet.cache, config(σ)...)

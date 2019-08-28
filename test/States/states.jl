@@ -60,7 +60,6 @@ function test_state_dyn_double(s)
         for i=1:length(config(s))
             fl = length(first(config(s)))
             if i > fl
-                println(i)
                 v = first(config(s))[i-fl]
                 old, new = flipat!(s, i)
                 @test old == v

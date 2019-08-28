@@ -25,8 +25,6 @@ function Base.push!(c::OpConnectionIndex, (m_els, indices))
 end
 
 function Base.append!(c::OpConnectionIndex, (m_els, indices))
-    println(m_els)
-
     append!(c.mel, m_els)
     append!(c.indices, indices)
     return c
