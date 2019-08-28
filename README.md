@@ -1,11 +1,11 @@
 # NeuralQuantum
-[![Build Status](https://travis-ci.org/PhilipVinc/NeuralQuantum.jl.svg?branch=master)](https://travis-ci.org/PhilipVinc/NeuralQuantum.jl) [![DOI](https://zenodo.org/badge/186389926.svg)](https://zenodo.org/badge/latestdoi/186389926)
+[![Build Status](https://travis-ci.org/PhilipVinc/NeuralQuantum.jl.svg?branch=master)](https://travis-ci.org/PhilipVinc/NeuralQuantum.jl) [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://philipvinc.github.io/NeuralQuantum.jl/dev) [![DOI](https://zenodo.org/badge/186389926.svg)](https://zenodo.org/badge/latestdoi/186389926)
 
 **NeuralQuantum** is a numerical framework written in [Julia] to investigate
 Neural-Network representations of mixed quantum states and to find the Steady-
 State of dissipative Quantum Systems with variational Montecarlo schemes.
 
-This code has been developed while working on [Variational neural network ansatz for steady states in open quantum systems](https://arxiv.org/abs/1902.10104)
+This code has been developed while working on [Variational neural network ansatz for steady states in open quantum systems](https://arxiv.org/abs/1902.10104), by [F. Vicentini] et al. Phys Rev Lett in press (2019).
 
 ## Installation
 To Install `NeuralQuantum.jl`, run the following commands to install all
@@ -114,4 +114,5 @@ plot(pl1, pl2, layout=(2,1))
 ```
 
 [Julia]: http://julialang.org
+[F. Vicentini]: mailto:filippo.vicentini@univ-paris-diderot.fr
 [Filippo Vicentini]: mailto:filippo.vicentini@univ-paris-diderot.fr
