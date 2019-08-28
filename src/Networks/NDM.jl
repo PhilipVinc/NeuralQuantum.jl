@@ -74,6 +74,8 @@ mutable struct NDMCache{T,VT,VCT} <: NNCache{NDM}
     θλ_σp_tmp::VT
     θμ_σp_tmp::VT
 
+    σr::VT
+    σc::VT
     ∑σ::VT
     Δσ::VT
 
@@ -84,6 +86,7 @@ mutable struct NDMCache{T,VT,VCT} <: NNCache{NDM}
     ∂logℒ_λ_σp::VT
     ∂logℒ_μ_σp::VT
     _Π::VCT
+    _Π2::VCT
     _Π_tmp::VT
     ∂logℒ_Π::VCT
 
@@ -106,10 +109,13 @@ cache(net::NDM) =
 
               similar(net.b_μ),
               similar(net.b_μ),
+              similar(net.b_μ),
+              similar(net.b_μ),
 
               zero(eltype(net.b_μ)), zero(eltype(net.b_μ)),
               similar(net.h_μ), similar(net.h_μ),
               similar(net.h_μ), similar(net.h_μ),
+              similar(net.d_λ, complex(eltype(net.d_λ))),
               similar(net.d_λ, complex(eltype(net.d_λ))),
               similar(net.d_λ, eltype(net.d_λ)),
               similar(net.d_λ, complex(eltype(net.d_λ))),

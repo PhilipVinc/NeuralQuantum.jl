@@ -16,8 +16,8 @@ raw_state(s::LUState) = raw_state(state(s))
 invalidate!(s::LUState) = s.valid = false
 validate!(s::LUState) = s.valid = true
 # Modifiers
-init_lut!(s::LUState, net::NeuralNetwork) = begin
-    if isvalid(s)
+init_lut!(s::LUState, net::NeuralNetwork, force::Bool=false) = begin
+    if isvalid(s) && !force
         return update_lut!(s, net)
     end
     apply_chages!(state(s))

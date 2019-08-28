@@ -41,6 +41,11 @@ logψ_Δ(cnet::CachedNet, σ::LUState{<:DoubleState}, changes_r, changes_c) = be
                   changes_r, changes_c)
 end
 
+function Δ_logψ_and_∇logψ(cnet::CachedNet, σ::LUState, args...)
+    ∇lnψ = grad_cache(cnet)
+    return Δ_logψ_and_∇logψ!(∇lnψ, cnet, σ, args...)
+end
+
 Δ_logψ_and_∇logψ!(∇lnψ, cnet::CachedNet, σ::LUState{<:DoubleState}) = begin
     σ_r = row(state(σ))
     σ_c = col(state(σ))
