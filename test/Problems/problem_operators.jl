@@ -7,7 +7,8 @@ T = Float64
 
 lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=1.3, V=2.0, γ=1.0)
 
-@test_broken "LdagL problem: LdagL_Lrho_op_prob as fallback" begin
+#=
+@testset "LdagL problem: LdagL_Lrho_op_prob as fallback" begin
 net  = cached(rNDM(T, Nsites, 2, 1))
 
 prob = LdagL_Lmat_prob(T, lind);
@@ -41,6 +42,7 @@ evaluation_post_sampling!(SREvalL, icL)
 @test all([l≈r for (l,r)=zip(SREval.F, SREvalL.F)])
 @test all([l≈r for (l,r)=zip(SREval.S, SREvalL.S)])
 end
+=#
 
 @testset "LdagL problem: LdagL_Lrho_op_prob as fallback" begin
 net  = cached(RBMSplit(Complex{T}, Nsites, 2))
