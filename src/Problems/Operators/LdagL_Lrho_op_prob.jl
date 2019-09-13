@@ -83,7 +83,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
     # L rho Ldag H #ok
     # -im ⟨σ|L ρ Lᴴ|σt⟩
     for L=c_ops
-        diffs_r = row_valdiff(L, row(𝝝))
+        diffs_r = row_valdiff(L, row(𝝝)) # TODO Not allocate!
         diffs_c = row_valdiff(L, col(𝝝))
 
         for (mel_r, changes_r)=diffs_r
@@ -133,6 +133,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
     C_loc = zero(Complex{real(out_type(net))})
 
     # ⟨σ|Hρ|σt⟩ (using hermitianity of HdH)
+    # TODO should be non allocating!
     diffs_hnh = row_valdiff(HnH, raw_state(row(𝝝s)))
     for (mel, changes)=diffs_hnh
         Δ_lnψ, ∇lnψ_i = Δ_logψ_and_∇logψ!(∇lnψ, net, 𝝝, changes, no_changes)

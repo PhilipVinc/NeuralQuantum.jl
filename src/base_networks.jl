@@ -33,5 +33,5 @@ out_type(net::NeuralNetwork) = error("Not Implemented")
 input_shape(net::NeuralNetwork) = error("Not Implemented")
 random_input_state(net::NeuralNetwork) = error("Not Implemented")
 is_analytic(net::NeuralNetwork) = false
-num_params(net::NeuralNetwork) = sum([length(getfield(net, f)) for f=fieldnames(typeof(f))])
+num_params(net::NeuralNetwork) = sum([length(getfield(net, f)) for f=fieldnames(typeof(net))])
 copy(net::NeuralNetwork) = net

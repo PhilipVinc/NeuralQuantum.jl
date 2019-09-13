@@ -40,7 +40,7 @@ col(v::DoubleState) = v.σ_col
 @inline config(v::DoubleState) = (config(v.σ_row), config(v.σ_col))
 #@inline config(v::DoubleState) = return config(v.σ_row), config(v.σ_col)
 
-# checs
+# checks
 same_basis(v::DoubleState{ST}, v2::DoubleState{ST2}) where {ST, ST2} =
     ST==ST2 && same_basis(row(v), row(v2)) && same_basis(col(v), col(v2))
 

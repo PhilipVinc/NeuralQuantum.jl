@@ -1,3 +1,6 @@
+# Sample network and compute observables for observables stored as
+# sparse matrices, therefore where we have a list of non-zero elements in the
+# column.
 function sample_network!(
   res::MCMCObsEvaluationCache,
   problem::ObservablesProblem,

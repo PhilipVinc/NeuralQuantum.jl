@@ -46,10 +46,10 @@ mutable struct RBMSplitCache{VT} <: NNCache{RBMSplit}
     ∂logℒθ::VT
 
     # complex sigmas
-    σr::VT
-    σc::VT
 
     # states
+    σr::VT
+    σc::VT
 
     valid::Bool # = false
 end
@@ -82,8 +82,8 @@ function (net::RBMSplit)(c::RBMSplitCache, σr_r, σc_r)
     θ .+= net.b .+ θ_tmp
 
     logℒθ .= logℒ.(θ)
-    logψ = dot(σr,net.ar) + dot(σc,net.ac) + sum(logℒθ)
-    return logψ
+    lnψ = dot(σr,net.ar) + dot(σc,net.ac) + sum(logℒθ)
+    return lnψ
 end
 
 function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, σr_r, σc_r)
@@ -113,6 +113,6 @@ function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, σr_r, �
     ∇logψ.Wr .= ∂logℒθ .* transpose(σr)
     ∇logψ.Wc .= ∂logℒθ .* transpose(σc)
 
-    logψ = dot(σr,net.ar) + dot(σc,net.ac) + sum(logℒθ)
-    return logψ, ∇logψ
+    lnψ = dot(σr,net.ar) + dot(σc,net.ac) + sum(logℒθ)
+    return lnψ, ∇logψ
 end
