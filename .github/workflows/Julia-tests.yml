@@ -22,4 +22,4 @@ jobs:
                             println("Installed [QuantumLattices]");
                             Pkg.instantiate();
                             println("Instantiated");'
-            julia --color=yes -e "using Pkg; Pkg.test(coverage=true)"
+            julia --color=yes --project=@. -e "using Pkg; Pkg.test(coverage=true)"
