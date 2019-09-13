@@ -16,6 +16,7 @@ end
 function Base.resize!(c::OpConnection, n)
     resize!(c.mel,     n)
     resize!(c.changes, n)
+    return c
 end
 
 Base.eltype(c::OpConnection{A,B,C}) where {A,B,C} = (eltype(A), eltype(B), eltype(C))
@@ -87,5 +88,5 @@ function clear_duplicates(c::OpConnection)
         ids = findall(isequal(el), c.changes)
         push!(u_mel, sum(c.mel[ids]))
     end
-    return OpConnection(u_cngs, u_mel)
+    return OpConnection(u_mel, u_cngs)
 end

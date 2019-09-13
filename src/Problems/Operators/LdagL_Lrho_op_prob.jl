@@ -146,7 +146,8 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
     end
 
     # ⟨σ|ρHᴴ|σt⟩
-    diffs_hnh = row_valdiff(HnH, raw_state(col(𝝝s)))
+    resize!(diffs_hnh, 0)
+    row_valdiff!(diffs_hnh, HnH, raw_state(col(𝝝s)))
     for (mel, changes)=diffs_hnh
         Δ_lnψ, ∇lnψ_i = Δ_logψ_and_∇logψ!(∇lnψ, net, 𝝝, no_changes, changes)
 
