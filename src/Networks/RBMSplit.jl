@@ -28,7 +28,7 @@ is_analytic(net::RBMSplit) = true
 
 
 (net::RBMSplit)(σ::State) = net(config(σ)...)
-(net::RBMSplit)(σr, σc)   = transpose(net.ar)*σr .+ transpose(net.ac)*σc .+ sum(logℒ.(net.b .+
+(net::RBMSplit)(σr, σc)   = transpose(net.ar)*σr .+ transpose(net.ac)*σc .+ sum_autobatch(logℒ.(net.b .+
                                                         net.Wr*σr .+ net.Wc*σc))
 
 
@@ -39,13 +39,15 @@ Base.show(io::IO, ::MIME"text/plain", m::RBMSplit) = print(
 "RBMSplit($(eltype(m.ar)), n=$(length(m.ar)), α=$(length(m.b)/length(m.ar)))")
 
 # Cached version
-mutable struct RBMSplitCache{VT} <: NNCache{RBMSplit}
+mutable struct RBMSplitCache{VT,VS,VST} <: NNCache{RBMSplit}
     θ::VT
     θ_tmp::VT
     logℒθ::VT
     ∂logℒθ::VT
 
     # complex sigmas
+    res::VS #batch
+    res_tmp::VST #batch
 
     # states
     σr::VT
@@ -56,6 +58,8 @@ end
 
 cache(net::RBMSplit) =
     RBMSplitCache(similar(net.b),
+                  similar(net.b),
+                  similar(net.b),
                   similar(net.b),
                   similar(net.b),
                   similar(net.b),
@@ -71,8 +75,8 @@ function (net::RBMSplit)(c::RBMSplitCache, σr_r, σc_r)
     T = eltype(θ)
 
     # copy the states to complex valued states for the computations.
-    σr = c.σr; copy!(σr, σr_r)
-    σc = c.σc; copy!(σc, σc_r)
+    σr = c.σr; copyto!(σr, σr_r)
+    σc = c.σc; copyto!(σc, σc_r)
 
     #θ .= net.b .+
     #        net.Wr*σr .+
@@ -94,8 +98,8 @@ function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, σr_r, �
     T      = eltype(θ)
 
     # copy the states to complex valued states for the computations.
-    σr = c.σr; copy!(σr, σr_r)
-    σc = c.σc; copy!(σc, σc_r)
+    σr = c.σr; copyto!(σr, σr_r)
+    σc = c.σc; copyto!(σc, σc_r)
 
     #θ .= net.b .+
     #        net.Wr*σr .+

@@ -8,7 +8,7 @@ using LightGraphs
 
 using Zygote: gradient, forward
 using Random: AbstractRNG, MersenneTwister, GLOBAL_RNG
-using LinearAlgebra, SparseArrays
+using LinearAlgebra, SparseArrays, Strided
 
 include("IterativeSolvers/minresqlp.jl")
 using .MinresQlp
@@ -55,8 +55,12 @@ export NotParallel, ParallelThreaded
 include("base_states.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
+include("base_batched_networks.jl")
 include("treelike.jl") # from flux
 include("tuple_logic.jl")
+
+# Useful
+include("utils/math.jl")
 
 # Basic states for uniform systems
 include("States/StateChanges.jl")

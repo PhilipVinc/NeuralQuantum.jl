@@ -43,11 +43,11 @@ Base.show(io::IO, ::MIME"text/plain", m::NDM) = print(io,
 @inline (net::NDM)(σ::Tuple) = net(σ...)
 function (W::NDM)(σr, σc)
     T=eltype(W.u_λ)
-    ∑logℒ_λ_σ = sum(logℒ.(W.h_λ .+ W.w_λ*σr))
-    ∑logℒ_μ_σ = sum(logℒ.(W.h_μ .+ W.w_μ*σr))
+    ∑logℒ_λ_σ = sum_autobatch(logℒ.(W.h_λ .+ W.w_λ*σr))
+    ∑logℒ_μ_σ = sum_autobatch(logℒ.(W.h_μ .+ W.w_μ*σr))
 
-    ∑logℒ_λ_σp = sum(logℒ.(W.h_λ .+ W.w_λ*σc))
-    ∑logℒ_μ_σp = sum(logℒ.(W.h_μ .+ W.w_μ*σc))
+    ∑logℒ_λ_σp = sum_autobatch(logℒ.(W.h_λ .+ W.w_λ*σc))
+    ∑logℒ_μ_σp = sum_autobatch(logℒ.(W.h_μ .+ W.w_μ*σc))
 
     ∑σ = σr .+ σc
     Δσ = σr .- σc
@@ -55,12 +55,12 @@ function (W::NDM)(σr, σc)
     _Π = T(0.5)  .* W.u_λ*∑σ .+
            T(0.5)im .* W.u_μ*Δσ .+ W.d_λ
 
-    Γ_λ = T(0.5)   * (∑logℒ_λ_σ + ∑logℒ_λ_σp + ∑σ ⋅ W.b_λ)
-    Γ_μ = T(0.5)im * (∑logℒ_μ_σ - ∑logℒ_μ_σp + Δσ ⋅ W.b_μ)
-    Π  = sum(logℒ.(_Π))
+    Γ_λ = T(0.5)   * (∑logℒ_λ_σ + ∑logℒ_λ_σp + transpose(W.b_λ)*∑σ )
+    Γ_μ = T(0.5)im * (∑logℒ_μ_σ - ∑logℒ_μ_σp + transpose(W.b_μ)*Δσ )
+    Π  = sum_autobatch(logℒ.(_Π))
 
-    logψ = Γ_λ + Γ_μ + Π
-    return logψ
+    lnψ = Γ_λ + Γ_μ + Π
+    return lnψ
 end
 
 # Cached version
