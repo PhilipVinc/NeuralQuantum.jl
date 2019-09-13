@@ -16,7 +16,6 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 TensorBoardLogger = "899adc3e-224a-11e9-021f-63837185c80f"
-ValueHistoriesLogger = "1b1fca25-83d5-5bb0-90da-fe5c0189c84d"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [extras]

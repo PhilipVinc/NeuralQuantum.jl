@@ -23,7 +23,7 @@ import .Optimisers: update, update!
 export Optimisers
 
 # Logging
-using TensorBoardLogger, ValueHistoriesLogger
+using TensorBoardLogger
 
 # Imports
 import Base: length, UInt, eltype, copy, deepcopy, iterate
