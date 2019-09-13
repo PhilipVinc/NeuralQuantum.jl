@@ -73,7 +73,7 @@ weight_tuple(net) = weight_tuple(net, fieldnames(typeof(net)))[2]
 function weight_tuple(x, fnames, vec=Vector{weight_type(x)}(), start=1)
     i = 0
     d=Dict{Symbol, Any}()
-    for f=fieldnames(typeof(x))
+    for f=fnames
         di, val = weight_tuple(getfield(x,f), vec, start+i)
         i += di; push!(d, f=>val)
     end
@@ -98,3 +98,45 @@ function weight_tuple(x::AbstractArray{<:Number}, vec::Vector, start)
     reshpd_params .= x
     return length(x), reshpd_params
 end
+
+##
+function batched_weight_tuple(grad_tup, bsz=1)
+    all_weights = grad_tup.tuple_all_weights
+    all_weghts_new = [similar(w, length(w), bsz) for w=all_weights][1]
+    return batched_weight_tuple(grad_tup, fieldnames(typeof(grad_tup)), all_weghts_new)[2]
+end
+
+function batched_weight_tuple(x, fnames, vec, start=1)
+    i = 0
+    d=Dict{Symbol, Any}()
+    for f=fnames
+        f==:tuple_all_weights && continue
+        di, val = batched_weight_tuple(getfield(x,f), vec, start+i)
+        i += di; push!(d, f=>val)
+    end
+    start == 1 && push!(d, :tuple_all_weights=>[vec])
+    i, (;d...)
+end
+
+function batched_weight_tuple(x::Tuple, vec::Matrix, start)
+    i = 0
+    d=Vector()
+    for f=fieldnames(typeof(x))
+        di, val = batched_weight_tuple(getfield(x,f), vec, start+i)
+        i += di; push!(d, val)
+    end
+    i, Tuple(d)
+end
+
+function batched_weight_tuple(x::AbstractArray{<:Number}, vec::Matrix, start)
+    @assert length(vec) >= start+length(x)-1
+    bsz = size(vec, 2)
+
+    @views data_vec = vec[start:start+length(x)-1, :]
+    reshpd_params = reshape(data_vec, size(x)..., bsz)
+    reshpd_params .= x
+    if reshpd_params isa Base.ReshapedArray
+        reshpd_params = StridedView(reshpd_params)
+    end
+    return length(x), reshpd_params
+end # ? stridedView?
