@@ -98,6 +98,9 @@ include("Networks/NDMSymm.jl")
 include("Networks/RBMSplitLT.jl")
 include("Networks/NDMLT.jl")
 
+# Batch
+include("Networks/RBMSplitBatched.jl")
+
 const rRBMSplit = RBMSplit; export rRBMSplit;
 const rNDM = NDM; export rNDM;
 const rNDMSymm = NDMSymm; export rNDMSymm;
