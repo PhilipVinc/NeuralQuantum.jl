@@ -18,8 +18,8 @@ jobs:
           version: ${{ matrix.julia-version }}
       - name: "Run Tests"
         run: |
-            julia --color=yes --project=@. -e "using Pkg; Pkg.add([PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl")]);
+            julia --color=yes --project=@. -e 'using Pkg; Pkg.add([PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl")]);
                             println("Installed [QuantumLattices]");
                             Pkg.instantiate();
-                            println("Instantiated");"
+                            println("Instantiated");'
             julia --color=yes -e "using Pkg; Pkg.test(coverage=true)"
