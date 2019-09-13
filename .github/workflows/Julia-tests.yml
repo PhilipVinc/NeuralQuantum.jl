@@ -1,0 +1,26 @@
+name: Run tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        julia-version: [1.0.4, 1.1.1, 1.2.0-rc3, 1.3.0-rc1]
+        os: [ubuntu-latest, macOS-latest]
+    
+    steps:
+      - uses: actions/checkout@v1.0.0
+      - name: "Setup Julia environment ${{ matrix.julia-version }}"
+        uses: julia-actions/setup-julia@v0.2.1
+        with:
+          version: ${{ matrix.julia-version }}
+        run: julia --color=yes -e 'using Pkg;
+                            Pkg.activate();
+                            Pkg.add([PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl")]);
+                            println("Installed [QuantumLattices, ValueHistoriesLogger]");
+                            Pkg.instantiate();
+                            println("Instantiated");
+                            println("Developed");
+                            Pkg.test(coverage=true)'
