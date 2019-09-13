@@ -29,6 +29,12 @@ function apply_chages!(s::DoubleState{<:ModifiedState})
     apply_changes!(col(s))
     return s
 end
+clear_changes!(s::DoubleState) = nothing
+function clear_changes!(s::DoubleState{<:ModifiedState})
+    clear_changes!(row(s))
+    clear_changes!(col(s))
+    return s
+end
 
 raw_config(s::DoubleState) = config(s)
 raw_config(s::DoubleState{<:ModifiedState}) = (raw_config(s.σ_row), raw_config(s.σ_col))

@@ -17,7 +17,6 @@ ops = KLocalOperatorSum(op)
 ops2 = ops + op2
 @test length(operators(ops)) == 1
 @test first(operators(ops2)).mat == matsum
-display(matsum)
 
 # Check that index works for a single site
 check = sparse(zeros(size(matsum)))

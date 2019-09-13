@@ -75,3 +75,8 @@ apply_lut_updates!(σ::LUState{<:DoubleState}, cnet::CachedNet) = begin
         config(raw_state(σ_r)), config(raw_state(σ_c)),
         changes(σ_r), changes(σ_c))
 end
+
+update_lookup!(σ::LUState, cnet::CachedNet) = begin
+    # TODO Check if this is correct. I could just rename this, no?
+    update_lut!(σ, cnet)
+end
