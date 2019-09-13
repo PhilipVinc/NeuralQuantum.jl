@@ -199,3 +199,7 @@ end
 Base.conj(op::KLocalOperator) = conj!(duplicate(op))
 
 Base.adjoint(op::KLocalOperator) = conj(tranpose(op))
+
+Base.eltype(::T) where {T<:KLocalOperator} = eltype(T)
+Base.eltype(T::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {SV,M,Vel,Vti,Vtc,Vtv,OC} =
+    eltype(eltype(Vel))

@@ -70,3 +70,38 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector)
 
     return (H, loss_ops, loss_ops_t)
 end
+
+function to_linear_operator(op::GraphOperator)
+    op_locs = op.LocalOperators
+    op_loc = KLocalOperatorRow([1], [length(basis(first(op_locs)))],
+                        first(op_locs).data)
+
+    res_op = KLocalOperatorSum(op_loc)
+
+    # Add the local hamiltonian terms
+    for (i, op_loc) = enumerate(op.LocalOperators)
+        i == 1 && continue # the first one was already added by the constructor.
+
+        dim = length(basis(op_loc))
+        sum!(res_op, KLocalOperatorRow([i], [dim], op_loc.data))
+    end
+
+    # Hoppings
+    for edge=edges(graph(op))
+        edge ∉ keys(op.EdgeOpList) && continue
+
+        connections = op.EdgeOpList[edge]
+        for (coeff, l_id, r_id)=connections
+            hl = op.HopOperatorsList[l_id]
+            hr = op.HopOperatorsList[r_id]
+
+            dim_l = length(basis(hl))
+            dim_r = length(basis(hr))
+            sum!(res_op, KLocalOperatorRow([edge.src, edge.dst],
+                                           [dim_l, dim_r],
+                                         coeff*((hl⊗hr).data)))
+        end
+    end
+
+    return res_op
+end

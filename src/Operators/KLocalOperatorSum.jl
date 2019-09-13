@@ -98,3 +98,10 @@ function Base.conj!(ops::KLocalOperatorSum)
 end
 
 Base.adjoint(ops::KLocalOperatorSum) = conj!(transpose(ops))
+
+Base.show(io::IO, ::MIME"text/plain", op::KLocalOperatorSum) = print(io,
+    "KLocalOperatorSum: \n\t -sites: $(op.sites)")
+
+Base.eltype(::T) where {T<:KLocalOperatorSum} = eltype(T)
+Base.eltype(T::Type{KLocalOperatorSum{Vec,VOp}}) where {Vec,VOp} =
+    eltype(eltype(VOp))
