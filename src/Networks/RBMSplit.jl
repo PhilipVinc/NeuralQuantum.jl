@@ -7,6 +7,7 @@ struct RBMSplit{VT,MT} <: MatrixNeuralNetwork
     Wr::MT
     Wc::MT
 end
+@treelike RBMSplit
 
 RBMSplit(in::Int, α::Number, args...) = RBMSplit(ComplexF32, in, α, args...)
 RBMSplit(T::Type, in, α,

@@ -12,6 +12,7 @@ struct NDM{VT,MT} <: MatrixNeuralNetwork
     w_λ::MT
     u_λ::MT
 end
+@treelike NDM
 
 NDM(args...) = NDM(Float32, args...)
 NDM(T::Type{<:Real}, in, αh, αa,

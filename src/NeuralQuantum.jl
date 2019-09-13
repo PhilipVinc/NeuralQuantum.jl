@@ -55,6 +55,7 @@ export NotParallel, ParallelThreaded
 include("base_states.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
+include("treelike.jl") # from flux
 include("tuple_logic.jl")
 
 # Basic states for uniform systems
