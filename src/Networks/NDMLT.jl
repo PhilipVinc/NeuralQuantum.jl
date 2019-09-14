@@ -206,7 +206,7 @@ function logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, lt::NDMLUT,
     ∇logψ.u_λ .= T(0.5) .* ∂logℒ_Π .* transpose(∑σ)
     ∇logψ.u_μ .= T(0.5)im .*  ∂logℒ_Π .* transpose(Δσ)
 
-    return logψ, ∇logψ
+    return logψ
 end
 
 
@@ -380,5 +380,5 @@ function Δ_logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, lt::NDMLUT,
     ∇logψ.u_λ .= T(0.5) .* ∂logℒ_Π .* transpose(∑σ)
     ∇logψ.u_μ .= T(0.5)im .*  ∂logℒ_Π .* transpose(Δσ)
 
-    return logvaldiff, ∇logψ
+    return logvaldiff
 end

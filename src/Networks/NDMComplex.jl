@@ -213,5 +213,5 @@ function logψ_and_∇logψ!(∇logψ, W::NDMComplex, c::NDMComplexCache, σr,σ
     Π   = sum(_Π)
     logψ = Γ_λ + T(1.0)im * Γ_μ + Π
 
-    return logψ, ∇logψ
+    return logψ
 end

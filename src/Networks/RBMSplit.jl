@@ -67,7 +67,8 @@ cache(net::RBMSplit) =
                   similar(net.b, length(net.ar)),
                   false)
 
-(net::RBMSplit)(c::RBMSplitCache, σ) = net(c, config(σ)...)
+(net::RBMSplit)(c::RBMSplitCache, σ::State) = net(c, config(σ))
+(net::RBMSplit)(c::RBMSplitCache, (σr, σc)::Tuple{AbstractArray,AbstractArray}) = net(c, σr, σc)
 function (net::RBMSplit)(c::RBMSplitCache, σr_r, σc_r)
     θ = c.θ
     θ_tmp = c.θ_tmp
@@ -118,5 +119,5 @@ function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, σr_r, �
     ∇logψ.Wc .= ∂logℒθ .* transpose(σc)
 
     lnψ = dot(σr,net.ar) + dot(σc,net.ac) + sum(logℒθ)
-    return lnψ, ∇logψ
+    return lnψ
 end

@@ -78,15 +78,23 @@ grad_cache(net::CachedNet) = grad_cache(net.net)
 @inline logψ(cnet::CachedNet, σ...) = cnet.net(cnet.cache, config(σ)...)
 
 #@inline ∇logψ(n::CachedNet, σ) = logψ_and_∇logψ(n, σ)[2]
-function logψ_and_∇logψ(n::CachedNet, σ)
+function logψ_and_∇logψ(n::CachedNet, σ::Vararg{N,V}) where {N,V}
     #@warn "Inefficient calling logψ_and_∇logψ for cachedNet"
     ∇lnψ = grad_cache(n)
-    lψ, ∇ψ = logψ_and_∇logψ!(∇lnψ, n, σ);
-    return (lψ, ∇ψ)
+    lψ   = logψ_and_∇logψ!(∇lnψ, n, σ...);
+    return (lψ, ∇lnψ)
 end
 
-function logψ_and_∇logψ!(der, n::CachedNet, σ)
-    lψ, ∇ψ = logψ_and_∇logψ!(der, n.net, n.cache, config(σ)...);
+# Declare the two functions, even if config(blabla)=blabla, because of a shitty
+# Julia's performance bug #32761
+# see https://github.com/JuliaLang/julia/issues/32761
+@inline logψ_and_∇logψ!(der, n::CachedNet, σ::State) = logψ_and_∇logψ!(der, n, config(σ))
+@inline function logψ_and_∇logψ!(der, n::CachedNet, σ::NTuple{N,AbstractArray}) where N
+    lψ = logψ_and_∇logψ!(der, n.net, n.cache, config(σ)...)
+    return (lψ, der)
+end
+@inline function logψ_and_∇logψ!(der, n::CachedNet, σ::Vararg{AbstractArray,N}) where N
+    lψ = logψ_and_∇logψ!(der, n.net, n.cache, σ...);
     return (lψ, der)
 end
 
@@ -152,6 +160,6 @@ function logψ_and_∇logψ(net::KetNeuralNetwork, σ)
 end
 
 function logψ_and_∇logψ(n::CachedNet{<:KetNeuralNetwork}, σ)
-    lψ, ∇ψ = logψ_and_∇logψ(n.der, n.cache, n.net, config(σ));
+    lψ = logψ_and_∇logψ(n.der, n.cache, n.net, config(σ));
     return (lψ, n.der)
 end

@@ -6,7 +6,7 @@ export logψ, ∇logψ, ∇logψ!, logψ_and_∇logψ, logψ_and_∇logψ!, grad
 @inline ∇logψ(args...)              = logψ_and_∇logψ(args...)[2]
 @inline ∇logψ!(args...)             = logψ_and_∇logψ!(args...)[2]
 
-function logψ_and_∇logψ(net::NeuralNetwork, σ)
+function logψ_and_∇logψ(net::NeuralNetwork, σ::Vararg{N,V})where {N,V}
     der = grad_cache(net)
     y, der = logψ_and_∇logψ!(der, net, σ)
 

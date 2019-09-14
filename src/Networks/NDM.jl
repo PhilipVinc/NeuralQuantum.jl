@@ -129,7 +129,9 @@ cache(net::NDM) =
 
               false)
 
-(net::NDM)(c::NDMCache, σ) = net(c, config(σ)...)
+
+(net::NDM)(c::NDMCache, σ::State) = net(c, config(σ))
+(net::NDM)(c::NDMCache, (σr, σc)::Tuple{AbstractArray,AbstractArray}) = net(c, σr, σc)
 function (W::NDM)(c::NDMCache, σr, σc)
     ∑σ      = c.∑σ
     Δσ      = c.Δσ
@@ -302,7 +304,7 @@ function logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, σr,σc)
     Π   = sum(_Π)
     logψ = Γ_λ + T(1.0)im * Γ_μ + Π
 
-    return logψ, ∇logψ
+    return logψ
 end
 
 function vectorize_gradient(net::NDM{T}, gradient::NamedTuple) where T
