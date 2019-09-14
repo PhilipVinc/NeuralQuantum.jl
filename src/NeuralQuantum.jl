@@ -22,9 +22,6 @@ using .Optimisers
 import .Optimisers: update, update!
 export Optimisers
 
-# Logging
-using TensorBoardLogger
-
 # Imports
 import Base: length, UInt, eltype, copy, deepcopy, iterate
 import Random: rand!
@@ -169,7 +166,7 @@ include("base_diffeval.jl")
 include("utils/densitymatrix.jl")
 include("utils/expectation_values.jl")
 include("utils/translational_symm.jl")
-include("utils/logging.jl")
+#include("utils/logging.jl")
 include("utils/loading.jl")
 
 # interface
