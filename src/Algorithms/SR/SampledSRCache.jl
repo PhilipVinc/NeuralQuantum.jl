@@ -34,8 +34,8 @@ function MCMCSREvaluationCache(net::NeuralNetwork, prob)
     zero!(cache)
 end
 
-SamplingCache(alg::SR, prob::HermitianMatrixProblem, net)   = MCMCSREvaluationCache(net, prob)
-SamplingCache(alg::SR, prob::OpenTimeEvolutionProblem, net) = MCMCSREvaluationCache(net, prob)
+SamplingCache(alg::SR, prob::PT, net) where {PT<:Union{HermitianMatrixProblem, OpenTimeEvolutionProblem}}  =
+    MCMCSREvaluationCache(net, prob)
 
 
 function zero!(comp_vals::MCMCSREvaluationCache)
