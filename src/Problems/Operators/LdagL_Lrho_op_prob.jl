@@ -27,9 +27,11 @@ end
 
 basis(prob::LdagL_Lrho_op_prob) = prob.HilbSpace
 
+# Standard method dispatched when the state is generic (non lut).
+# will work only if 𝝝 and 𝝝p are the same type (and non lut!)
 function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
-                       net::MatrixNet, 𝝝,
-                       lnψ=net(𝝝), 𝝝p=deepcopy(𝝝))
+                       net::MatrixNet, 𝝝::S,
+                       lnψ=net(𝝝), 𝝝p::S=deepcopy(𝝝)) where {S}
     # hey
     HnH = prob.HnH
     c_ops = prob.L_ops
@@ -116,9 +118,11 @@ end
 Base.show(io::IO, p::LdagL_Lrho_op_prob) = print(io,
     "LdagL_Lrho_op_prob on space $(basis(p)) computing the variance of Lrho using the sparse liouvillian")
 
+# Variant for when the state has a LookUpTable and resorts to computing
+# only lut updates.
 function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
-                       net::MatrixNet, 𝝝::LUState,
-                       _lnψ=nothing, _𝝝p=nothing)
+                       net::MatrixNet, 𝝝::S,
+                       _lnψ=nothing, _𝝝p::NS=nothing) where {S<:LUState, NS<:Union{Nothing, S}}
     # hey
     HnH = prob.HnH
     c_ops = prob.L_ops

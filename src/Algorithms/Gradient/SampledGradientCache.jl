@@ -1,10 +1,10 @@
 ################################################################################
 ######      Cache holding the information generated along a sampling      ######
 ################################################################################
-mutable struct MCMCGradientEvaluationCache{T,T2,TV,TD, S} <: EvaluationSamplingCache
+mutable struct MCMCGradientEvaluationCache{T,T2,TV,TVC,TD, S} <: EvaluationSamplingCache
     Oave::TV#Vector{T}
     Eave::T
-    EOave::TV#Vector{T}
+    EOave::TVC
     Zave::T2
 
     Evalues::Vector{T}
@@ -17,7 +17,7 @@ function MCMCGradientEvaluationCache(net::NeuralNetwork, prob)
     der_vec = grad_cache(net).tuple_all_weights
 
     Oave  = [zero(dvec) for dvec=der_vec]
-    EOave = [zero(dvec) for dvec=der_vec]
+    EOave = [zeros(TC, size(dvec)) for dvec=der_vec]
 
     cache = MCMCGradientEvaluationCache(Oave,
                                         zero(TC),

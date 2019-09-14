@@ -1,18 +1,18 @@
 ################################################################################
 ######      Cache holding the information generated along a sampling      ######
 ################################################################################
-mutable struct MCMCSRLEvaluationCache{T,T2,TV,TM,TD,S} <: EvaluationSamplingCache
+mutable struct MCMCSRLEvaluationCache{T,T2,TV,TVC,TM,TD,S} <: EvaluationSamplingCache
     Oave::TV#Vector{T}
     OOave::TM#Matrix{T}
     Eave::T
-    EOave::TV#Vector{T}
-    LLOave::TV#Vector{T}
+    EOave::TVC
+    LLOave::TVC
     Zave::T2
 
     Evalues::Vector{T}
 
     # cache
-    LLO_i::TV
+    LLO_i::TVC
     ∇lnψ::TD
     ∇lnψ2::TD
     σ::S
@@ -24,9 +24,9 @@ function MCMCSRLEvaluationCache(net::NeuralNetwork, prob)
 
     Oave   = [zero(dvec) for dvec=der_vec]
     OOave  = [zeros(eltype(dvec), length(dvec), length(dvec)) for dvec=der_vec]
-    EOave  = [zero(dvec) for dvec=der_vec]
-    LLOave = [zero(dvec) for dvec=der_vec]
-    LLO_i = [zero(dvec) for dvec=der_vec]
+    EOave  = [zeros(TC, size(dvec)) for dvec=der_vec]
+    LLOave = [zeros(TC, size(dvec)) for dvec=der_vec]
+    LLO_i  = [zeros(TC, size(dvec)) for dvec=der_vec]
 
     cache = MCMCSRLEvaluationCache(Oave,
                                   OOave,

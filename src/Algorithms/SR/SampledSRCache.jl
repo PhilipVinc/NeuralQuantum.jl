@@ -1,11 +1,11 @@
 ################################################################################
 ######      Cache holding the information generated along a sampling      ######
 ################################################################################
-mutable struct MCMCSREvaluationCache{T,T2,TV,TM,TD,S} <: EvaluationSamplingCache
+mutable struct MCMCSREvaluationCache{T,T2,TV,TVC,TM,TD,S} <: EvaluationSamplingCache
     Oave::TV#Vector{T}
     OOave::TM#Matrix{T}
     Eave::T
-    EOave::TV#Vector{T}
+    EOave::TVC
     Zave::T2
 
     Evalues::Vector{T}
@@ -21,7 +21,7 @@ function MCMCSREvaluationCache(net::NeuralNetwork, prob)
 
     Oave  = [zero(dvec) for dvec=der_vec]
     OOave = [zeros(eltype(dvec), length(dvec), length(dvec)) for dvec=der_vec]
-    EOave = [zero(dvec) for dvec=der_vec]
+    EOave = [zeros(TC, size(dvec)) for dvec=der_vec]
 
     cache = MCMCSREvaluationCache(Oave,
                                   OOave,
