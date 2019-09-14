@@ -9,6 +9,7 @@ using LightGraphs
 using Zygote: gradient, forward
 using Random: AbstractRNG, MersenneTwister, GLOBAL_RNG
 using LinearAlgebra, SparseArrays, Strided
+using NNlib
 
 include("IterativeSolvers/minresqlp.jl")
 using .MinresQlp

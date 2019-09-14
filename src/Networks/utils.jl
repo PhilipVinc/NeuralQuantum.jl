@@ -20,5 +20,9 @@ rescaled_normal(T::Type, scale::Real, dims::Integer...) = randn(T, dims...) .* T
 
 
 @inline ℒ(x) = one(x) + exp(x)
-@inline ∂logℒ(x) = one(x)/(one(x)+exp(-x))
-@inline logℒ(x) = log1p(exp(x))#log(one(x) + exp(x))
+#@inline ∂logℒ(x) = one(x)/(one(x)+exp(-x))
+const ∂logℒ = NNlib.σ
+NNlib.σ(x::Complex) = one(x)/(one(x)+exp(-x))
+#@inline logℒ(x) = log1p(exp(x))#log(one(x) + exp(x))
+const logℒ = NNlib.softplus
+NNlib.softplus(x::Complex) = log1p(exp(x))#log(one(x) + exp(x))
