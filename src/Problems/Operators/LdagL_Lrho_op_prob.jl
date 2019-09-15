@@ -44,65 +44,76 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
     C_loc = zero(Complex{real(out_type(net))})
 
     # ⟨σ|Hρ|σt⟩ (using hermitianity of HdH)
-    diffs_hnh = row_valdiff(HnH, row(𝝝))
+    # diffs_hnh = row_valdiff(HnH, row(𝝝))
     set_index!(𝝝p_col, index(col(𝝝)))
-    for (mel, changes)=diffs_hnh
+    for op=operators(HnH)
+        r=local_index(row(𝝝), sites(op))
+        for (mel, changes)=op.op_conns[r] #diffs_hnh
+            set_index!(𝝝p_row, index(row(𝝝)))
+            for (site,val)=changes
+                setat!(𝝝p_row, site, val)
+            end
 
-        set_index!(𝝝p_row, index(row(𝝝)))
-        for (site,val)=changes
-            setat!(𝝝p_row, site, val)
+            lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
+            C_loc_i  =  -1.0im * mel * exp(lnψ_i - lnψ)
+            for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
+              LLOave .+= C_loc_i .* _∇lnψ
+            end
+            C_loc  += C_loc_i
         end
-
-        lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
-        C_loc_i  =  -1.0im * mel * exp(lnψ_i - lnψ)
-        for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
-          LLOave .+= C_loc_i .* _∇lnψ
-        end
-        C_loc  += C_loc_i
-    end
+    end #operators
 
     # ⟨σ|ρHᴴ|σt⟩
-    diffs_hnh = row_valdiff(HnH, col(𝝝))
+    # diffs_hnh = row_valdiff(HnH, col(𝝝))
     set_index!(𝝝p_row, index(row(𝝝)))
-    for (mel, changes)=diffs_hnh
-        set_index!(𝝝p_col, index(col(𝝝)))
-        for (site,val)=changes
-            setat!(𝝝p_col, site, val)
-        end
+    for op=operators(HnH)
+        r=local_index(col(𝝝), sites(op))
+        for (mel, changes)=op.op_conns[r]
+            set_index!(𝝝p_col, index(col(𝝝)))
+            for (site,val)=changes
+                setat!(𝝝p_col, site, val)
+            end
 
-        lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
-        C_loc_i  =  1.0im * conj(mel) * exp(lnψ_i - lnψ)
-        for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
-          LLOave .+= C_loc_i .* _∇lnψ
+            lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
+            C_loc_i  =  1.0im * conj(mel) * exp(lnψ_i - lnψ)
+            for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
+              LLOave .+= C_loc_i .* _∇lnψ
+            end
+            C_loc  += C_loc_i
         end
-        C_loc  += C_loc_i
     end
 
     # L rho Ldag H #ok
     # -im ⟨σ|L ρ Lᴴ|σt⟩
     for L=c_ops
-        diffs_r = row_valdiff(L, row(𝝝)) # TODO Not allocate!
-        diffs_c = row_valdiff(L, col(𝝝))
+        #diffs_r = row_valdiff(L, row(𝝝)) # TODO Not allocate!
+        #diffs_c = row_valdiff(L, col(𝝝))
+        for op_r=operators(L)
+            r_r=local_index(row(𝝝), sites(op_r))
+            for op_c=operators(L)
+                r_c=local_index(col(𝝝), sites(op_c))
 
-        for (mel_r, changes_r)=diffs_r
-            set_index!(𝝝p_row, index(row(𝝝)))
-            for (site,val)=changes_r
-                setat!(𝝝p_row, site, val)
-            end
+                for (mel_r, changes_r)=op_r.op_conns[r_r]
+                    set_index!(𝝝p_row, index(row(𝝝)))
+                    for (site,val)=changes_r
+                        setat!(𝝝p_row, site, val)
+                    end
 
-            for (mel_c, changes_c)=diffs_c
-                set_index!(𝝝p_col, index(col(𝝝)))
-                for (site,val)=changes_c
-                    setat!(𝝝p_col, site, val)
+                    for (mel_c, changes_c)=op_c.op_conns[r_c]
+                        set_index!(𝝝p_col, index(col(𝝝)))
+                        for (site,val)=changes_c
+                            setat!(𝝝p_col, site, val)
+                        end
+
+                        lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
+                        C_loc_i  =  (mel_r) * conj(mel_c) *  exp(lnψ_i - lnψ)
+
+                        for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
+                          LLOave .+= C_loc_i .* _∇lnψ
+                        end
+                        C_loc  += C_loc_i
+                    end
                 end
-
-                lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
-                C_loc_i  =  (mel_r) * conj(mel_c) *  exp(lnψ_i - lnψ)
-
-                for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
-                  LLOave .+= C_loc_i .* _∇lnψ
-                end
-                C_loc  += C_loc_i
             end
         end
     end

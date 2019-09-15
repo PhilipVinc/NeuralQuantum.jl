@@ -101,6 +101,7 @@ end
 
 ## Accessors
 sites(op::KLocalOperator) = op.sites
+operators(op::KLocalOperator) = (op,)
 
 conn_type(top::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {SV, M, Vel, Vti, Vtc, Vtv, OC} =
     OpConnection{Vel, eltype(Vtc), eltype(Vtv)}

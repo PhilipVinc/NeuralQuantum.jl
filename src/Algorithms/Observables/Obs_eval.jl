@@ -59,15 +59,18 @@ function sample_network!(
   set_index!(col(σp), i_σ)
   for (obs_id, O) = enumerate(problem.ObservablesTransposed)
     O_loc = 0.0+0.0im
-    diffs_O = row_valdiff(O, row(σ.parent))
-    for (mel, changes)=diffs_O
-      set_index!(col(σp), i_σ)
-      for (site, val)=changes
-        setat!(σp, site, val)
+    #diffs_O = row_valdiff(O, row(σ.parent))
+    for op=operators(O)
+      r=local_index(row(σ.parent), sites(op))
+      for (mel, changes)=op.op_conns[r]
+        set_index!(col(σp), i_σ)
+        for (site, val)=changes
+          setat!(σp, site, val)
+        end
+        # Compute the log(ψ(σ)/ψ(σ')), by only computing differences.
+        log_ratio = net(σp) - lnψ
+        O_loc += conj(mel) * conj(exp(log_ratio)) # maybe a conj
       end
-      # Compute the log(ψ(σ)/ψ(σ')), by only computing differences.
-      log_ratio = net(σp) - lnψ
-      O_loc += conj(mel) * conj(exp(log_ratio)) # maybe a conj
     end
 
     res.ObsAve[obs_id] += prob * O_loc
