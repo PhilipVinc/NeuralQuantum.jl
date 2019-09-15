@@ -1,23 +1,28 @@
+export Ham_spmat_prob
+
 struct Ham_spmat_prob{B, SM} <: HermitianMatrixProblem where {B<:Basis,
-                                                 SM<:SparseMatrixCSC}
+                                                 SM}
     HilbSpace::B # 0
     H::SM
     ρss
 end
 
 Ham_spmat_prob(args...) = Ham_spmat_prob(Float32, args...)
-Ham_spmat_prob(T::Type{<:Number}, gl::GraphOperator) =
-    Ham_spmat_prob(T, SparseOperator(gl))
+Ham_spmat_prob(T::Type{<:Number}, gl::GraphOperator; operators=true) = begin
+    if operators
+        return Ham_spmat_prob(basis(gl), to_linear_operator(gl), 0.0)
+    else
+        return Ham_spmat_prob(T, SparseOperator(gl))
+    end
+end
 Ham_spmat_prob(T::Type{<:Number}, Ham::SparseOperator) =
     Ham_spmat_prob(Ham.basis_l, data(Ham), 0.0)
 
 basis(prob::Ham_spmat_prob) = prob.HilbSpace
 
-function compute_Cloc(prob::Ham_spmat_prob, net::KetNet, σ::State)
+function compute_Cloc(prob::Ham_spmat_prob{B,SM}, net::KetNet, σ::State,
+                      lnψ=net(σ), σp=deepcopy(σ)) where {B,SM<:SparseMatrixCSC}
     H = prob.H
-    σp = deepcopy(σ)
-
-    lnψ, ∇logψ = logψ_and_∇logψ(net, σ)
 
     #### Now compute E(S) = Σₛ⟨s|Hψ⟩/⟨s|ψ⟩
     C_loc = zero(Complex{real(out_type(net))})
@@ -37,5 +42,28 @@ function compute_Cloc(prob::Ham_spmat_prob, net::KetNet, σ::State)
       C_loc += conj(H.nzval[row_id]) * exp(log_ratio)
     end
 
-    return lnψ, ∇logψ, C_loc
+    return C_loc
+end
+
+function compute_Cloc(prob::Ham_spmat_prob{B,SM}, net::KetNet, σ::State,
+                      lnψ=net(σ), σp=deepcopy(σ)) where {B,SM<:AbsLinearOperator}
+    H = prob.H
+    σp = deepcopy(σ)
+
+    #### Now compute E(S) = Σₛ⟨s|Hψ⟩/⟨s|ψ⟩
+    C_loc = zero(Complex{real(out_type(net))})
+    for op=operators(H)
+        r = local_index(σ, sites(op))
+        for (mel, changes)=op.op_conns[r]
+            set_index!(σp, index(σ))
+            for (site,val)=changes
+                setat!(σp, site, val)
+            end
+
+            log_ratio = logψ(net, σp) - lnψ
+            C_loc += mel * exp(log_ratio)
+        end
+    end
+
+    return C_loc
 end

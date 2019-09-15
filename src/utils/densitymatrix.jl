@@ -1,4 +1,4 @@
-export densitymatrix
+export densitymatrix, ket
 
 function densitymatrix(net, prob, norm=true)
     ρ = DenseOperator(basis(prob))
@@ -20,3 +20,16 @@ function densitymatrix(net, prob, norm=true)
 end
 
 QuantumOptics.dm(net::NeuralNetwork, prob::Problem, norm=false) = densitymatrix(net, prob, norm)
+
+function ket(net, prob, norm=true)
+    psi = Ket(basis(prob))
+    v = state(prob, net)
+    for i=1:spacedimension(v)
+        set_index!(v, i)
+        psi.data[i] = exp(net(v))
+    end
+    if norm
+        normalize!(psi)
+    end
+    return psi
+end

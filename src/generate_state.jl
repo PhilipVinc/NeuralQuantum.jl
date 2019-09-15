@@ -31,7 +31,7 @@ function _lut_state(T::Type{<:Number}, hilb::Basis, net::MatrixNet)
     return LUState(state, lut)
 end
 
-function _homogeneous_system_state(T::Type{<:Number}, hilb::Basis, nsites, net::MatrixNet)
+function _homogeneous_system_state(T::Type{<:Number}, hilb::Basis, nsites, net::Union{MatrixNet, KetNet})
     loc_size = first(hilb.shape)
     return NAryState(T, loc_size, nsites)
 end

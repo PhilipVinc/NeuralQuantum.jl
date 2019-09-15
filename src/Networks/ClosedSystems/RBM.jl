@@ -56,13 +56,13 @@ function (net::RBM{T})(c::RBMCache, σ) where T
     return logψ
 end
 
-function logψ_and_∇logψ(∇logψ, c::RBMCache, net::RBM{T}, σ) where T
+function logψ_and_∇logψ!(∇logψ, net::RBM{T}, c::RBMCache, σ) where T
     θ = c.θ
     logℒθ = c.logℒθ
 
     #θ .= net.b .+ net.W * σ
-    copy!(c.σ, σ)
-    copy!(θ, net.b)
+    copyto!(c.σ, σ)
+    copyto!(θ, net.b)
     BLAS.gemv!('N', T(1.0), net.W, c.σ, T(1.0), θ)
 
     logℒθ .= logℒ.(θ)
@@ -71,5 +71,5 @@ function logψ_and_∇logψ(∇logψ, c::RBMCache, net::RBM{T}, σ) where T
     ∇logψ.a .= σ
     ∇logψ.b .= ∂logℒ.(θ)
     ∇logψ.W .= ∇logψ.b  .* transpose(σ)
-    return logψ, ∇logψ
+    return logψ
 end

@@ -13,6 +13,7 @@ using Test
         include("Problems/problem_algs.jl")
         include("Problems/problem_operators.jl")
         include("Problems/observables.jl")
+        include("Problems/hamiltonian.jl")
     end
 
     println("Testing States...")
