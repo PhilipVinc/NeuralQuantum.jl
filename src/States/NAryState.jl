@@ -130,7 +130,7 @@ end
 local_index(s::NAryState, i::T) where {T<:Integer} =
     T(s.σ[i])+1
 
-function local_index(s::NAryState{T,Nb}, is::Vector{T2}) where {T,Nb,T2<:Integer}
+function local_index(s::NAryState{T,Nb}, is::AbstractVector{T2}) where {T,Nb,T2<:Integer}
     idx = 1
     for (i,j)=enumerate(is)
         idx += T2(s.σ[j]) * Nb^(i-1)

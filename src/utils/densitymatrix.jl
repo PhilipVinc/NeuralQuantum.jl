@@ -1,8 +1,11 @@
 export densitymatrix
 
 function densitymatrix(net, prob, norm=true)
-    ρ = DenseOperator(prob.HilbSpace)
+    ρ = DenseOperator(basis(prob))
     v = state(prob, net)
+    if v isa DiagonalStateWrapper
+        v = v.parent
+    end
     for i=1:spacedimension(row(v))
         set_index!(row(v), i)
         for j=1:spacedimension(col(v))

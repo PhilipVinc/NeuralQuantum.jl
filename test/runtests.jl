@@ -12,6 +12,7 @@ using Test
     @testset "Problem & algs" begin
         include("Problems/problem_algs.jl")
         include("Problems/problem_operators.jl")
+        include("Problems/observables.jl")
     end
 
     println("Testing States...")
