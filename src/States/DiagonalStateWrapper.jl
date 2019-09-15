@@ -2,6 +2,9 @@ struct DiagonalStateWrapper{T} <: FiniteBasisState where {T<:DoubleState}
     parent::T
 end
 
+# accessor
+Base.parent(σ::DiagonalStateWrapper) = σ.parent
+
 # Property Accessors
 spacedimension(s::DiagonalStateWrapper) = spacedimension(row(s.parent))
 nsites(s::DiagonalStateWrapper) = nsites(row(s.parent))

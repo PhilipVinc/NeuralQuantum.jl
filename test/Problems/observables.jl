@@ -25,8 +25,8 @@ v     = state(oprob, net)
 ρ     = dm(net, oprob, false).data
 #ex_val = [expect(o, ρ) for o=obs_dense]
 
-ic    = NeuralQuantum.MCMCObsEvaluationCache(oprob)
-ic_op = NeuralQuantum.MCMCObsEvaluationCache(oprob_op)
+ic    = NeuralQuantum.MCMCObsEvaluationCache(net, oprob)
+ic_op = NeuralQuantum.MCMCObsEvaluationCache(net, oprob_op)
 
 for i=1:spacedimension(v)
     set_index!(v, i)

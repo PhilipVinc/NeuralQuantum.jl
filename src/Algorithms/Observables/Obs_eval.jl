@@ -6,7 +6,7 @@ function sample_network!(
   problem::ObservablesProblem,
   net, σ, wholespace=false)
 
-  σp = deepcopy(σ.parent)
+  σp = res.σ
 
   # The denominator of this state
   lnψ = net(σ)
@@ -17,8 +17,10 @@ function sample_network!(
   # transpose matrix
   i_σ = index(σ)
 
-  # TODO : this works only with NDM. Should generalize it to states...
+  set_index!(row(σp), i_σ)
   set_index!(col(σp), i_σ)
+
+  # TODO : this works only with NDM. Should generalize it to states...
   for (obs_id, Oᵗ) = enumerate(problem.ObservablesTransposed)
     O_loc = 0.0+0.0im
     for row_id = Oᵗ.colptr[i_σ]:(Oᵗ.colptr[i_σ+1]-1)
@@ -44,7 +46,7 @@ function sample_network!(
   problem::ObservablesProblem{B,SM},
   net, σ, wholespace=false) where {B, SM<:AbsLinearOperator}
 
-  σp = deepcopy(σ.parent)
+  σp = res.σ
 
   # The denominator of this state
   lnψ = net(σ)
@@ -55,8 +57,10 @@ function sample_network!(
   # transpose matrix
   i_σ = index(σ)
 
-  # TODO : this works only with NDM. Should generalize it to states...
+  set_index!(row(σp), i_σ)
   set_index!(col(σp), i_σ)
+
+  # TODO : this works only with NDM. Should generalize it to states...
   for (obs_id, O) = enumerate(problem.ObservablesTransposed)
     O_loc = 0.0+0.0im
     #diffs_O = row_valdiff(O, row(σ.parent))
