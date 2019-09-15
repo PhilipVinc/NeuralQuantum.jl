@@ -49,6 +49,7 @@ arrays for intermediate results for improved performance. This object will
 behave identically to a standard network `net`.
 """
 cached(net::NeuralNetwork) = CachedNet(net, cache(net))
+cached(net::CachedNet) = throw("Can't build cached net of cached network!")
 
 # When copying shallow copy the net but deepcopy the der_vec
 copy(cnet::CachedNet) = CachedNet(cnet.net, deepcopy(cnet.cache))
