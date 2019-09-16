@@ -37,6 +37,7 @@ evaluation_post_sampling!(SREval_op,    ic_op)
 @testset "LookUp table evaluation" begin
     @test ic_op.Evalues ≈ Clocs_ex
     @test ic_sp.Evalues ≈ Clocs_ex
+
     @test SREval_op.L ≈ SREval_sp.L
     @test ic_op.Evalues ≈ ic_sp.Evalues
     @test all([l≈r for (l,r)=zip(SREval_op.F, SREval_sp.F)])

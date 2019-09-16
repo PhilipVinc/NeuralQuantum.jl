@@ -47,7 +47,7 @@ function sample_network!(
   prob = wholespace ? exp(2*real(lnψ)) : 1.0
   res.Zave += prob
 
-  i_σ = toint(σ)
+  i_σ = index(σ)
   for (obs_id, O) = enumerate(problem.ObservablesTransposed)
     O_loc = 0.0+0.0im
     #diffs_O = row_valdiff(O, σ)
@@ -61,7 +61,7 @@ function sample_network!(
 
         # Compute the log(ψ(σ)/ψ(σ')), by only computing differences.
         log_ratio = net(σp) - lnψ
-        O_loc += mel * conj(exp(log_ratio))
+        O_loc += mel * exp(log_ratio)
       end
     end
 

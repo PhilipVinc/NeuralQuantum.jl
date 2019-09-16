@@ -26,7 +26,7 @@ oprob = ObservablesProblem(Sx, Sy, Sz)
 
 
 # Define the Neural Network. A RBM with N visible spins and α=2
-net  = RBM(Complex{T}, Nsites, 2)
+net  = RBM(Complex{T}, Nsites, 1)
 # Create a cached version of the neural network for improved performance.
 cnet = cached(net)
 # Chose a sampler. Options are FullSumSampler() which sums over the whole space

@@ -1,4 +1,5 @@
 export ObservablesProblem
+
 """
     ObservablesProblem
 
@@ -17,8 +18,6 @@ Constructs an ObservablesProblem from the observables provided.
 Userd to compute observables.
 """
 ObservablesProblem(args...; kwargs...) = ObservablesProblem(Float32, args...; kwargs...)
-#ObservablesProblem(T::Type{<:Number}, args...; kwargs...) = ObservablesProblem(T, [(Symbol("obs_", i), obs) for (i,obs)=enumerate(args)]; kwargs...)
-#ObservablesProblem(T::Type{<:Number}, args::Tuple...; kwargs...) = ObservablesProblem(T, [args...]; kwargs...)
 
 function ObservablesProblem(T::Type{<:Number}, obs::Any...; operator=true)
     if length(obs) == 1
@@ -53,7 +52,7 @@ function ObservablesProblem(T::Type{<:Number}, obs::Any...; operator=true)
 
         return ObservablesProblem(b, matrices_trans, names)
     else
-        ba = nothing
+        b = nothing
         matrices_trans = Vector{SparseMatrixCSC}()
         for (i, el) = enumerate(obs)
             if el isa Tuple
@@ -74,10 +73,10 @@ function ObservablesProblem(T::Type{<:Number}, obs::Any...; operator=true)
             else
                 push!(matrices_trans, Complex{T}.(last(el)))
             end
-            ba = basis(op)
+            b = basis(op)
         end
         T = typeof(first(matrices_trans))
-        ObservablesProblem(ba, T.(matrices_trans), names)
+        return ObservablesProblem(b, T.(matrices_trans), names)
     end
 end
 

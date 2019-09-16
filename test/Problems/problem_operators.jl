@@ -9,7 +9,7 @@ lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=1.3, V=2.0, γ=1.0
 
 function test_ldagl_op(T, Nsites, net, lind)
 
-    prob = LdagL_Lmat_prob(T, lind);
+    prob  = LdagL_Lmat_prob(T, lind);
     probL = LdagL_Lrho_op_prob(T, lind);
 
     v    = state(prob, net)
@@ -41,13 +41,19 @@ function test_ldagl_op(T, Nsites, net, lind)
     evaluation_post_sampling!(SREvalL,    icL)
     evaluation_post_sampling!(SREvalL_fb, icL_fb)
 
+    @test Clocs_ex ≈ ic.Evalues
+
     @testset "LookUp table evaluation" begin
+        @test Clocs_ex ≈ icL.Evalues
+
         @test SREval.L ≈ SREvalL.L
         @test ic.Evalues ≈ icL.Evalues
         @test all([l≈r for (l,r)=zip(SREval.F, SREvalL.F)])
         @test all([l≈r for (l,r)=zip(SREval.S, SREvalL.S)])
     end
     @testset "Fallback (no LUT)" begin
+        @test Clocs_ex ≈ icL_fb.Evalues
+
         @test SREval.L ≈ SREvalL_fb.L
         @test ic.Evalues ≈ icL_fb.Evalues
         @test all([l≈r for (l,r)=zip(SREval.F, SREvalL_fb.F)])
