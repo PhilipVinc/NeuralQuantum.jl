@@ -1,6 +1,6 @@
 using NeuralQuantum, LinearAlgebra, Statistics
 using Test, QuantumOptics
-using NeuralQuantum: LdagL_L_prob, LdagL_Lmat_prob
+using NeuralQuantum: LdagL_L_prob, LdagL_Lrho_prob
 Nsites = 4
 T = Float64
 

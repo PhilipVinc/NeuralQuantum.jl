@@ -20,7 +20,7 @@ Creates a problem for minimizing the cost function 𝒞 = ∑|ρ(σ)|²|⟨⟨σ
 Computes |⟨⟨σ|ℒ |ρ⟩⟩| by building the sparse superoperator, which can be done
 for sizes up to dimℋ < 500.
 
-For more than 9 spins it is reccomended to use the command `LdagL_Lmat_prob`.
+For more than 9 spins it is reccomended to use the command `LdagL_Lrho_prob`.
 
 args... can either be a `GraphLindbladian`, or the Hamiltonian and a vector
 of collapse operators.

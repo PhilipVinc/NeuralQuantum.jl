@@ -1,6 +1,6 @@
 using NeuralQuantum
 using Test
-using NeuralQuantum: LdagL_L_prob, LdagL_Lmat_prob
+using NeuralQuantum: LdagL_L_prob, LdagL_Lrho_prob
 Nsites = 4
 T = Float64
 
@@ -33,7 +33,7 @@ end
 Nsites = 4
 T = Float64
 
-prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
+prob_types = [LdagL_L_prob, LdagL_Lrho_prob]
 @testset "LdagL problem: $prob_T" for prob_T=prob_types
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=1.6, V=2.0, γ=1.0)
     net  = cached(rNDM(T, Nsites, 2, 1))
@@ -73,7 +73,7 @@ end
     net  = cached(rNDM(T, Nsites, 2, 1))
 
     prob = LdagL_L_prob(T, lind);
-    probL = LdagL_Lmat_prob(T, lind);
+    probL = LdagL_Lrho_prob(T, lind);
 
     v    = state(prob, net)
 
@@ -140,7 +140,7 @@ prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
     @test Clocs_ex ≈ Clocs_net_S
 end
 
-prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
+prob_types = [LdagL_L_prob, LdagL_Lrho_prob]
 @testset "LdagL random problem: $prob_T" for prob_T=prob_types
     Nsites=2
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=false), g=1.6, V=2.0, γ=1.0)

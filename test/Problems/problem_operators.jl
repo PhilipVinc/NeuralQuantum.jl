@@ -1,6 +1,6 @@
 using NeuralQuantum
 using Test
-using NeuralQuantum: LdagL_L_prob, LdagL_Lmat_prob, LdagL_Lrho_op_prob
+using NeuralQuantum: LdagL_L_prob, LdagL_Lrho_prob, LdagL_Lrho_op_prob
 using NeuralQuantum: init_lut!
 
 Nsites = 4
@@ -9,7 +9,7 @@ lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=1.3, V=2.0, γ=1.0
 
 function test_ldagl_op(T, Nsites, net, lind)
 
-    prob  = LdagL_Lmat_prob(T, lind);
+    prob  = LdagL_Lrho_prob(T, lind);
     probL = LdagL_Lrho_op_prob(T, lind);
 
     v    = state(prob, net)

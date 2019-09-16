@@ -111,19 +111,19 @@ const rNDMSymm = NDMSymm; export rNDMSymm;
 include("Networks/ClosedSystems/RBM.jl")
 
 # Problems
-export LdagL_spmat_prob, LdagL_sop_prob, LdagLProblem, LdagLFullProblem, LdagL_L_prob, LdagL_L_Problem, LdagL_Lmat_prob
+export LdagL_spmat_prob, LdagL_sop_prob, LdagLProblem, LdagLFullProblem, LdagL_L_prob, LdagL_L_Problem, LdagL_Lrho_prob
 include("Problems/LdagL_spmat_prob.jl")
 include("Problems/LdagL_sop_prob.jl")
 include("Problems/ObservablesProblem.jl")
 include("Problems/LdagL_L_prob.jl")
-include("Problems/LdagL_Lmat_prob.jl")
+include("Problems/LdagL_Lrho_prob.jl")
 include("Problems/Operators/LdagL_Lrho_op_prob.jl")
 const LdagLFullProblem = LdagL_sop_prob
 const LdagLProblem = LdagL_spmat_prob
-const LdagL_L_Problem = LdagL_Lmat_prob
+const LdagL_L_Problem = LdagL_Lrho_prob
 
 # Hamiltonian problems
-include("Problems/Ham_spmat_prob.jl")
+include("Problems/Hamiltonian/HamiltonianGSEnergyProblem.jl")
 include("Problems/Hamiltonian/build_GroundStateProblem.jl")
 
 # gen state

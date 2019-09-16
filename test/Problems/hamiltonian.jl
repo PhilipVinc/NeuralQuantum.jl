@@ -1,6 +1,6 @@
 using NeuralQuantum
 using Test
-using NeuralQuantum: LdagL_L_prob, LdagL_Lmat_prob, LdagL_Lrho_op_prob
+using NeuralQuantum: LdagL_L_prob, LdagL_Lrho_prob, LdagL_Lrho_op_prob
 using NeuralQuantum: init_lut!, HamiltonianGSEnergyProblem
 
 Nsites = 4

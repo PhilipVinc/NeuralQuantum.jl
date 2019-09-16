@@ -16,7 +16,7 @@ end
 Creates a problem for minimizing the cost function 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ'ℒ |ρ⟩⟩|².
 Computes |⟨⟨σ|ℒ'ℒ |ρ⟩⟩| by building the sparse superoperator, which can be done
 for sizes up to dimℋ < 500. For more than 9 spins it is reccomended to use the
-command LdagL_Lmat_prob
+command LdagL_Lrho_prob
 
 `lindbladian` can either be the lindbladian on a graph, a QuantumOptics superoperator
 or the Hamiltonian and a vector of collapse operators.

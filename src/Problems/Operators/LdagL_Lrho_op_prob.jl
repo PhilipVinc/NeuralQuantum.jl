@@ -11,14 +11,13 @@ struct LdagL_Lrho_op_prob{B, SM1, SM} <: LRhoSquaredProblem where {B<:Basis,
     HilbSpace::B            # 0
     HnH::SM1
     L_ops::Vector{SM}       # 4
-    L_ops_t::Vector{SM}     # 5
     ρss
 end
 
 LdagL_Lrho_op_prob(gl::GraphLindbladian) = LdagL_Lrho_op_prob(STD_REAL_PREC, gl)
 function LdagL_Lrho_op_prob(T, gl::GraphLindbladian)
     HnH, c_ops, c_ops_t = to_linear_operator(gl)
-    return LdagL_Lrho_op_prob(basis(gl), HnH, c_ops, c_ops_t, 0.0)
+    return LdagL_Lrho_op_prob(basis(gl), HnH, c_ops, 0.0)
 end
 
 basis(prob::LdagL_Lrho_op_prob) = prob.HilbSpace
@@ -30,7 +29,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
                        lnψ=net(𝝝), 𝝝p::S=deepcopy(𝝝)) where {S}
     # hey
     HnH = prob.HnH
-    c_ops = prob.L_ops
+    L_ops = prob.L_ops
 
     set_index!(𝝝p, index(𝝝))
     𝝝p_row = row(𝝝p)
@@ -84,7 +83,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
 
     # L rho Ldag H #ok
     # -im ⟨σ|L ρ Lᴴ|σt⟩
-    for L=c_ops
+    for L=L_ops
         #diffs_r = row_valdiff(L, row(𝝝)) # TODO Not allocate!
         #diffs_c = row_valdiff(L, col(𝝝))
         for op_r=operators(L)
@@ -131,8 +130,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
                        _lnψ=nothing, _𝝝p::NS=nothing) where {S<:LUState, NS<:Union{Nothing, S}}
     # hey
     HnH = prob.HnH
-    c_ops = prob.L_ops
-    c_ops_trans = prob.L_ops_t
+    L_ops = prob.L_ops
 
     for el=LLO_i
       el .= 0.0
@@ -170,7 +168,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
 
     # L rho Ldag H #ok
     # -im ⟨σ|L ρ Lᴴ|σt⟩
-    for L=c_ops
+    for L=L_ops
         diffs_r = row_valdiff(L, raw_state(row(𝝝s)))
         diffs_c = row_valdiff(L, raw_state(col(𝝝s)))
 
