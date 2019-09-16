@@ -24,6 +24,7 @@ mutable struct GradientEvaluation{TL,TF} <: EvaluatedAlgorithm
     L::TL
     F::TF
 
+    # Individual values to compute statistical correlators
     LVals::Vector
 end
 

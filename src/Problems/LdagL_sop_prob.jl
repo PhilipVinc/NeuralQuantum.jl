@@ -38,8 +38,6 @@ function compute_Cloc(prob::LdagL_sop_prob, net::MatrixNet, σ, lnψ=net(σ), σ
     ℒdagℒ = prob.LdagL
     set_index!(σp, index(σ))
 
-    #lnψ, ∇logψ = logψ_and_∇logψ(net, σ)
-
     #### Now compute E(S) = Σₛ⟨s|Hψ⟩/⟨s|ψ⟩
     C_loc = zero(Complex{real(out_type(net))})
     # Iterate through all elements in row i_σ of the matrix computing

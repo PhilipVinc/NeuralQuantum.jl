@@ -9,9 +9,10 @@ mutable struct MCMCSRLEvaluationCache{T,T2,TV,TVC,TM,TD,S} <: EvaluationSampling
     LLOave::TVC
     Zave::T2
 
+    # Individual values to compute statistical correlators
     Evalues::Vector{T}
 
-    # cache
+    # Caches to avoid allocating during computation
     LLO_i::TVC
     ∇lnψ::TD
     ∇lnψ2::TD

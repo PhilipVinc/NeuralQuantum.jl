@@ -1,5 +1,11 @@
 export densitymatrix, ket
 
+"""
+    densitymatrix(net, prob, norm=true)
+
+Returns the Density matrix encoded by the neural network `net`, and normalizes
+it if `norm==true`.
+"""
 function densitymatrix(net, prob, norm=true)
     ρ = DenseOperator(basis(prob))
     v = state(prob, net)
@@ -19,8 +25,15 @@ function densitymatrix(net, prob, norm=true)
     ρ
 end
 
-QuantumOptics.dm(net::NeuralNetwork, prob::Problem, norm=false) = densitymatrix(net, prob, norm)
+QuantumOptics.dm(net::NeuralNetwork, prob::Problem, norm=false) =
+    densitymatrix(net, prob, norm)
 
+"""
+    ket(net, prob, norm=true)
+
+Returns the state (ket) encoded by the neural network `net`, and normalizes
+it if `norm==true`.
+"""
 function ket(net, prob, norm=true)
     psi = Ket(basis(prob))
     v = state(prob, net)

@@ -48,7 +48,6 @@ end
 function compute_Cloc(prob::Ham_spmat_prob{B,SM}, net::KetNet, σ::State,
                       lnψ=net(σ), σp=deepcopy(σ)) where {B,SM<:AbsLinearOperator}
     H = prob.H
-    σp = deepcopy(σ)
 
     #### Now compute E(S) = Σₛ⟨s|Hψ⟩/⟨s|ψ⟩
     C_loc = zero(Complex{real(out_type(net))})

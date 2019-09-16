@@ -68,6 +68,7 @@ mutable struct SREvaluation{TL,TF,TS} <: EvaluatedAlgorithm
     F::TF
     S::TS
 
+    # Individual values to compute statistical correlators
     LVals::Vector
 end
 

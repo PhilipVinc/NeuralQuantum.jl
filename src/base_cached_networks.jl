@@ -1,8 +1,8 @@
-export cached, vectorize_gradient, weights, grad_cache
+# This file contains methods that are dispatched to when using neural networks
+# with a preallocated cache (called CachedNetworks). Those are used to greatly
+# improve performance, especially in
 
-abstract type NNLookUp
-    #valid
-end
+export cached, vectorize_gradient, weights, grad_cache
 
 """
     NNCache{N}
@@ -12,13 +12,6 @@ The base abstract type holding a cache for the network type `N<:NeuralNetwork`.
 abstract type NNCache{N}
     #valid::Bool
 end
-
-"""
-    grad_cache(net::N) -> tuple
-
-Creates a tuple holding all derivatives of the network N.
-"""
-grad_cache(net::NeuralNetwork) = derivative_tuple(net)
 
 """
     invalidate_cache!(net)
@@ -36,7 +29,7 @@ A Cached Version of Neural Network `N` using Cache `NC`. It behaves the same as
 the network `N`, but uses a preallocated cache to speed up computation of the
 gradient and the function.
 """
-struct CachedNet{N, NC}#=, ND, NDV}=# <: NeuralNetwork
+struct CachedNet{N, NC} <: NeuralNetwork
     net::N
     cache::NC
 end
@@ -52,6 +45,12 @@ cached(net::NeuralNetwork) = CachedNet(net, cache(net))
 cached(net::CachedNet) = throw("Can't build cached net of cached network!")
 
 # When copying shallow copy the net but deepcopy the der_vec
+"""
+    copy(cnet::CachedNet)
+
+Copy a cached network, building a shallow copy of the network and a deep-copy
+of the cache.
+"""
 copy(cnet::CachedNet) = CachedNet(cnet.net, deepcopy(cnet.cache))
 
 """
@@ -63,19 +62,18 @@ If it has not been implemented returns nothing.
 cache(net) = nothing
 
 """
-    lookup(net)
+    weights(net)
 
-Constructs the `NNCache{typeof(net)}` object that holds the cache for this network.
-If it has not been implemented returns nothing.
+Access the underlying structure holding the weights of the network. This is usefull
+when dealing with Symmetrized networks or cached networks, as it gives access to
+the wrapped data structure.
 """
-lookup(net::NeuralNetwork) = nothing
-lookup(net::CachedNet) = lookup(net.net)
-
 weights(net) = net
 weights(cnet::CachedNet) = cnet.net
 grad_cache(net::CachedNet) = grad_cache(net.net)
 
 @inline (cnet::CachedNet)(σ...) = logψ(cnet, σ...)
+# When you call logψ on a cached net use the cache to compute the net
 @inline logψ(cnet::CachedNet, σ...) = cnet.net(cnet.cache, config(σ)...)
 
 #@inline ∇logψ(n::CachedNet, σ) = logψ_and_∇logψ(n, σ)[2]
@@ -104,7 +102,7 @@ update!(opt, cnet::CachedNet, Δ, state=nothing) = (update!(opt, weights(cnet), 
 apply!(opt, val1::Union{NeuralNetwork, CachedNet}, val2::Union{NeuralNetwork, CachedNet}, args...) =
     apply!(weights(val1), weights(val2), args...)
 
-# Common Operations on networks that should always be defined
+# The common operations are forwarded to the underlying network.
 input_type(cnet::CachedNet) = input_type(cnet.net)
 out_type(cnet::CachedNet) = out_type(cnet.net)
 input_shape(net::CachedNet) = input_shape(cnet.net)

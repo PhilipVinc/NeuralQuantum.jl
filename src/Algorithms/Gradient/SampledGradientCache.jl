@@ -7,7 +7,10 @@ mutable struct MCMCGradientEvaluationCache{T,T2,TV,TVC,TD, S} <: EvaluationSampl
     EOave::TVC
     Zave::T2
 
+    # Individual values to compute statistical correlators
     Evalues::Vector{T}
+
+    # Caches to avoid allocating during computation
     ∇lnψ::TD
     σ::S
 end
