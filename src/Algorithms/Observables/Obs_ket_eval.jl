@@ -47,6 +47,7 @@ function sample_network!(
   prob = wholespace ? exp(2*real(lnψ)) : 1.0
   res.Zave += prob
 
+  i_σ = toint(σ)
   for (obs_id, O) = enumerate(problem.ObservablesTransposed)
     O_loc = 0.0+0.0im
     #diffs_O = row_valdiff(O, σ)

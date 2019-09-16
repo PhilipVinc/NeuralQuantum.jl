@@ -142,7 +142,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lmat_prob, net::MatrixNet, �
         end
       end
     end
-    
+
     return C_loc
 end
 

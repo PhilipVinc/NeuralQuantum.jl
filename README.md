@@ -5,7 +5,7 @@
 Neural-Network representations of mixed quantum states and to find the Steady-
 State of dissipative Quantum Systems with variational Montecarlo schemes.
 
-This code has been developed while working on [Variational neural network ansatz for steady states in open quantum systems](https://arxiv.org/abs/1902.10104), by [F. Vicentini] et al. Phys Rev Lett in press (2019).
+This code has been developed while working on [Variational neural network ansatz for steady states in open quantum systems](https://arxiv.org/abs/1902.10104), by [F. Vicentini] et al. [Phys Rev Lett 122, 250503 (2019)](https://link.aps.org/doi/10.1103/PhysRevLett.122.250503).
 
 ## Installation
 To Install `NeuralQuantum.jl`, run the following commands to install all
@@ -13,12 +13,10 @@ dependencies:
 ```
 using Pkg
 pkg"add https://github.com/PhilipVinc/QuantumLattices.jl"
-pkg"add https://github.com/PhilipVinc/ValueHistoriesLogger.jl"
 pkg"add https://github.com/PhilipVinc/NeuralQuantum.jl"
 ```
-Those packages are needed for the following reasons:
- - `QuantumLattices` is a custom package that allows defining new types of operators on a lattice. It's not needed natively but it is usefull to define hamiltonians on a lattice.
- - `ValueHistoriesLogger` custom logger for logging arbitrary values
+`QuantumLattices` is a custom package that allows defining new types of operators on a lattice.
+It's not needed natively but it is usefull to define hamiltonians on a lattice.
 
 ## Example
 ```
@@ -73,22 +71,26 @@ ois = MTIterativeSampler(cnet, osampl, oprob, oprob)
 
 # Create the logger to store all output data
 log = MVLogger()
+# Create the structure to store all output data
+minimization_data = MVHistory()
+Δw = grad_cache(cnet)
 
 # Solve iteratively the problem
-with_logger(log) do
-    for i=1:50
-        # Sample the gradient
-        grad_data  = sample!(is)
-        obs_data = sample!(ois)
+for i=1:110
+    # Sample the gradient
+    grad_data  = sample!(is)
+    obs_data = sample!(ois)
 
-        # Logging
-        @printf "%4i -> %+2.8f %+2.2fi --\t \t-- %+2.5f\n" i real(grad_data.L) imag(grad_data.L) real(obs_data.ObsAve[1])
-        @info "" optim=grad_data obs=obs_data
-
-        succ = precondition!(cnet.der.tuple_all_weights, algo , grad_data, i)
-        !succ && break
-        Optimisers.update!(optimizer, cnet, cnet.der)
+    # Logging
+    @printf "%4i -> %+2.8f %+2.2fi --\t \t-- %+2.5f\n" i real(grad_data.L) imag(grad_data.L) real(obs_data.ObsAve[1])
+    push!(minimization_data, :loss, grad_data.L)
+    for (name,val)=zip(obs_data.ObsNames, obs_data.ObsAve)
+        push!(minimization_data, Symbol(name), val)
     end
+
+    succ = precondition!(Δw.tuple_all_weights, algo , grad_data, i)
+    !succ && break
+    Optimisers.update!(optimizer, cnet, Δw)
 end
 
 # Optional: compute the exact solution
@@ -100,13 +102,13 @@ exacts = Dict("Sx"=>ESx, "Sy"=>ESy, "Sz"=>ESz)
 ## - end Optional
 
 using Plots
-data = log.hist
+data = minimization_data 
 
-iter_cost, cost = get(data["optim/Loss"])
-pl1 = plot(iter_cost, real(cost), yscale=:log10);
+iter_cost, cost = get(minimization_data[:loss])
+pl1 = plot(iter_cost, real(cost), yscale=:log10)
 
-iter_mx, mx = get(data["obs/obs_1"])
-pl2 = plot(iter_mx, mx);
+iter_mx, mx = get(minimization_data[:obs_1])
+pl2 = plot(iter_mx, real(mx))
 hline!(pl2, [ESx,ESx]);
 
 plot(pl1, pl2, layout=(2,1))
