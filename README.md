@@ -4,12 +4,12 @@
 **NeuralQuantum** is a numerical framework written in [Julia] to investigate
 Neural-Network representations of mixed quantum states and to find the Steady-
 State of dissipative Quantum Systems with variational Montecarlo schemes.
+It can also compute the ground state of hermitian hamiltonians.
 
 This code has been developed while working on [Variational neural network ansatz for steady states in open quantum systems](https://arxiv.org/abs/1902.10104), by [F. Vicentini] et al. [Phys Rev Lett 122, 250503 (2019)](https://link.aps.org/doi/10.1103/PhysRevLett.122.250503).
 
 ## Installation
-To Install `NeuralQuantum.jl`, run the following commands to install all
-dependencies:
+To Install `NeuralQuantum.jl`, run the following commands to install it's dependcy.
 ```
 using Pkg
 pkg"add https://github.com/PhilipVinc/QuantumLattices.jl"
@@ -69,8 +69,6 @@ optimizer = Optimisers.Descent(0.02)
 is = MTIterativeSampler(cnet, sampl, prob, algo)
 ois = MTIterativeSampler(cnet, osampl, oprob, oprob)
 
-# Create the logger to store all output data
-log = MVLogger()
 # Create the structure to store all output data
 minimization_data = MVHistory()
 Δw = grad_cache(cnet)

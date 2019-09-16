@@ -124,7 +124,7 @@ const LdagL_L_Problem = LdagL_Lmat_prob
 
 # Hamiltonian problems
 include("Problems/Ham_spmat_prob.jl")
-include("Problems/Hamiltonian/GroundStateProblem.jl")
+include("Problems/Hamiltonian/build_GroundStateProblem.jl")
 
 # gen state
 export state, state_lut

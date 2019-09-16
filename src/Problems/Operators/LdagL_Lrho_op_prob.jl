@@ -31,7 +31,6 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
     # hey
     HnH = prob.HnH
     c_ops = prob.L_ops
-    c_ops_trans = prob.L_ops_t
 
     set_index!(𝝝p, index(𝝝))
     𝝝p_row = row(𝝝p)
