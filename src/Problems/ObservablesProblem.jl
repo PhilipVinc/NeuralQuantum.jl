@@ -79,7 +79,7 @@ end
 
 basis(prob::ObservablesProblem) = prob.HilbSpace
 
-state(T::Type{<:Number}, prob::ObservablesProblem, net) =
+state(T::Type{<:Number}, prob::ObservablesProblem, net::MatrixNet) =
     DiagonalStateWrapper(state(T, basis(prob), net))
 
 Base.show(io::IO, p::ObservablesProblem) = print(io,

@@ -53,6 +53,7 @@ export NotParallel, ParallelThreaded
 include("base_states.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
+include("base_lookup.jl")
 include("base_batched_networks.jl")
 include("treelike.jl") # from flux
 include("tuple_logic.jl")
@@ -147,6 +148,7 @@ include("Algorithms/Gradient/Gradient_eval.jl")
 # Observables
 include("Algorithms/Observables/Obs.jl")
 include("Algorithms/Observables/Obs_eval.jl")
+include("Algorithms/Observables/Obs_ket_eval.jl")
 
 
 # Sampling

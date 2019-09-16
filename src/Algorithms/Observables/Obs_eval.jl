@@ -4,9 +4,9 @@
 function sample_network!(
   res::MCMCObsEvaluationCache,
   problem::ObservablesProblem,
-  net, σ, wholespace=false)
+  net::MatrixNet, σ, wholespace=false)
 
-  σp = res.σ
+  σp = parent(res.σ)
 
   # The denominator of this state
   lnψ = net(σ)
@@ -44,9 +44,9 @@ end
 function sample_network!(
   res::MCMCObsEvaluationCache,
   problem::ObservablesProblem{B,SM},
-  net, σ, wholespace=false) where {B, SM<:AbsLinearOperator}
+  net::MatrixNet, σ, wholespace=false) where {B, SM<:AbsLinearOperator}
 
-  σp = res.σ
+  σp = parent(res.σ)
 
   # The denominator of this state
   lnψ = net(σ)
@@ -86,7 +86,7 @@ end
 function sample_network!(
   res::MCMCObsEvaluationCache,
   problem::ObservablesProblem{B,SM},
-  net, σ::LUState, wholespace=false) where {B, SM<:AbsLinearOperator}
+  net::MatrixNet, σ::LUState, wholespace=false) where {B, SM<:AbsLinearOperator}
 
   # The denominator of this state
   prob = wholespace ? exp(real(net(σ))) : 1.0

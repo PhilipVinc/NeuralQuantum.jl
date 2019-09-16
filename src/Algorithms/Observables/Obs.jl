@@ -51,7 +51,7 @@ function MCMCObsEvaluationCache(net::NeuralNetwork, obs_prob::ObservablesProblem
     obs_ave  = Vector{ComplexF64}(undef, n_obs)
     obs_vals = [Vector{ComplexF64}() for i=1:n_obs]
 
-    σ        = parent(state(obs_prob, net))
+    σ        = state(obs_prob, net)
 
     cache=MCMCObsEvaluationCache(obs_prob.Names, obs_ave, obs_vals, 0.0, σ)
     zero!(cache)

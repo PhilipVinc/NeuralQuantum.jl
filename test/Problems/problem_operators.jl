@@ -13,18 +13,18 @@ function test_ldagl_op(T, Nsites, net, lind)
     probL = LdagL_Lrho_op_prob(T, lind);
 
     v    = state(prob, net)
-    vL    = state(probL, net)
+    vL   = state(probL, net)
 
     L=liouvillian(lind)
     LdagL = L.data'*L.data
     rho   = dm(net, prob, false).data
     rhov  = vec(rho)
+    Clocs_ex  = abs.((L.data*rhov)./rhov).^2
 
     ic     = NeuralQuantum.MCMCSRLEvaluationCache(net, prob);  zero!(ic)
     icL_fb = NeuralQuantum.MCMCSRLEvaluationCache(net, prob);  zero!(icL_fb)
     icL    = NeuralQuantum.MCMCSRLEvaluationCache(net, probL); zero!(icL)
 
-    Clocs_ex  = abs.((L.data*rhov)./rhov).^2
     for i=1:spacedimension(v)
         set_index!(v, i)
         init_lut!(set_index!(vL, i), net)
