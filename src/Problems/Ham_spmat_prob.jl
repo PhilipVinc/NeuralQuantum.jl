@@ -1,26 +1,24 @@
-export Ham_spmat_prob
-
-struct Ham_spmat_prob{B, SM} <: HermitianMatrixProblem where {B<:Basis,
+struct HamiltonianGSEnergyProblem{B, SM} <: HermitianMatrixProblem where {B<:Basis,
                                                  SM}
     HilbSpace::B # 0
     H::SM
     ρss
 end
 
-Ham_spmat_prob(args...) = Ham_spmat_prob(Float32, args...)
-Ham_spmat_prob(T::Type{<:Number}, gl::GraphOperator; operators=true) = begin
+HamiltonianGSEnergyProblem(args...) = HamiltonianGSEnergyProblem(STD_REAL_PREC, args...)
+HamiltonianGSEnergyProblem(T::Type{<:Number}, gl::GraphOperator; operators=true) = begin
     if operators
-        return Ham_spmat_prob(basis(gl), to_linear_operator(gl), 0.0)
+        return HamiltonianGSEnergyProblem(basis(gl), to_linear_operator(gl), 0.0)
     else
-        return Ham_spmat_prob(T, SparseOperator(gl))
+        return HamiltonianGSEnergyProblem(T, SparseOperator(gl))
     end
 end
-Ham_spmat_prob(T::Type{<:Number}, Ham::SparseOperator) =
-    Ham_spmat_prob(Ham.basis_l, data(Ham), 0.0)
+HamiltonianGSEnergyProblem(T::Type{<:Number}, Ham::SparseOperator) =
+    HamiltonianGSEnergyProblem(Ham.basis_l, data(Ham), 0.0)
 
-basis(prob::Ham_spmat_prob) = prob.HilbSpace
+basis(prob::HamiltonianGSEnergyProblem) = prob.HilbSpace
 
-function compute_Cloc(prob::Ham_spmat_prob{B,SM}, net::KetNet, σ::State,
+function compute_Cloc(prob::HamiltonianGSEnergyProblem{B,SM}, net::KetNet, σ::State,
                       lnψ=net(σ), σp=deepcopy(σ)) where {B,SM<:SparseMatrixCSC}
     H = prob.H
 
@@ -45,7 +43,7 @@ function compute_Cloc(prob::Ham_spmat_prob{B,SM}, net::KetNet, σ::State,
     return C_loc
 end
 
-function compute_Cloc(prob::Ham_spmat_prob{B,SM}, net::KetNet, σ::State,
+function compute_Cloc(prob::HamiltonianGSEnergyProblem{B,SM}, net::KetNet, σ::State,
                       lnψ=net(σ), σp=deepcopy(σ)) where {B,SM<:AbsLinearOperator}
     H = prob.H
 
@@ -66,3 +64,10 @@ function compute_Cloc(prob::Ham_spmat_prob{B,SM}, net::KetNet, σ::State,
 
     return C_loc
 end
+
+# pretty printing
+Base.show(io::IO, p::HamiltonianGSEnergyProblem) = print(io,
+    """
+    HamiltonianGSEnergyProblem: target minimum ground state energy
+        - space : $(basis(p))
+        - using operators : $(p.H isa AbsLinearOperator)""")

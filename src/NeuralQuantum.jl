@@ -122,14 +122,13 @@ const LdagLFullProblem = LdagL_sop_prob
 const LdagLProblem = LdagL_spmat_prob
 const LdagL_L_Problem = LdagL_Lmat_prob
 
+# Hamiltonian problems
+include("Problems/Ham_spmat_prob.jl")
+include("Problems/Hamiltonian/GroundStateProblem.jl")
+
 # gen state
 export state, state_lut
 include("generate_state.jl")
-
-#
-export HamProblem
-include("Problems/Ham_spmat_prob.jl")
-const HamProblem = Ham_spmat_prob
 
 # Algorithms
 abstract type Algorithm end

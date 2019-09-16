@@ -1,7 +1,7 @@
 using NeuralQuantum
 using Test
 using NeuralQuantum: LdagL_L_prob, LdagL_Lmat_prob, LdagL_Lrho_op_prob
-using NeuralQuantum: init_lut!
+using NeuralQuantum: init_lut!, HamiltonianGSEnergyProblem
 
 Nsites = 4
 T = Float64
@@ -10,8 +10,8 @@ ham  = lind.H
 
 net  = cached(RBM(T, Nsites, 2))
 
-prob_sp = Ham_spmat_prob(T, ham, operators=false);
-prob_op = Ham_spmat_prob(T, ham, operators=true);
+prob_sp = HamiltonianGSEnergyProblem(T, ham, operators=false);
+prob_op = HamiltonianGSEnergyProblem(T, ham, operators=true);
 
 v    = state(prob_sp, net)
 
