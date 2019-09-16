@@ -22,7 +22,7 @@ basis(prob::LdagL_spmat_prob) = prob.HilbSpace
 
 
 """
-    LdagL_spmat_prob([T=Float64], lindbladian)
+    LdagL_spmat_prob([T=STD_REAL_PREC], lindbladian)
 
 Creates a problem for minimizing the cost function 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ'ℒ |ρ⟩⟩|².
 Computes |⟨⟨σ|ℒ'ℒ |ρ⟩⟩| by computing on the fly commutators with the
@@ -31,10 +31,10 @@ Hamiltonian and with the collapse operators.
 `lindbladian` can either be the lindbladian on a graph, a QuantumOptics superoperator
 or the Hamiltonian and a vector of collapse operators.
 
-`T=Float64` by default is the numerical precision used. It should match that of
+`T=STD_REAL_PREC` by default is the numerical precision used. It should match that of
 the network.
 """
-LdagL_spmat_prob(args...) = LdagL_spmat_prob(Float64, args...)
+LdagL_spmat_prob(args...) = LdagL_spmat_prob(STD_REAL_PREC, args...)
 LdagL_spmat_prob(T::Type{<:Number}, gl::GraphLindbladian) =
     LdagL_spmat_prob(T, basis(gl), SparseOperator(hamiltonian(gl)), jump_operators(gl))
 LdagL_spmat_prob(T::Type{<:Number}, ham::DataOperator, cops) =

@@ -27,8 +27,8 @@ function compute_Cloc(prob::Ham_spmat_prob{B,SM}, net::KetNet, σ::State,
     #### Now compute E(S) = Σₛ⟨s|Hψ⟩/⟨s|ψ⟩
     C_loc = zero(Complex{real(out_type(net))})
     # Iterate through all elements in row i_σ of the matrix computing
-    # ⟨i_σ|ℒdagℒψ⟩ = Σ_{i_σp} ⟨i_σ|ℒdagℒ|i_σp⟩⟨i_σp|ψ⟩
-    # NOTE: ℒdagℒ is CSC, but I would like a CSR matrix. Since it is hermitian I
+    # ⟨i_σ|H|ψ⟩ = Σ_{i_σp} ⟨i_σ|H|i_σp⟩⟨i_σp|ψ⟩
+    # NOTE: H is CSC, but I would like a CSR matrix. Since it is hermitian I
     # can simply take the conjugate of the elements in the columns
     i_σ = index(σ)
     for row_id = H.colptr[i_σ]:(H.colptr[i_σ+1]-1)
@@ -49,7 +49,7 @@ function compute_Cloc(prob::Ham_spmat_prob{B,SM}, net::KetNet, σ::State,
                       lnψ=net(σ), σp=deepcopy(σ)) where {B,SM<:AbsLinearOperator}
     H = prob.H
 
-    #### Now compute E(S) = Σₛ⟨s|Hψ⟩/⟨s|ψ⟩
+    #### Now compute E(S) = Σₛ⟨s|H|ψ⟩/⟨s|ψ⟩
     C_loc = zero(Complex{real(out_type(net))})
     for op=operators(H)
         r = local_index(σ, sites(op))

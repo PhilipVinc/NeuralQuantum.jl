@@ -12,12 +12,12 @@ struct ObservablesProblem{B,SM} <: OperatorEstimationProblem where {SM}
 end
 
 """
-    ObservablesProblem([T=Float64], obs1, obs2, ....)
+    ObservablesProblem([T=STD_REAL_PREC], obs1, obs2, ....)
 
 Constructs an ObservablesProblem from the observables provided.
 Userd to compute observables.
 """
-ObservablesProblem(args...; kwargs...) = ObservablesProblem(Float32, args...; kwargs...)
+ObservablesProblem(args...; kwargs...) = ObservablesProblem(STD_REAL_PREC, args...; kwargs...)
 
 function ObservablesProblem(T::Type{<:Number}, obs::Any...; operator=true)
     if length(obs) == 1

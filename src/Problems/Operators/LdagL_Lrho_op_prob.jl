@@ -15,7 +15,7 @@ struct LdagL_Lrho_op_prob{B, SM1, SM} <: LRhoSquaredProblem where {B<:Basis,
     ρss
 end
 
-LdagL_Lrho_op_prob(gl::GraphLindbladian) = LdagL_Lrho_op_prob(Float64, gl)
+LdagL_Lrho_op_prob(gl::GraphLindbladian) = LdagL_Lrho_op_prob(STD_REAL_PREC, gl)
 function LdagL_Lrho_op_prob(T, gl::GraphLindbladian)
     HnH, c_ops, c_ops_t = to_linear_operator(gl)
     return LdagL_Lrho_op_prob(basis(gl), HnH, c_ops, c_ops_t, 0.0)

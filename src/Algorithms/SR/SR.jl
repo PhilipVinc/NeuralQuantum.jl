@@ -33,7 +33,7 @@ struct SR{T1,T2,T3,TP} <: Algorithm
     λmin::TP
 end
 
-SR(T::Type=Float64;ϵ=0.001, use_iterative=true, precision=10e-5,
+SR(T::Type=STD_REAL_PREC; ϵ=0.001, use_iterative=true, precision=10e-5,
    precondition_type=sr_shift,
    λ0=100.0, b=0.95, λmin=1e-4) = SR(T(ϵ), T(1.0), T(precision),
                                           precondition_type, use_iterative,

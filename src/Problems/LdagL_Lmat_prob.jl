@@ -18,7 +18,7 @@ struct LdagL_Lmat_prob{B, SM} <: LRhoSquaredProblem where {B<:Basis,
 end
 
 """
-    LdagL_Lmat_prob([T=Float64], args...)
+    LdagL_Lmat_prob([T=STD_REAL_PREC], args...)
 
 Creates a problem for minimizing the cost function 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ |ρ⟩⟩|².
 Computes |⟨⟨σ|ℒ |ρ⟩⟩| by computing on the fly the commutator with the
@@ -27,10 +27,10 @@ Hamiltonian and with the collapse operators.
 `args...` can either be a `GraphLindbladian`, or the Hamiltonian and a vector
 of collapse operators.
 
-`T=Float64` by default is the numerical precision used. It should match that of
+`T=STD_REAL_PREC` by default is the numerical precision used. It should match that of
 the network.
 """
-LdagL_Lmat_prob(args...) = LdagL_Lmat_prob(Float64, args...)
+LdagL_Lmat_prob(args...) = LdagL_Lmat_prob(STD_REAL_PREC, args...)
 LdagL_Lmat_prob(T::Type{<:Number}, gl::GraphLindbladian) =
     LdagL_Lmat_prob(T, basis(gl), SparseOperator(hamiltonian(gl)), jump_operators(gl))
 LdagL_Lmat_prob(T::Type{<:Number}, Ham::DataOperator, cops::Vector) =

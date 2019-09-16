@@ -14,7 +14,7 @@ struct LdagL_L_prob{B, SM} <: LRhoSquaredProblem where {B<:Basis,
 end
 
 """
-    LdagL_L_prob([T=Float64], args...)
+    LdagL_L_prob([T=STD_REAL_PREC], args...)
 
 Creates a problem for minimizing the cost function 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ |ρ⟩⟩|².
 Computes |⟨⟨σ|ℒ |ρ⟩⟩| by building the sparse superoperator, which can be done
@@ -25,7 +25,7 @@ For more than 9 spins it is reccomended to use the command `LdagL_Lmat_prob`.
 args... can either be a `GraphLindbladian`, or the Hamiltonian and a vector
 of collapse operators.
 """
-LdagL_L_prob(args...) = LdagL_L_prob(Float64, args...)
+LdagL_L_prob(args...) = LdagL_L_prob(STD_REAL_PREC, args...)
 LdagL_L_prob(T::Type{<:Number}, gl::GraphLindbladian) =
     LdagL_L_prob(T, liouvillian(gl))
 LdagL_L_prob(T::Type{<:Number}, Liouv::SparseSuperOperator) =

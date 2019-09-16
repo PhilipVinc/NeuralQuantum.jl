@@ -49,6 +49,9 @@ struct NotParallel <: ParallelType end
 struct ParallelThreaded <: ParallelType end
 export NotParallel, ParallelThreaded
 
+# Universal defines
+const STD_REAL_PREC =  Float32
+
 # Base elements
 include("base_states.jl")
 include("base_networks.jl")

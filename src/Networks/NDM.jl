@@ -14,7 +14,7 @@ struct NDM{VT,MT} <: MatrixNeuralNetwork
 end
 @treelike NDM
 
-NDM(args...) = NDM(Float32, args...)
+NDM(args...) = NDM(STD_REAL_PREC, args...)
 NDM(T::Type{<:Real}, in, αh, αa,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
     initb=(dims...)->rescaled_normal(T, 0.005, dims...),

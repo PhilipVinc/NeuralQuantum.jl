@@ -11,7 +11,7 @@ struct LdagL_sop_prob{B, SM} <: HermitianMatrixProblem where {B<:Basis,
 end
 
 """
-    LdagL_sop_prob([T=Float64], lindbladian)
+    LdagL_sop_prob([T=STD_REAL_PREC], lindbladian)
 
 Creates a problem for minimizing the cost function 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ'ℒ |ρ⟩⟩|².
 Computes |⟨⟨σ|ℒ'ℒ |ρ⟩⟩| by building the sparse superoperator, which can be done
@@ -21,10 +21,10 @@ command LdagL_Lmat_prob
 `lindbladian` can either be the lindbladian on a graph, a QuantumOptics superoperator
 or the Hamiltonian and a vector of collapse operators.
 
-`T=Float64` by default is the numerical precision used. It should match that of
+`T=STD_REAL_PREC` by default is the numerical precision used. It should match that of
 the network.
 """
-LdagL_sop_prob(args...) = LdagL_sop_prob(Float64, args...)
+LdagL_sop_prob(args...) = LdagL_sop_prob(STD_REAL_PREC, args...)
 LdagL_sop_prob(T::Type{<:Number}, gl::GraphLindbladian) =
     LdagL_sop_prob(T, liouvillian(gl))
 LdagL_sop_prob(T::Type{<:Number}, Ham::DataOperator, cops::Vector) =
