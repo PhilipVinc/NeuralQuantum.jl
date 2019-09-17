@@ -17,8 +17,8 @@ function NDMSymm(T::Type{<:Real}, n_in, αh, αa, permutations)
     n_symm = length(permutations)
     @assert length(first(permutations)) == n_in
 
-    symm_net = rNDM(T, n_in, αh//n_in,αa//n_in)
-    bare_net = rNDM(T, n_in, αh//n_in*n_symm, αa//n_in*n_symm)
+    symm_net = NDM(T, n_in, αh//n_in,αa//n_in)
+    bare_net = NDM(T, n_in, αh//n_in*n_symm, αa//n_in*n_symm)
     set_bare_params!(bare_net, symm_net, permutations)
     ∇b_mat, ∇h_mat, ∇d_mat, ∇w_mat, ∇u_mat = construct_∇matrices(bare_net, symm_net, n_in, αh, αa, permutations)
     bare_der = grad_cache(bare_net)
@@ -45,11 +45,11 @@ update!(opt, cnet::NDMSymm, Δ, state=nothing) = (res = update!(opt, weights(cne
 function logψ_and_∇logψ!(∇lnψ_symm, net::NDMSymm, args...)
     lnψ, ∇lnψ = logψ_and_∇logψ!(net.bare_der, net.bare_net, args...)
 
-    symmetrize_∇logψ_rNDM!(∇lnψ_symm, ∇lnψ, net)
+    symmetrize_∇logψ_NDM!(∇lnψ_symm, ∇lnψ, net)
     lnψ, ∇lnψ_symm
 end
 
-function symmetrize_∇logψ_rNDM!(∇lnψ_symm, ∇lnψ, net)
+function symmetrize_∇logψ_NDM!(∇lnψ_symm, ∇lnψ, net)
     mul!(∇lnψ_symm.b_μ, net.∇b_mat, ∇lnψ.b_μ)
     mul!(∇lnψ_symm.b_λ, net.∇b_mat, ∇lnψ.b_λ)
     mul!(∇lnψ_symm.h_μ, net.∇h_mat, ∇lnψ.h_μ)
