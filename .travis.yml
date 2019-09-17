@@ -1,17 +1,20 @@
 language: julia
 os:
     - linux
+    - osx
 julia:
+    - 1.1
     - 1.2
     - nightly
 matrix:
     allow_failures:
         - julia: nightly
+        - os: osx
 notifications:
     email: false
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-    - julia --color=yes -e 'using Pkg;
+    - travis_wait 20 julia --color=yes -e 'using Pkg;
                             Pkg.activate();
                             Pkg.add([PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"), PackageSpec(url="https://github.com/PhilipVinc/ValueHistoriesLogger.jl")]);
                             println("Installed [QuantumLattices, ValueHistoriesLogger]");

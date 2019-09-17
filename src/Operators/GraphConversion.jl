@@ -1,11 +1,25 @@
-to_linear_operator(lind::GraphLindbladian) =
-    to_linear_operator(hamiltonian(lind), jump_operators_graph(lind))
+"""
+    to_linear_operator(lind::GraphLindbladian, [T=eltype(lind)])
 
-function to_linear_operator(ham::GraphOperator, c_ops::Vector)
+Converts the Lindbladian to a `KLocalOperatorSum` with eltype `T` for the non
+Hermitian Hamiltonian and a set of KLocalOperator(Sum) for the dissipators.
+
+This structure has minimal memory cost, and is NEEDED when the need to represent
+systems in very big lattices arises. Evidently, there is a small performance
+price to pay when using those structures.
+"""
+to_linear_operator(lind::GraphLindbladian, T=nothing) =
+    to_linear_operator(hamiltonian(lind), jump_operators_graph(lind), T)
+
+function to_linear_operator(ham::GraphOperator, c_ops::Vector, T::Union{Nothing, Type{<:Number}}=nothing)
 
     ham_locs = ham.LocalOperators
-    op_loc = KLocalOperatorRow([1], [length(basis(first(ham_locs)))],
-                        first(ham_locs).data)
+
+    # default type
+    T = isnothing(T) ?  eltype(first(ham_locs).data) : T
+
+    op_loc = KLocalOperatorRow(T, [1], [length(basis(first(ham_locs)))],
+                               first(ham_locs).data)
 
     H = KLocalOperatorSum(op_loc)
 
@@ -14,7 +28,7 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector)
         i == 1 && continue
 
         dim = length(basis(h_loc))
-        sum!(H, KLocalOperatorRow([i], [dim], h_loc.data))
+        sum!(H, KLocalOperatorRow(T, [i], [dim], h_loc.data))
     end
 
     # Hoppings
@@ -26,9 +40,9 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector)
 
             dim_l = length(basis(hl))
             dim_r = length(basis(hr))
-            sum!(H, KLocalOperatorRow([edge.src, edge.dst],
-                                   [dim_l, dim_r],
-                                    coeff*((hl⊗hr).data)))
+            sum!(H, KLocalOperatorRow(T, [edge.src, edge.dst],
+                                      [dim_l, dim_r],
+                                      coeff*((hl⊗hr).data)))
         end
     end
 
@@ -53,9 +67,9 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector)
 
         L_nz      = tensor(L.LocalOperators[nz_sites]...)
 
-        op        = KLocalOperatorRow(nz_sites, hilb_dims, L_nz.data)
+        op        = KLocalOperatorRow(T, nz_sites, hilb_dims, L_nz.data)
 
-        op_hnh    = KLocalOperatorRow(nz_sites, hilb_dims,
+        op_hnh    = KLocalOperatorRow(T, nz_sites, hilb_dims,
                                       -im/2*(L_nz'*L_nz).data)
 
         sum!(H, op_hnh)
@@ -71,9 +85,23 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector)
     return (H, loss_ops, loss_ops_t)
 end
 
-function to_linear_operator(op::GraphOperator)
+"""
+    to_linear_operator(lind::GraphLindbladian, [T=eltype(lind)])
+
+Converts the Hamiltonian to a `KLocalOperatorSum` with eltype `T`.
+
+This structure has minimal memory cost, and is NEEDED when the need to represent
+systems in very big lattices arises. Evidently, there is a small performance
+price to pay when using those structures.
+"""
+function to_linear_operator(op::GraphOperator, T::Union{Nothing, Type{<:Number}}=nothing)
+
     op_locs = op.LocalOperators
-    op_loc = KLocalOperatorRow([1], [length(basis(first(op_locs)))],
+
+    # default type
+    T = isnothing(T) ?  eltype(first(op_locs).data) : T
+
+    op_loc = KLocalOperatorRow(T, [1], [length(basis(first(op_locs)))],
                         first(op_locs).data)
 
     res_op = KLocalOperatorSum(op_loc)
@@ -83,7 +111,7 @@ function to_linear_operator(op::GraphOperator)
         i == 1 && continue # the first one was already added by the constructor.
 
         dim = length(basis(op_loc))
-        sum!(res_op, KLocalOperatorRow([i], [dim], op_loc.data))
+        sum!(res_op, KLocalOperatorRow(T, [i], [dim], op_loc.data))
     end
 
     # Hoppings
@@ -97,9 +125,9 @@ function to_linear_operator(op::GraphOperator)
 
             dim_l = length(basis(hl))
             dim_r = length(basis(hr))
-            sum!(res_op, KLocalOperatorRow([edge.src, edge.dst],
+            sum!(res_op, KLocalOperatorRow(T, [edge.src, edge.dst],
                                            [dim_l, dim_r],
-                                         coeff*((hl⊗hr).data)))
+                                           coeff*((hl⊗hr).data)))
         end
     end
 

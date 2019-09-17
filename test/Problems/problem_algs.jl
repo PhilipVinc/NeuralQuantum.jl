@@ -1,13 +1,13 @@
 using NeuralQuantum
 using Test
-using NeuralQuantum: LdagL_L_prob, LdagL_Lmat_prob
+using NeuralQuantum: LdagLSparseSuperopProblem, LRhoSparseOpProblem
 Nsites = 4
 T = Float64
 
-prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
+prob_types = [LRhoSparseSuperopProblem, LdagLSparseOpProblem]
 @testset "LdagL problem: $prob_T" for prob_T=prob_types
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=1.6, V=2.0, γ=1.0)
-    net  = cached(rNDM(T, Nsites, 2, 1))
+    net  = cached(NDM(T, Nsites, 2, 1))
 
     prob = prob_T(T, lind);
 
@@ -33,13 +33,13 @@ end
 Nsites = 4
 T = Float64
 
-prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
+prob_types = [LdagLSparseSuperopProblem, LRhoSparseOpProblem]
 @testset "LdagL problem: $prob_T" for prob_T=prob_types
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=1.6, V=2.0, γ=1.0)
-    net  = cached(rNDM(T, Nsites, 2, 1))
-    net  = (rNDM(T, Nsites, 2, 1))
+    net  = cached(NDM(T, Nsites, 2, 1))
+    net  = (NDM(T, Nsites, 2, 1))
 
-    prob = NeuralQuantum.LdagL_sop_prob(T, lind);
+    prob = NeuralQuantum.LRhoSparseSuperopProblem(T, lind);
     probL = prob_T(T, lind);
 
     v    = state(prob, net)
@@ -68,12 +68,12 @@ prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
     @test all([l≈r for (l,r)=zip(SREval.F, SREvalL.F)])
 end
 
-@testset "LdagL problem: LdagL_Lrho_prob" begin
+@testset "LdagL problem: LRhoSparseOpProblem" begin
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=0.0, V=0.0, γ=1.0)
-    net  = cached(rNDM(T, Nsites, 2, 1))
+    net  = cached(NDM(T, Nsites, 2, 1))
 
-    prob = LdagL_L_prob(T, lind);
-    probL = LdagL_Lmat_prob(T, lind);
+    prob = LdagLSparseSuperopProblem(T, lind);
+    probL = LRhoSparseOpProblem(T, lind);
 
     v    = state(prob, net)
 
@@ -107,11 +107,11 @@ end
 using SparseArrays, Random
 
 # random
-prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
+prob_types = [LRhoSparseSuperopProblem, LdagLSparseOpProblem]
 @testset "LdagL random problem: $prob_T" for prob_T=prob_types
     Nsites=2
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=false), g=1.6, V=2.0, γ=1.0)
-    net  = cached(rNDM(T, Nsites, 2, 1))
+    net  = cached(NDM(T, Nsites, 2, 1))
 
     Ham  = SparseOperator(lind.H)
     Ham.data.=sprand(ComplexF64, size(Ham.data,1),size(Ham.data,2),0.5)
@@ -140,11 +140,11 @@ prob_types = [LdagL_sop_prob, LdagL_spmat_prob]
     @test Clocs_ex ≈ Clocs_net_S
 end
 
-prob_types = [LdagL_L_prob, LdagL_Lmat_prob]
+prob_types = [LdagLSparseSuperopProblem, LRhoSparseOpProblem]
 @testset "LdagL random problem: $prob_T" for prob_T=prob_types
     Nsites=2
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=false), g=1.6, V=2.0, γ=1.0)
-    net  = cached(rNDM(T, Nsites, 2, 1))
+    net  = cached(NDM(T, Nsites, 2, 1))
 
     Ham  = SparseOperator(lind.H)
     Ham.data.=sprand(ComplexF64, size(Ham.data,1),size(Ham.data,2),0.5)

@@ -85,7 +85,7 @@ function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, lt::RBMS
     ∇logψ.Wc .= ∂logℒθ .* transpose(σc)
 
     logψ = dot(σr,net.ar) + dot(σc,net.ac) + sum(logℒθ)
-    return logψ, ∇logψ
+    return logψ
 end
 
 function Δ_logψ(net::RBMSplit, c::RBMSplitCache, lt::RBMSplitLUT, σr_r, σc_r,
@@ -157,5 +157,5 @@ function Δ_logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, lt::R
     ∇logψ.Wr .= ∂logℒθ .* transpose(σr)
     ∇logψ.Wc .= ∂logℒθ .* transpose(σc)
 
-    return logvaldiff, ∇logψ
+    return logvaldiff
 end

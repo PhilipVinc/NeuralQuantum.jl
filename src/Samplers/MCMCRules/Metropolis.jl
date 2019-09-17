@@ -2,7 +2,7 @@
 export Metropolis
 struct Metropolis <: MCMCRule end
 
-function markov_chain_step!(σ, s::MCMCSampler{Metropolis}, net::MatrixNet, c)
+function markov_chain_step!(σ, s::MCMCSampler{Metropolis}, net::Union{MatrixNet,KetNet}, c)
     # the denominator
     logψ_σ = 2*real(net(σ))
 
@@ -28,7 +28,7 @@ function markov_chain_step!(σ, s::MCMCSampler{Metropolis}, net::MatrixNet, c)
     return true
 end
 
-function markov_chain_step!(σ::LUState, s::MCMCSampler{Metropolis}, net::MatrixNet, c)
+function markov_chain_step!(σ::LUState, s::MCMCSampler{Metropolis}, net::Union{MatrixNet,KetNet}, c)
     # 1- Flip a spin
     sites_to_flip = 1:nsites(σ)
     flipat = rand(c.rng, sites_to_flip) #1:nsites(σ))

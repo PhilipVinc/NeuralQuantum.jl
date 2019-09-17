@@ -15,8 +15,8 @@ op2 = KLocalOperatorRow(sts, hilb_dims, mat2)
 
 ops = KLocalOperatorSum(op)
 ops2 = ops + op2
-@test length(operators(ops)) == 1
-@test first(operators(ops2)).mat == matsum
+@test length(NeuralQuantum.operators(ops)) == 1
+@test first(NeuralQuantum.operators(ops2)).mat == matsum
 
 # Check that index works for a single site
 check = sparse(zeros(size(matsum)))

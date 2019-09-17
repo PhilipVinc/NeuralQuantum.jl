@@ -1,17 +1,18 @@
 ################################################################################
 ######      Cache holding the information generated along a sampling      ######
 ################################################################################
-mutable struct MCMCGradientLEvaluationCache{T,T2,TV,TD,S} <: EvaluationSamplingCache
+mutable struct MCMCGradientLEvaluationCache{T,T2,TV,TVC,TD,S} <: EvaluationSamplingCache
     Oave::TV#Vector{T}
     Eave::T
-    EOave::TV#Vector{T}
-    LLOave::TV#Vector{T}
+    EOave::TVC
+    LLOave::TVC
     Zave::T2
 
+    # Individual values to compute statistical correlators
     Evalues::Vector{T}
 
-    # cache
-    LLO_i::TV
+    # Caches to avoid allocating during computation
+    LLO_i::TVC
     ∇lnψ::TD
     ∇lnψ2::TD
     σ::S
@@ -22,9 +23,9 @@ function MCMCGradientLEvaluationCache(net::NeuralNetwork, prob)
     der_vec = grad_cache(net).tuple_all_weights
 
     Oave   = [zero(dvec) for dvec=der_vec]
-    EOave  = [zero(dvec) for dvec=der_vec]
-    LLOave = [zero(dvec) for dvec=der_vec]
-    LLO_i = [zero(dvec) for dvec=der_vec]
+    EOave  = [zeros(TC, size(dvec)) for dvec=der_vec]
+    LLOave = [zeros(TC, size(dvec)) for dvec=der_vec]
+    LLO_i  = [zeros(TC, size(dvec)) for dvec=der_vec]
 
     cache = MCMCGradientLEvaluationCache(Oave,
                                   zero(TC),

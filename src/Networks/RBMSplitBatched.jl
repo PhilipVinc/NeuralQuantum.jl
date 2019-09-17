@@ -91,5 +91,5 @@ function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitBatchedCache, �
     _batched_outer_prod!(∇logψ.Wr, ∂logℒθ, σr)
     _batched_outer_prod!(∇logψ.Wc, ∂logℒθ, σc)
 
-    return res, ∇logψ
+    return res
 end

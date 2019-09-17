@@ -40,25 +40,28 @@ end
 Creates a KLocalOperator where connections are stored by row for the operator
     `operator` acting on `sites` each with `hilb_dims` local dimension.
 """
-function KLocalOperatorRow(sites::Vector, hilb_dims::Vector, operator)
-    # TODO Generalize to arbistrary spaces and not only uniform
-    st = NAryState(real(eltype(operator)), first(hilb_dims), length(sites))
-    st1 = NAryState(real(eltype(operator)), first(hilb_dims), length(sites))
+KLocalOperatorRow(sites::AbstractVector, hilb_dims::AbstractVector, operator) =
+    KLocalOperatorRow(eltype(operator), sites, hilb_dims, operator)
 
-    mel         = Vector{Vector{eltype(operator)}}()
+function KLocalOperatorRow(T::Type{<:Number}, sites::AbstractVector, hilb_dims::AbstractVector, operator)
+    # TODO Generalize to arbistrary spaces and not only uniform
+    st  = NAryState(real(T), first(hilb_dims), length(sites))
+    st1 = NAryState(real(T), first(hilb_dims), length(sites))
+
+    mel         = Vector{Vector{T}}()
     new_indices = Vector{Vector{Int}}()
     to_change   = Vector{Vector{Vector{eltype(Int)}}}()
     new_values  = Vector{Vector{Vector{eltype(st)}}}()
-    op_conns    = Vector{OpConnection{Vector{eltype(operator)},
+    op_conns    = Vector{OpConnection{Vector{T},
                         Vector{eltype(Int)}, Vector{eltype(st)}}}()
     #SCT = StateChanges{eltype(to_change_els), eltype(new_values_els)}
 
     for (r, row) = enumerate(eachrow(operator))
         # create the containers for this row
-        mel_els        = eltype(row)[]
+        mel_els        = T[]
         mel_indices    = Int[]
         to_change_els  = Vector{Vector{Int}}()
-        new_values_els = Vector{Vector{eltype(mel_els)}}()
+        new_values_els = Vector{Vector{T}}()
         conns_els      = eltype(op_conns)()
 
         if abs(row[r]) > 10e-6
@@ -96,11 +99,20 @@ function KLocalOperatorRow(sites::Vector, hilb_dims::Vector, operator)
         push!(new_values, new_values_els)
         push!(op_conns, conns_els)
     end
-    KLocalOperator(sites, hilb_dims, operator |> collect, mel, to_change, new_values, op_conns, new_indices)
+    KLocalOperator(sites, hilb_dims, convert(Matrix{T}, operator |> collect),
+                        mel, to_change, new_values, op_conns, new_indices)
 end
 
 ## Accessors
+"""
+    sites(op::KLocalOperator)
+
+Returns the vector of `Int` labelling the lattice sites on which this operator
+acts, in no particular order.
+"""
 sites(op::KLocalOperator) = op.sites
+
+operators(op::KLocalOperator) = (op,)
 
 conn_type(top::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {SV, M, Vel, Vti, Vtc, Vtv, OC} =
     OpConnection{Vel, eltype(Vtc), eltype(Vtv)}

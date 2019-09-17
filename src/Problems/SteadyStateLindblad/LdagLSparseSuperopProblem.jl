@@ -1,12 +1,12 @@
 """
-    LdagL_L_prob <: Problem
+    LdagLSparseSuperopProblem <: AbstractProblem
 
 Problem or finding the steady state of a ℒdagℒ matrix by computing
 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ |ρ⟩⟩|² using the sparse Liouvillian matrix.
 
 DO NOT USE WITH COMPLEX-WEIGHT NETWORKS, AS IT DOES NOT WORK
 """
-struct LdagL_L_prob{B, SM} <: LRhoSquaredProblem where {B<:Basis,
+struct LdagLSparseSuperopProblem{B, SM} <: LRhoSquaredProblem where {B<:Basis,
                                                  SM<:SparseMatrixCSC}
     HilbSpace::B            # 0
     L::SM
@@ -14,28 +14,28 @@ struct LdagL_L_prob{B, SM} <: LRhoSquaredProblem where {B<:Basis,
 end
 
 """
-    LdagL_L_prob([T=Float64], args...)
+    LdagLSparseSuperopProblem([T=STD_REAL_PREC], args...)
 
 Creates a problem for minimizing the cost function 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ |ρ⟩⟩|².
 Computes |⟨⟨σ|ℒ |ρ⟩⟩| by building the sparse superoperator, which can be done
 for sizes up to dimℋ < 500.
 
-For more than 9 spins it is reccomended to use the command `LdagL_Lmat_prob`.
+For more than 9 spins it is reccomended to use the command `LRhoSparseOpProblem`.
 
 args... can either be a `GraphLindbladian`, or the Hamiltonian and a vector
 of collapse operators.
 """
-LdagL_L_prob(args...) = LdagL_L_prob(Float64, args...)
-LdagL_L_prob(T::Type{<:Number}, gl::GraphLindbladian) =
-    LdagL_L_prob(T, liouvillian(gl))
-LdagL_L_prob(T::Type{<:Number}, Liouv::SparseSuperOperator) =
-    LdagL_L_prob(first(Liouv.basis_l), sparse(transpose(Liouv.data)), 0.0)
-LdagL_L_prob(T::Type{<:Number}, Ham::DataOperator, cops::Vector) =
-    LdagL_L_prob(T, liouvillian(Ham, cops))
+LdagLSparseSuperopProblem(args...) = LdagLSparseSuperopProblem(STD_REAL_PREC, args...)
+LdagLSparseSuperopProblem(T::Type{<:Number}, gl::GraphLindbladian) =
+    LdagLSparseSuperopProblem(T, liouvillian(gl))
+LdagLSparseSuperopProblem(T::Type{<:Number}, Liouv::SparseSuperOperator) =
+    LdagLSparseSuperopProblem(first(Liouv.basis_l), sparse(transpose(Liouv.data)), 0.0)
+LdagLSparseSuperopProblem(T::Type{<:Number}, Ham::DataOperator, cops::Vector) =
+    LdagLSparseSuperopProblem(T, liouvillian(Ham, cops))
 
-basis(prob::LdagL_L_prob) = prob.HilbSpace
+basis(prob::LdagLSparseSuperopProblem) = prob.HilbSpace
 
-function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_L_prob, net::MatrixNet, σ, lnψ=net(σ), σp=deepcopy(σ))
+function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagLSparseSuperopProblem, net::MatrixNet, σ, lnψ=net(σ), σp=deepcopy(σ))
     ℒ = prob.L
     LLO_i = LLO_i
     set_index!(σp, index(σ))
@@ -69,5 +69,5 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_L_prob, net::MatrixNet, σ, l
 end
 
 # pretty printing
-Base.show(io::IO, p::LdagL_L_prob) = print(io,
-    "LdagL_L_prob on space $(basis(p)) computing the variance of Lrho using the sparse liouvillian")
+Base.show(io::IO, p::LdagLSparseSuperopProblem) = print(io,
+    "LdagLSparseSuperopProblem on space $(basis(p)) computing the variance of Lrho using the sparse liouvillian")

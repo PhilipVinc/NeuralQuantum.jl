@@ -10,19 +10,21 @@ logψ(cnet::CachedNet, σ::LUState{<:DoubleState}) = begin
                 changes(σ_r), changes(σ_c))
 end
 
-logψ_and_∇logψ!(cnet::CachedNet, σ::LUState) = begin
-    @warn "Inefficient calling logψ_and_∇logψ for cachedNet"
-    ∇lnψ = grad_cache(n)
-    return logψ_and_∇logψ!(∇lnψ, cnet, σ)
+logψ_and_∇logψ(cnet::CachedNet, σ::LUState) = begin
+   # @warn "Inefficient calling logψ_and_∇logψ for cachedNet"
+    ∇lnψ = grad_cache(cnet)
+    lnψ, ∇lnψ = logψ_and_∇logψ!(∇lnψ, cnet, σ)
+    return lnψ, ∇lnψ
 end
 
 logψ_and_∇logψ!(∇lnψ, cnet::CachedNet, σ::LUState) = begin
     σ_r = row(state(σ))
     σ_c = col(state(σ))
 
-    return logψ_and_∇logψ!(∇lnψ, cnet.net, cnet.cache, lut(σ),
-                           config(raw_state(σ_r)), config(raw_state(σ_c)),
-                           changes(σ_r), changes(σ_c))
+    lnψ = logψ_and_∇logψ!(∇lnψ, cnet.net, cnet.cache, lut(σ),
+                          config(raw_state(σ_r)), config(raw_state(σ_c)),
+                          changes(σ_r), changes(σ_c))
+    return lnψ, ∇lnψ
 end
 
 logψ_Δ(cnet::CachedNet, σ::LUState{<:DoubleState}) = begin
@@ -47,21 +49,23 @@ function Δ_logψ_and_∇logψ(cnet::CachedNet, σ::LUState, args...)
 end
 
 Δ_logψ_and_∇logψ!(∇lnψ, cnet::CachedNet, σ::LUState{<:DoubleState}) = begin
-    σ_r = row(state(σ))
-    σ_c = col(state(σ))
-    return Δ_logψ_and_∇logψ!(∇lnψ,
+    σ_r  = row(state(σ))
+    σ_c  = col(state(σ))
+    Δlnψ = Δ_logψ_and_∇logψ!(∇lnψ,
                   cnet.net, cnet.cache, lut(σ),
                   config(raw_state(σ_r)), config(raw_state(σ_c)),
                   changes(σ_r), changes(σ_c))
+    return Δlnψ, ∇lnψ
 end
 
 Δ_logψ_and_∇logψ!(∇lnψ, cnet::CachedNet, σ::LUState{<:DoubleState}, changes_r, changes_c) = begin
-    σ_r = row(state(σ))
-    σ_c = col(state(σ))
-    return Δ_logψ_and_∇logψ!(∇lnψ,
+    σ_r  = row(state(σ))
+    σ_c  = col(state(σ))
+    Δlnψ = Δ_logψ_and_∇logψ!(∇lnψ,
                   cnet.net, cnet.cache, lut(σ),
                   config(raw_state(σ_r)), config(raw_state(σ_c)),
                   changes_r, changes_c)
+    return Δlnψ, ∇lnψ
 end
 
 prepare_lut!(σ::LUState, cnet::CachedNet) =

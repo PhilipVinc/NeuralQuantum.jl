@@ -36,24 +36,29 @@ end
 ################################################################################
 ######      Cache holding the information generated along a sampling      ######
 ################################################################################
-mutable struct MCMCObsEvaluationCache{T,T2} <: EvaluationSamplingCache
+mutable struct MCMCObsEvaluationCache{T,T2,S} <: EvaluationSamplingCache
     ObsNames::Vector{Symbol}
     ObsAve::T
     ObsVals::T2
     Zave::Real
+
+    # caches
+    σ::S
 end
 
-function MCMCObsEvaluationCache(obs_prob::ObservablesProblem)
+function MCMCObsEvaluationCache(net::NeuralNetwork, obs_prob::ObservablesProblem)
     n_obs    = length(obs_prob.ObservablesTransposed)
     obs_ave  = Vector{ComplexF64}(undef, n_obs)
     obs_vals = [Vector{ComplexF64}() for i=1:n_obs]
 
-    cache=MCMCObsEvaluationCache(obs_prob.Names, obs_ave, obs_vals, 0.0)
+    σ        = state(obs_prob, net)
+
+    cache=MCMCObsEvaluationCache(obs_prob.Names, obs_ave, obs_vals, 0.0, σ)
     zero!(cache)
     cache
 end
-SamplingCache(alg::ObservablesProblem, prob::ObservablesProblem, net=nothing) = MCMCObsEvaluationCache(prob)
-SamplingCache(prob::ObservablesProblem, net=nothing) = MCMCObsEvaluationCache(prob)
+SamplingCache(alg::ObservablesProblem, prob::ObservablesProblem, net) = MCMCObsEvaluationCache(net, prob)
+SamplingCache(prob::ObservablesProblem, net) = MCMCObsEvaluationCache(net, prob)
 
 function zero!(comp_vals::MCMCObsEvaluationCache)
     comp_vals.ObsAve   .= 0.0

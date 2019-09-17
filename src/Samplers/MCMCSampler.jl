@@ -49,7 +49,9 @@ end
 
 performs one step of markov chain
 """
-function markov_chain_step!(σ, s::MCMCSampler, net, c) end
+function markov_chain_step!(σ, s::MCMCSampler, net, c)
+    throw("markov_chain_step! undefined for this type")
+end
 
 ## Mulithreading
 function _mt_recompute_sampler_params!(samplers, s::MCMCSampler)

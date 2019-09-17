@@ -9,6 +9,7 @@ using LightGraphs
 using Zygote: gradient, forward
 using Random: AbstractRNG, MersenneTwister, GLOBAL_RNG
 using LinearAlgebra, SparseArrays, Strided
+using NNlib
 
 include("IterativeSolvers/minresqlp.jl")
 using .MinresQlp
@@ -22,9 +23,6 @@ using .Optimisers
 import .Optimisers: update, update!
 export Optimisers
 
-# Logging
-using TensorBoardLogger
-
 # Imports
 import Base: length, UInt, eltype, copy, deepcopy, iterate
 import Random: rand!
@@ -36,12 +34,12 @@ abstract type NeuralNetwork end
 abstract type State end
 abstract type FiniteBasisState <: State end
 
-abstract type Problem end
-abstract type SteadyStateProblem <: Problem end
-abstract type HermitianMatrixProblem <: SteadyStateProblem end
-abstract type LRhoSquaredProblem <: SteadyStateProblem end
-abstract type OpenTimeEvolutionProblem <: SteadyStateProblem end
-abstract type OperatorEstimationProblem <: Problem end
+abstract type AbstractProblem end
+abstract type AbstractSteadyStateProblem <: AbstractProblem end
+abstract type HermitianMatrixProblem <: AbstractSteadyStateProblem end
+abstract type LRhoSquaredProblem <: AbstractSteadyStateProblem end
+abstract type OpenTimeEvolutionProblem <: AbstractSteadyStateProblem end
+abstract type OperatorEstimationProblem <: AbstractProblem end
 
 abstract type Sampler end
 
@@ -51,10 +49,14 @@ struct NotParallel <: ParallelType end
 struct ParallelThreaded <: ParallelType end
 export NotParallel, ParallelThreaded
 
+# Universal defines
+const STD_REAL_PREC =  Float32
+
 # Base elements
 include("base_states.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
+include("base_lookup.jl")
 include("base_batched_networks.jl")
 include("treelike.jl") # from flux
 include("tuple_logic.jl")
@@ -101,33 +103,33 @@ include("Networks/NDMLT.jl")
 # Batch
 include("Networks/RBMSplitBatched.jl")
 
-const rRBMSplit = RBMSplit; export rRBMSplit;
-const rNDM = NDM; export rNDM;
-const rNDMSymm = NDMSymm; export rNDMSymm;
-
 #
 include("Networks/ClosedSystems/RBM.jl")
 
 # Problems
-export LdagL_spmat_prob, LdagL_sop_prob, LdagLProblem, LdagLFullProblem, LdagL_L_prob, LdagL_L_Problem, LdagL_Lmat_prob
-include("Problems/LdagL_spmat_prob.jl")
-include("Problems/LdagL_sop_prob.jl")
+export LdagLSparseOpProblem, LRhoSparseSuperopProblem, LdagLProblem, LdagLFullProblem, LdagLSparseSuperopProblem, LdagLSparseSuperopProblemlem, LRhoSparseOpProblem
+include("Problems/SteadyStateLindblad/LdagLSparseOpProblem.jl")
+include("Problems/SteadyStateLindblad/LdagLSparseSuperopProblem.jl")
+include("Problems/SteadyStateLindblad/LRhoKLocalOpProblem.jl")
+include("Problems/SteadyStateLindblad/LRhoSparseOpProblem.jl")
+include("Problems/SteadyStateLindblad/LRhoSparseSuperopProblem.jl")
+const LdagLFullProblem = LRhoSparseSuperopProblem
+const LdagLProblem = LdagLSparseOpProblem
+const LdagLSparseSuperopProblemlem = LRhoSparseOpProblem
+
+include("Problems/SteadyStateLindblad/build_SteadyStateProblem.jl")
+
+# Hamiltonian problems
+include("Problems/Hamiltonian/HamiltonianGSEnergyProblem.jl")
+include("Problems/Hamiltonian/build_GroundStateProblem.jl")
+
+# Observables problem
 include("Problems/ObservablesProblem.jl")
-include("Problems/LdagL_L_prob.jl")
-include("Problems/LdagL_Lmat_prob.jl")
-include("Problems/Operators/LdagL_Lrho_op_prob.jl")
-const LdagLFullProblem = LdagL_sop_prob
-const LdagLProblem = LdagL_spmat_prob
-const LdagL_L_Problem = LdagL_Lmat_prob
+
 
 # gen state
 export state, state_lut
 include("generate_state.jl")
-
-#
-export HamProblem
-include("Problems/Ham_spmat_prob.jl")
-const HamProblem = Ham_spmat_prob
 
 # Algorithms
 abstract type Algorithm end
@@ -149,6 +151,7 @@ include("Algorithms/Gradient/Gradient_eval.jl")
 # Observables
 include("Algorithms/Observables/Obs.jl")
 include("Algorithms/Observables/Obs_eval.jl")
+include("Algorithms/Observables/Obs_ket_eval.jl")
 
 
 # Sampling
@@ -169,7 +172,7 @@ include("base_diffeval.jl")
 include("utils/densitymatrix.jl")
 include("utils/expectation_values.jl")
 include("utils/translational_symm.jl")
-include("utils/logging.jl")
+#include("utils/logging.jl")
 include("utils/loading.jl")
 
 # interface

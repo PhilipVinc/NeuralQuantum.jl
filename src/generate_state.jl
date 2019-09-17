@@ -1,6 +1,9 @@
-state(prob::Problem, net, args...) = state(input_type(net), prob, net, args...)
-state(T::Type{<:Number}, prob::Problem, net) = state(T, basis(prob), net)
-state(T::Type{<:Number}, prob::LdagL_Lrho_op_prob, net) = state_lut(T, basis(prob), net)
+state(prob::AbstractProblem, net, args...) = state(input_type(net), prob, net, args...)
+state(T::Type{<:Number}, prob::AbstractProblem, net) = state(T, basis(prob), net)
+#state(T::Type{<:Number}, prob::LRhoKLocalOpProblem, net) = state_lut(T, basis(prob), net)
+state_lut(prob::AbstractProblem, net, args...) = state_lut(input_type(net), prob, net, args...)
+state_lut(T::Type{<:Number}, prob::AbstractProblem, net) = state_lut(T, basis(prob), net)
+
 function state(T::Type{<:Number}, hilb::Basis, net)
     !is_homogeneous(hilb) && error("Could not generate a state.")
     sys_state = _homogeneous_system_state(T, first(hilb.bases),
@@ -28,7 +31,7 @@ function _lut_state(T::Type{<:Number}, hilb::Basis, net::MatrixNet)
     return LUState(state, lut)
 end
 
-function _homogeneous_system_state(T::Type{<:Number}, hilb::Basis, nsites, net::MatrixNet)
+function _homogeneous_system_state(T::Type{<:Number}, hilb::Basis, nsites, net::Union{MatrixNet, KetNet})
     loc_size = first(hilb.shape)
     return NAryState(T, loc_size, nsites)
 end
