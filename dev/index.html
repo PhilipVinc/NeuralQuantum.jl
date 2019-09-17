@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Home · NeuralQuantum.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><a href><img class="logo" src="assets/logo.png" alt="NeuralQuantum.jl logo"/></a><h1>NeuralQuantum.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li class="current"><a class="toctext" href>Home</a><ul class="internal"><li><a class="toctext" href="#Installation-1">Installation</a></li><li><a class="toctext" href="#Basic-Usage-1">Basic Usage</a></li><li><a class="toctext" href="#Table-Of-Contents-1">Table Of Contents</a></li><li><a class="toctext" href="#Main-Functions-1">Main Functions</a></li><li><a class="toctext" href="#Index-1">Index</a></li></ul></li><li><span class="toctext">Manual</span><ul><li><a class="toctext" href="basics/">Basics</a></li><li><a class="toctext" href="problems/">Problems</a></li><li><a class="toctext" href="algorithms/">Algorithms</a></li><li><a class="toctext" href="networks/">Networks</a></li><li><a class="toctext" href="optimizers/">Optimizers</a></li></ul></li><li><span class="toctext">Internals</span><ul><li><a class="toctext" href="states/">States</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Home</a></li></ul><a class="edit-page" href="https://github.com/PhilipVinc/NeuralQuantum.jl/blob/master/docs/src/index.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Home</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="NeuralQuantum.jl-1" href="#NeuralQuantum.jl-1">NeuralQuantum.jl</a></h1><p><em>A Neural-Network steady-state solver</em></p><p><strong>NeuralQuantum.jl</strong> is a numerical framework written in <a href="http://julialang.org">Julia</a> to investigate Neural-Network representations of mixed quantum states and to find the Steady-State of such NonEquilibrium Quantum Systems by MonteCarlo sampling.</p><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>Please note that the code is research code and is not production ready, yet.</p></div></div><h2><a class="nav-anchor" id="Installation-1" href="#Installation-1">Installation</a></h2><p>To install <code>NeuralQuantum</code>, run in a Julia prompt the following command.</p><pre><code class="language-none">] add QuantumOptics#master
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Home · NeuralQuantum.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><a href><img class="logo" src="assets/logo.png" alt="NeuralQuantum.jl logo"/></a><h1>NeuralQuantum.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li class="current"><a class="toctext" href>Home</a><ul class="internal"><li><a class="toctext" href="#Installation-1">Installation</a></li><li><a class="toctext" href="#Basic-Usage-1">Basic Usage</a></li><li><a class="toctext" href="#Table-Of-Contents-1">Table Of Contents</a></li><li><a class="toctext" href="#Main-Functions-1">Main Functions</a></li><li><a class="toctext" href="#Index-1">Index</a></li></ul></li><li><span class="toctext">Manual</span><ul><li><a class="toctext" href="basics/">Basics</a></li><li><a class="toctext" href="problems/">Problems</a></li><li><a class="toctext" href="algorithms/">Algorithms</a></li><li><a class="toctext" href="networks/">Networks</a></li><li><a class="toctext" href="optimizers/">Optimizers</a></li></ul></li><li><span class="toctext">Internals</span><ul><li><a class="toctext" href="states/">States</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Home</a></li></ul><a class="edit-page" href="https://github.com/PhilipVinc/NeuralQuantum.jl/blob/master/docs/src/index.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Home</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="NeuralQuantum.jl-1" href="#NeuralQuantum.jl-1">NeuralQuantum.jl</a></h1><p><em>A Neural-Network steady-state solver</em></p><p><strong>NeuralQuantum.jl</strong> is a numerical framework written in <a href="http://julialang.org">Julia</a> to investigate Neural-Network representations of pure and mixed quantum states, and to find the Steady-State of such Open Quantum Systems through MonteCarlo procedures. The package can also be used to compute the ground state of a many-body hamiltonian.</p><div class="admonition note"><div class="admonition-title">Note</div><div class="admonition-text"><p>Please note that the code is research code and is not production ready, yet.</p></div></div><h2><a class="nav-anchor" id="Installation-1" href="#Installation-1">Installation</a></h2><p>To install <code>NeuralQuantum</code>, run in a Julia prompt the following command.</p><pre><code class="language-none">] add QuantumOptics#master
 ] add https://github.com/PhilipVinc/QuantumLattices.jl
-] add https://github.com/PhilipVinc/ValueHistoriesLogger.jl
-] add https://github.com/PhilipVinc/NeuralQuantum.jl</code></pre><h2><a class="nav-anchor" id="Basic-Usage-1" href="#Basic-Usage-1">Basic Usage</a></h2><p>Once one has a Liouvillian problem of which one wants to compute the steady state, the underlaying idea of the package is the following:</p><ul><li>One selects a Neural-Network based ansatz to approximate the density matrix (see Sec. <a href="networks/#Networks-1">Networks</a>);</li><li>One choses the algorithm to compute the gradient with which to minimise the objective function (see Sec. <a href="algorithms/#Algorithms-1">Algorithms</a>);</li><li>One choses an optimizer to perform the optimization, such as steepest gradient, accelerated gradient or others (see Sec. <a href="optimizers/#Optimizers-1">Optimizers</a>);</li></ul><p>Here you can find a very short usage example. For a more in-depth walkthrough of <code>NeuralQuantum.jl</code> please refer to Sec. <a href="basics/#Basics-1">Basics</a>.</p><pre><code class="language-none"># Load dependencies
+] add https://github.com/PhilipVinc/NeuralQuantum.jl</code></pre><h2><a class="nav-anchor" id="Basic-Usage-1" href="#Basic-Usage-1">Basic Usage</a></h2><p>When using NeuralQuantum, to determine the Ground State or Steady State of a many-body problem, one needs to perform the following choices:</p><ul><li>Chose a Neural-Network based ansatz to approximate the quantum state (see Sec. <a href="networks/#Networks-1">Networks</a>);</li><li>Chose the algorithm to compute the gradient with which to minimise the objective function, such as simple gradient or natural gradient/Stochastic Reconfiguration (see Sec. <a href="algorithms/#Algorithms-1">Algorithms</a>);</li><li>Chose the optimizer to perform the optimization, such as steepest gradient, accelerated gradient or others (see Sec. <a href="optimizers/#Optimizers-1">Optimizers</a>);</li></ul><p>Here you can find a very short, commented example. For a more in-depth walkthrough of <code>NeuralQuantum.jl</code> please refer to Sec. <a href="basics/#Basics-1">Basics</a>.</p><pre><code class="language-none"># Load dependencies
 using NeuralQuantum, QuantumLattices
 using Printf, ValueHistoriesLogger, Logging, ValueHistories
 
@@ -16,8 +15,9 @@ lattice = SquareLattice([Nsites],PBC=true)
 # Create the lindbladian for the QI model
 lind = quantum_ising_lind(lattice, g=1.0, V=2.0, γ=1.0)
 # Create the Problem (cost function) for the given lindbladian
-# alternative is LdagL_L_prob. It works for NDM, not for RBM
-prob = LdagL_spmat_prob(T, lind);
+# targeting the Steady State, using a memory efficient encoding and
+# minimizing |Lρ|^2 as a variance, which is more efficient.
+prob = SteadyStateProblem(T, lind);
 
 #-- Observables
 # Define the local observables to look at.
@@ -30,7 +30,7 @@ oprob = ObservablesProblem(Sx, Sy, Sz)
 
 # Define the Neural Network. A NDM with N visible spins and αa=2 and αh=1
 #alternative vectorized rbm: net  = RBMSplit(Complex{T}, Nsites, 6)
-net  = rNDM(T, Nsites, 1, 2)
+net  = NDM(T, Nsites, 1, 2)
 # Create a cached version of the neural network for improved performance.
 cnet = cached(net)
 # Chose a sampler. Options are FullSumSampler() which sums over the whole space
@@ -51,24 +51,26 @@ optimizer = Optimisers.Descent(0.02)
 is = MTIterativeSampler(cnet, sampl, prob, algo)
 ois = MTIterativeSampler(cnet, osampl, oprob, oprob)
 
-# Create the logger to store all output data
-log = MVLogger()
+# Create the structure to store all output data
+minimization_data = MVHistory()
+Δw = grad_cache(cnet)
 
 # Solve iteratively the problem
-with_logger(log) do
-    for i=1:50
-        # Sample the gradient
-        grad_data  = sample!(is)
-        obs_data = sample!(ois)
+for i=1:110
+    # Sample the gradient
+    grad_data  = sample!(is)
+    obs_data = sample!(ois)
 
-        # Logging
-        @printf &quot;%4i -&gt; %+2.8f %+2.2fi --\t \t-- %+2.5f\n&quot; i real(grad_data.L) imag(grad_data.L) real(obs_data.ObsAve[1])
-        @info &quot;&quot; optim=grad_data obs=obs_data
-
-        succ = precondition!(cnet.der.tuple_all_weights, algo , grad_data, i)
-        !succ &amp;&amp; break
-        Optimisers.update!(optimizer, cnet, cnet.der)
+    # Logging
+    @printf &quot;%4i -&gt; %+2.8f %+2.2fi --\t \t-- %+2.5f\n&quot; i real(grad_data.L) imag(grad_data.L) real(obs_data.ObsAve[1])
+    push!(minimization_data, :loss, grad_data.L)
+    for (name,val)=zip(obs_data.ObsNames, obs_data.ObsAve)
+        push!(minimization_data, Symbol(name), val)
     end
+
+    succ = precondition!(Δw.tuple_all_weights, algo , grad_data, i)
+    !succ &amp;&amp; break
+    Optimisers.update!(optimizer, cnet, Δw)
 end
 
 # Optional: compute the exact solution
@@ -80,14 +82,14 @@ exacts = Dict(&quot;Sx&quot;=&gt;ESx, &quot;Sy&quot;=&gt;ESy, &quot;Sz&quot;=&gt
 ## - end Optional
 
 using Plots
-data = log.hist
+data = minimization_data 
 
-iter_cost, cost = get(data[&quot;optim/Loss&quot;])
-pl1 = plot(iter_cost, real(cost), yscale=:log10);
+iter_cost, cost = get(minimization_data[:loss])
+pl1 = plot(iter_cost, real(cost), yscale=:log10)
 
-iter_mx, mx = get(data[&quot;obs/obs_1&quot;])
-pl2 = plot(iter_mx, mx);
+iter_mx, mx = get(minimization_data[:obs_1])
+pl2 = plot(iter_mx, real(mx))
 hline!(pl2, [ESx,ESx]);
 
 plot(pl1, pl2, layout=(2,1))
-...</code></pre><h2><a class="nav-anchor" id="Table-Of-Contents-1" href="#Table-Of-Contents-1">Table Of Contents</a></h2><ul><li><a href="algorithms/#Algorithms-1">Algorithms</a></li><li><a href="basics/#Basics-1">Basics</a></li><ul><li><a href="basics/#Setting-up-the-problem-1">Setting up the problem</a></li><li><a href="basics/#Choosing-the-Ansatz-1">Choosing the Ansatz</a></li><li><a href="basics/#Solving-for-the-steady-state-1">Solving for the steady state</a></li><li><a href="basics/#Logging-observables-during-the-evolution-1">Logging observables during the evolution</a></li><li><a href="basics/#Summary-1">Summary</a></li></ul><li><a href="#NeuralQuantum.jl-1">NeuralQuantum.jl</a></li><ul><li><a href="#Installation-1">Installation</a></li><li><a href="#Basic-Usage-1">Basic Usage</a></li><li><a href="#Table-Of-Contents-1">Table Of Contents</a></li><li><a href="#Main-Functions-1">Main Functions</a></li><li><a href="#Index-1">Index</a></li></ul><li><a href="networks/#Networks-1">Networks</a></li><ul><li><a href="networks/#Usage-1">Usage</a></li></ul><li><a href="optimizers/#Optimizers-1">Optimizers</a></li><ul><li><a href="optimizers/#Types-of-Optimizers-1">Types of Optimizers</a></li></ul><li><a href="problems/#Problems-1">Problems</a></li><ul><li><a href="problems/#Minimization-of-\\mathcal{C}-\\langle\\langle\\mathcal{L}\\dagger\\mathcal{L}\\rangle\\rangle-1">Minimization of <span>$\mathcal{C} = \langle\langle\mathcal{L}^\dagger\mathcal{L}\rangle\rangle$</span></a></li></ul><li><a href="states/#State-abstract-type-1">State abstract type</a></li><ul><li><a href="states/#Defining-a-new-State-concrete-struct-1">Defining a new State concrete struct</a></li></ul></ul><h2><a class="nav-anchor" id="Main-Functions-1" href="#Main-Functions-1">Main Functions</a></h2><div class="admonition warning"><div class="admonition-title">Missing docstring.</div><div class="admonition-text"><p>Missing docstring for <code>solve</code>. Check Documenter&#39;s build log for details.</p></div></div><div class="admonition warning"><div class="admonition-title">Missing docstring.</div><div class="admonition-text"><p>Missing docstring for <code>ExactSamplerCache</code>. Check Documenter&#39;s build log for details.</p></div></div><h2><a class="nav-anchor" id="Index-1" href="#Index-1">Index</a></h2><ul><li><a href="algorithms/#NeuralQuantum.SR"><code>NeuralQuantum.SR</code></a></li></ul><footer><hr/><a class="next" href="basics/"><span class="direction">Next</span><span class="title">Basics</span></a></footer></article></body></html>
+...</code></pre><h2><a class="nav-anchor" id="Table-Of-Contents-1" href="#Table-Of-Contents-1">Table Of Contents</a></h2><ul><li><a href="algorithms/#Algorithms-1">Algorithms</a></li><li><a href="basics/#Basics-1">Basics</a></li><ul><li><a href="basics/#Setting-up-the-problem-1">Setting up the problem</a></li><li><a href="basics/#Choosing-the-Ansatz-1">Choosing the Ansatz</a></li><li><a href="basics/#Solving-for-the-steady-state-1">Solving for the steady state</a></li><li><a href="basics/#Logging-observables-during-the-evolution-1">Logging observables during the evolution</a></li><li><a href="basics/#Summary-1">Summary</a></li></ul><li><a href="#NeuralQuantum.jl-1">NeuralQuantum.jl</a></li><ul><li><a href="#Installation-1">Installation</a></li><li><a href="#Basic-Usage-1">Basic Usage</a></li><li><a href="#Table-Of-Contents-1">Table Of Contents</a></li><li><a href="#Main-Functions-1">Main Functions</a></li><li><a href="#Index-1">Index</a></li></ul><li><a href="networks/#Networks-1">Networks</a></li><ul><li><a href="networks/#Usage-1">Usage</a></li></ul><li><a href="optimizers/#Optimizers-1">Optimizers</a></li><ul><li><a href="optimizers/#Types-of-Optimizers-1">Types of Optimizers</a></li></ul><li><a href="problems/#Problems-1">Problems</a></li><ul><li><a href="problems/#Steady-States-of-Open-Quantum-Systems-1">Steady States of Open Quantum Systems</a></li><li><a href="problems/#Ground-State-Problems-1">Ground State Problems</a></li></ul><li><a href="states/#State-abstract-type-1">State abstract type</a></li><ul><li><a href="states/#Defining-a-new-State-concrete-struct-1">Defining a new State concrete struct</a></li></ul></ul><h2><a class="nav-anchor" id="Main-Functions-1" href="#Main-Functions-1">Main Functions</a></h2><div class="admonition warning"><div class="admonition-title">Missing docstring.</div><div class="admonition-text"><p>Missing docstring for <code>solve</code>. Check Documenter&#39;s build log for details.</p></div></div><div class="admonition warning"><div class="admonition-title">Missing docstring.</div><div class="admonition-text"><p>Missing docstring for <code>ExactSamplerCache</code>. Check Documenter&#39;s build log for details.</p></div></div><h2><a class="nav-anchor" id="Index-1" href="#Index-1">Index</a></h2><ul><li><a href="algorithms/#NeuralQuantum.Gradient"><code>NeuralQuantum.Gradient</code></a></li><li><a href="networks/#NeuralQuantum.NDM"><code>NeuralQuantum.NDM</code></a></li><li><a href="networks/#NeuralQuantum.RBM"><code>NeuralQuantum.RBM</code></a></li><li><a href="networks/#NeuralQuantum.RBMSplit"><code>NeuralQuantum.RBMSplit</code></a></li><li><a href="algorithms/#NeuralQuantum.SR"><code>NeuralQuantum.SR</code></a></li><li><a href="problems/#NeuralQuantum.GroundStateProblem"><code>NeuralQuantum.GroundStateProblem</code></a></li><li><a href="problems/#NeuralQuantum.SteadyStateProblem"><code>NeuralQuantum.SteadyStateProblem</code></a></li></ul><footer><hr/><a class="next" href="basics/"><span class="direction">Next</span><span class="title">Basics</span></a></footer></article></body></html>
