@@ -103,20 +103,16 @@ include("Networks/NDMLT.jl")
 # Batch
 include("Networks/RBMSplitBatched.jl")
 
-const rRBMSplit = RBMSplit; export rRBMSplit;
-const rNDM = NDM; export rNDM;
-const rNDMSymm = NDMSymm; export rNDMSymm;
-
 #
 include("Networks/ClosedSystems/RBM.jl")
 
 # Problems
 export LdagL_spmat_prob, LdagL_sop_prob, LdagLProblem, LdagLFullProblem, LdagL_L_prob, LdagL_L_Problem, LdagL_Lrho_prob
-include("Problems/LdagL_spmat_prob.jl")
-include("Problems/LdagL_sop_prob.jl")
-include("Problems/LdagL_L_prob.jl")
-include("Problems/LdagL_Lrho_prob.jl")
-include("Problems/Operators/LdagL_Lrho_op_prob.jl")
+include("Problems/SteadyStateLindblad/LdagLSparseOpProblem.jl")
+include("Problems/SteadyStateLindblad/LdagLSparseSuperopProblem.jl")
+include("Problems/SteadyStateLindblad/LRhoKLocalOpProblem.jl")
+include("Problems/SteadyStateLindblad/LRhoSparseOpProblem.jl")
+include("Problems/SteadyStateLindblad/LRhoSparseSuperopProblem.jl")
 const LdagLFullProblem = LdagL_sop_prob
 const LdagLProblem = LdagL_spmat_prob
 const LdagL_L_Problem = LdagL_Lrho_prob
