@@ -1,6 +1,6 @@
 state(prob::AbstractProblem, net, args...) = state(input_type(net), prob, net, args...)
 state(T::Type{<:Number}, prob::AbstractProblem, net) = state(T, basis(prob), net)
-#state(T::Type{<:Number}, prob::LdagL_Lrho_op_prob, net) = state_lut(T, basis(prob), net)
+#state(T::Type{<:Number}, prob::LRhoKLocalOpProblem, net) = state_lut(T, basis(prob), net)
 state_lut(prob::AbstractProblem, net, args...) = state_lut(input_type(net), prob, net, args...)
 state_lut(T::Type{<:Number}, prob::AbstractProblem, net) = state_lut(T, basis(prob), net)
 

@@ -13,7 +13,7 @@ lattice = SquareLattice(sites, PBC=true)
 # Create the hamiltonian for the QI model
 ham = quantum_ising_ham(lattice, g=1.0, V=2.0)
 # Create the Problem (cost function) for the given hamiltonian
-# alternative is LdagL_L_prob. It works for NDM, not for RBM
+# targeting the 0 ground state energy.
 prob = GroundStateProblem(T, ham)
 
 #-- Observables

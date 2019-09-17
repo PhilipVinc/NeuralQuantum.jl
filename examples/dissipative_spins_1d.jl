@@ -12,7 +12,8 @@ lattice = SquareLattice([Nsites],PBC=true)
 # Create the lindbladian for the QI model
 lind = quantum_ising_lind(lattice, g=1.0, V=2.0, γ=1.0)
 # Create the Problem (cost function) for the given lindbladian
-# alternative is LdagL_L_prob. It works for NDM, not for RBM
+# targeting the Steady State, using a memory efficient encoding and
+# minimizing |Lρ|^2 as a variance, which is more efficient.
 prob = SteadyStateProblem(T, lind, operators=true, variance=true)
 
 #-- Observables

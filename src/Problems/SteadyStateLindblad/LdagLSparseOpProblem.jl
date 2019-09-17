@@ -1,9 +1,9 @@
 """
-    LdagL_spmat_prob <: AbstractProblem
+    LdagLSparseOpProblem <: AbstractProblem
 
 Problem or finding the steady state of a ℒdagℒ matrix
 """
-struct LdagL_spmat_prob{B, SM} <: HermitianMatrixProblem where {B<:Basis,
+struct LdagLSparseOpProblem{B, SM} <: HermitianMatrixProblem where {B<:Basis,
                                                  SM<:SparseMatrixCSC}
     HilbSpace::B            # 0
     H::SM                   # 1
@@ -18,11 +18,11 @@ struct LdagL_spmat_prob{B, SM} <: HermitianMatrixProblem where {B<:Basis,
     ρss
 end
 
-basis(prob::LdagL_spmat_prob) = prob.HilbSpace
+basis(prob::LdagLSparseOpProblem) = prob.HilbSpace
 
 
 """
-    LdagL_spmat_prob([T=STD_REAL_PREC], lindbladian)
+    LdagLSparseOpProblem([T=STD_REAL_PREC], lindbladian)
 
 Creates a problem for minimizing the cost function 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ'ℒ |ρ⟩⟩|².
 Computes |⟨⟨σ|ℒ'ℒ |ρ⟩⟩| by computing on the fly commutators with the
@@ -34,12 +34,12 @@ or the Hamiltonian and a vector of collapse operators.
 `T=STD_REAL_PREC` by default is the numerical precision used. It should match that of
 the network.
 """
-LdagL_spmat_prob(args...) = LdagL_spmat_prob(STD_REAL_PREC, args...)
-LdagL_spmat_prob(T::Type{<:Number}, gl::GraphLindbladian) =
-    LdagL_spmat_prob(T, basis(gl), SparseOperator(hamiltonian(gl)), jump_operators(gl))
-LdagL_spmat_prob(T::Type{<:Number}, ham::DataOperator, cops) =
-    LdagL_spmat_prob(T, ham.basis_l, ham, cops)
-function LdagL_spmat_prob(T::Type{<:Number}, Hilb::Basis, Ham::DataOperator, c_ops_q)
+LdagLSparseOpProblem(args...) = LdagLSparseOpProblem(STD_REAL_PREC, args...)
+LdagLSparseOpProblem(T::Type{<:Number}, gl::GraphLindbladian) =
+    LdagLSparseOpProblem(T, basis(gl), SparseOperator(hamiltonian(gl)), jump_operators(gl))
+LdagLSparseOpProblem(T::Type{<:Number}, ham::DataOperator, cops) =
+    LdagLSparseOpProblem(T, ham.basis_l, ham, cops)
+function LdagLSparseOpProblem(T::Type{<:Number}, Hilb::Basis, Ham::DataOperator, c_ops_q)
     # Fix complex numbers
     if real(T) == T
         T = Complex{T}
@@ -70,7 +70,7 @@ function LdagL_spmat_prob(T::Type{<:Number}, Hilb::Basis, Ham::DataOperator, c_o
         end
     end
 
-    LdagL_spmat_prob{typeof(Hilb), ST}(
+    LdagLSparseOpProblem{typeof(Hilb), ST}(
                  Hilb,                  # 0
                  H_eff,                 # 1
                  transpose(H_eff),
@@ -83,7 +83,7 @@ function LdagL_spmat_prob(T::Type{<:Number}, Hilb::Basis, Ham::DataOperator, c_o
                  0.0)
 end
 
-function compute_Cloc(prob::LdagL_spmat_prob, net::MatrixNet, 𝝝, lnψ=net(𝝝), 𝝝p=deepcopy(𝝝))
+function compute_Cloc(prob::LdagLSparseOpProblem, net::MatrixNet, 𝝝, lnψ=net(𝝝), 𝝝p=deepcopy(𝝝))
     # Quantities of the problem
     H = prob.H
     H_t = prob.H_t
@@ -280,5 +280,5 @@ function compute_Cloc(prob::LdagL_spmat_prob, net::MatrixNet, 𝝝, lnψ=net(�
     return C_loc
 end
 
-Base.show(io::IO, p::LdagL_spmat_prob) = print(io,
-    "LdagL_spmat_prob on space : $(basis(p)), computing the energy of LdagL with H, jump_ops")
+Base.show(io::IO, p::LdagLSparseOpProblem) = print(io,
+    "LdagLSparseOpProblem on space : $(basis(p)), computing the energy of LdagL with H, jump_ops")

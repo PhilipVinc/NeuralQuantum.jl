@@ -1,12 +1,12 @@
 """
-    LdagL_Lrho_op_prob <: AbstractProblem
+    LRhoKLocalOpProblem <: AbstractProblem
 
 Problem or finding the steady state of a ℒdagℒ matrix by computing
 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ |ρ⟩⟩|² using the sparse Liouvillian matrix.
 
 DO NOT USE WITH COMPLEX-WEIGHT NETWORKS, AS IT DOES NOT WORK
 """
-struct LdagL_Lrho_op_prob{B, SM1, SM} <: LRhoSquaredProblem where {B<:Basis,
+struct LRhoKLocalOpProblem{B, SM1, SM} <: LRhoSquaredProblem where {B<:Basis,
                                                  SM<:SparseMatrixCSC}
     HilbSpace::B            # 0
     HnH::SM1
@@ -14,17 +14,17 @@ struct LdagL_Lrho_op_prob{B, SM1, SM} <: LRhoSquaredProblem where {B<:Basis,
     ρss
 end
 
-LdagL_Lrho_op_prob(gl::GraphLindbladian) = LdagL_Lrho_op_prob(STD_REAL_PREC, gl)
-function LdagL_Lrho_op_prob(T, gl::GraphLindbladian)
+LRhoKLocalOpProblem(gl::GraphLindbladian) = LRhoKLocalOpProblem(STD_REAL_PREC, gl)
+function LRhoKLocalOpProblem(T, gl::GraphLindbladian)
     HnH, c_ops, c_ops_t = to_linear_operator(gl, Complex{real(T)})
-    return LdagL_Lrho_op_prob(basis(gl), HnH, c_ops, 0.0)
+    return LRhoKLocalOpProblem(basis(gl), HnH, c_ops, 0.0)
 end
 
-basis(prob::LdagL_Lrho_op_prob) = prob.HilbSpace
+basis(prob::LRhoKLocalOpProblem) = prob.HilbSpace
 
 # Standard method dispatched when the state is generic (non lut).
 # will work only if 𝝝 and 𝝝p are the same type (and non lut!)
-function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
+function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
                        net::MatrixNet, 𝝝::S,
                        lnψ=net(𝝝), 𝝝p::S=deepcopy(𝝝)) where {S}
     # hey
@@ -120,12 +120,12 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
 end
 
 # pretty printing
-Base.show(io::IO, p::LdagL_Lrho_op_prob) = print(io,
-    "LdagL_Lrho_op_prob on space $(basis(p)) computing the variance of Lrho using the sparse liouvillian")
+Base.show(io::IO, p::LRhoKLocalOpProblem) = print(io,
+    "LRhoKLocalOpProblem on space $(basis(p)) computing the variance of Lrho using the sparse liouvillian")
 
 # Variant for when the state has a LookUpTable and resorts to computing
 # only lut updates.
-function compute_Cloc!(LLO_i, ∇lnψ, prob::LdagL_Lrho_op_prob,
+function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
                        net::MatrixNet, 𝝝::S,
                        _lnψ=nothing, _𝝝p::NS=nothing) where {S<:LUState, NS<:Union{Nothing, S}}
     # hey

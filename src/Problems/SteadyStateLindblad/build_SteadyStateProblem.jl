@@ -14,19 +14,19 @@ function SteadyStateProblem(T::Type{<:Number}, lind; operators=true, variance=tr
                    compatible with non-variance minimization.")
         end
 
-        return LdagL_Lrho_op_prob(T, lind)
+        return LRhoKLocalOpProblem(T, lind)
     else # not operators
         if variance
             if fullmatrix
-                return LdagL_L_prob(T, lind)
+                return LdagLSparseSuperopProblem(T, lind)
             else
-                return LdagL_Lrho_prob(T, lind)
+                return LRhoSparseOpProblem(T, lind)
             end
         else # not variance
             if fullmatrix
-                return LdagL_sop_prob(T, lind, 0.0)
+                return LRhoSparseSuperopProblem(T, lind, 0.0)
             else
-                return LdagL_spmat_prob(T, lind, 0.0)
+                return LdagLSparseOpProblem(T, lind, 0.0)
             end
         end
     end
