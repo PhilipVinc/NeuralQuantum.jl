@@ -20,8 +20,9 @@ The initial parameters of the neurons are initialized with a rescaled normal
 distribution of width 0.01 for the coupling matrix and 0.05 for the local
 biases. The default initializers can be overriden by specifying
 
-initW=(dims...)->rescaled_normal(T, 0.01, dims...),
-initb=(dims...)->rescaled_normal(T, 0.05, dims...),
+initW=(dims...)->rescaled_normal(T, 0.01, dims...)
+initb=(dims...)->rescaled_normal(T, 0.05, dims...)
+inita=(dims...)->rescaled_normal(T, 0.01, dims...)
 
 Refs:
     https://arxiv.org/abs/1606.02318
@@ -29,7 +30,8 @@ Refs:
 RBM(in, α, args...) = RBM(ComplexF32, in, α, args...)
 RBM(T::Type, in, α,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
-    initb=(dims...)->rescaled_normal(T, 0.05, dims...)) =
+    initb=(dims...)->rescaled_normal(T, 0.05, dims...),
+    inita=(dims...)->rescaled_normal(T, 0.01, dims...)) =
     RBM(inita(in), initb(convert(Int,α*in)),
         initW(convert(Int,α*in), in))
 
