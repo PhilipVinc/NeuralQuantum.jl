@@ -16,7 +16,7 @@ end
 
 LdagL_Lrho_op_prob(gl::GraphLindbladian) = LdagL_Lrho_op_prob(STD_REAL_PREC, gl)
 function LdagL_Lrho_op_prob(T, gl::GraphLindbladian)
-    HnH, c_ops, c_ops_t = to_linear_operator(gl)
+    HnH, c_ops, c_ops_t = to_linear_operator(gl, Complex{real(T)})
     return LdagL_Lrho_op_prob(basis(gl), HnH, c_ops, 0.0)
 end
 

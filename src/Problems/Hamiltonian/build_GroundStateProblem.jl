@@ -17,7 +17,7 @@ function GroundStateProblem(T::Type{<:Number}, hamiltonian; operators=true, vari
     base = basis(hamiltonian)
 
     if operators
-        ham = to_linear_operator(hamiltonian)
+        ham = to_linear_operator(hamiltonian, Complex{real(T)})
     else
         ham = data(SparseOperator(hamiltonian))
     end

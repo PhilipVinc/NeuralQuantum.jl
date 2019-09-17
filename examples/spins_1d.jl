@@ -14,7 +14,7 @@ lattice = SquareLattice(sites, PBC=true)
 ham = quantum_ising_ham(lattice, g=1.0, V=2.0)
 # Create the Problem (cost function) for the given hamiltonian
 # alternative is LdagL_L_prob. It works for NDM, not for RBM
-prob = NeuralQuantum.GroundStateProblem(T, ham)
+prob = GroundStateProblem(T, ham)
 
 #-- Observables
 # Define the local observables to look at.
