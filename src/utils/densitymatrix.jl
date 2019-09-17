@@ -25,7 +25,7 @@ function densitymatrix(net, prob, norm=true)
     ρ
 end
 
-QuantumOptics.dm(net::NeuralNetwork, prob::Problem, norm=false) =
+QuantumOptics.dm(net::NeuralNetwork, prob::AbstractProblem, norm=false) =
     densitymatrix(net, prob, norm)
 
 """

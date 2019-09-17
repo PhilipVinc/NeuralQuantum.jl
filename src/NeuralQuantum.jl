@@ -34,12 +34,12 @@ abstract type NeuralNetwork end
 abstract type State end
 abstract type FiniteBasisState <: State end
 
-abstract type Problem end
-abstract type SteadyStateProblem <: Problem end
-abstract type HermitianMatrixProblem <: SteadyStateProblem end
-abstract type LRhoSquaredProblem <: SteadyStateProblem end
-abstract type OpenTimeEvolutionProblem <: SteadyStateProblem end
-abstract type OperatorEstimationProblem <: Problem end
+abstract type AbstractProblem end
+abstract type AbstractSteadyStateProblem <: AbstractProblem end
+abstract type HermitianMatrixProblem <: AbstractSteadyStateProblem end
+abstract type LRhoSquaredProblem <: AbstractSteadyStateProblem end
+abstract type OpenTimeEvolutionProblem <: AbstractSteadyStateProblem end
+abstract type OperatorEstimationProblem <: AbstractProblem end
 
 abstract type Sampler end
 
@@ -114,7 +114,6 @@ include("Networks/ClosedSystems/RBM.jl")
 export LdagL_spmat_prob, LdagL_sop_prob, LdagLProblem, LdagLFullProblem, LdagL_L_prob, LdagL_L_Problem, LdagL_Lrho_prob
 include("Problems/LdagL_spmat_prob.jl")
 include("Problems/LdagL_sop_prob.jl")
-include("Problems/ObservablesProblem.jl")
 include("Problems/LdagL_L_prob.jl")
 include("Problems/LdagL_Lrho_prob.jl")
 include("Problems/Operators/LdagL_Lrho_op_prob.jl")
@@ -125,6 +124,11 @@ const LdagL_L_Problem = LdagL_Lrho_prob
 # Hamiltonian problems
 include("Problems/Hamiltonian/HamiltonianGSEnergyProblem.jl")
 include("Problems/Hamiltonian/build_GroundStateProblem.jl")
+
+# Observables problem
+include("Problems/ObservablesProblem.jl")
+include("Problems/time_evo/time_Evo_L.jl")
+
 
 # gen state
 export state, state_lut

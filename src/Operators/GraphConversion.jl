@@ -9,7 +9,7 @@ systems in very big lattices arises. Evidently, there is a small performance
 price to pay when using those structures.
 """
 to_linear_operator(lind::GraphLindbladian, T=nothing) =
-    to_linear_operator(hamiltonian(lind), jump_operators_graph(lind), T)T
+    to_linear_operator(hamiltonian(lind), jump_operators_graph(lind), T)
 
 function to_linear_operator(ham::GraphOperator, c_ops::Vector, T::Union{Nothing, Type{<:Number}}=nothing)
 

@@ -1,5 +1,5 @@
 """
-    LdagL_L_prob <: Problem
+    LdagL_L_prob <: AbstractProblem
 
 Problem or finding the steady state of a ℒdagℒ matrix by computing
 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ |ρ⟩⟩|² using the sparse Liouvillian matrix.

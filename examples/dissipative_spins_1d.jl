@@ -13,7 +13,7 @@ lattice = SquareLattice([Nsites],PBC=true)
 lind = quantum_ising_lind(lattice, g=1.0, V=2.0, γ=1.0)
 # Create the Problem (cost function) for the given lindbladian
 # alternative is LdagL_L_prob. It works for NDM, not for RBM
-prob = NeuralQuantum.LdagL_Lrho_op_prob(T, lind)
+prob = SteadyStateProblem(T, lind, operators=true, variance=true)
 
 #-- Observables
 # Define the local observables to look at.
@@ -26,7 +26,7 @@ oprob = ObservablesProblem(Sx, Sy, Sz)
 
 # Define the Neural Network. A NDM with N visible spins and αa=2 and αh=1
 #alternative vectorized rbm: net  = RBMSplit(Complex{T}, Nsites, 6)
-net  = rNDM(T, Nsites, 1, 2)
+net  = NDM(T, Nsites, 1, 2)
 # Create a cached version of the neural network for improved performance.
 cnet = cached(net)
 # Chose a sampler. Options are FullSumSampler() which sums over the whole space

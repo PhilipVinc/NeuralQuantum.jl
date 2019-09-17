@@ -1,5 +1,5 @@
 """
-    LdagL_Lrho_prob <: Problem
+    LdagL_Lrho_prob <: AbstractProblem
 
 Problem or finding the steady state of a ℒdagℒ matrix by computing
 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ |ρ⟩⟩|² only storing H and c_ops.

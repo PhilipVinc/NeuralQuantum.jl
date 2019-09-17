@@ -1,5 +1,5 @@
 """
-    LdagL_sop_prob <: Problem
+    LdagL_sop_prob <: AbstractProblem
 
 Problem or finding the steady state of a ℒdagℒ matrix
 """
