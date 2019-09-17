@@ -66,6 +66,7 @@ function sample_network!(res::MCMCSRLEvaluationCache,
   return res
 end
 
+#=
 function sample_network!(res::MCMCSREvaluationCache,
                          prob::OpenTimeEvolutionProblem,
                          net, σ, wholespace=false)
@@ -83,4 +84,4 @@ function sample_network!(res::MCMCSREvaluationCache,
     res.EOave[i] .+= prob .* conj.(_∇lnψ) .* E
   end
   return res
-end
+end=#

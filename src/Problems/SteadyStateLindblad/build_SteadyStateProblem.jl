@@ -18,7 +18,7 @@ bigger than a certain threshold.
 To use this feature, the hamiltonian must be provided as a `GraphOperator` object,
 from `QuantumLattices` package.
 """
-SteadyStateProblem(args...) = SteadyStateProblem(STD_REAL_PREC, args...)
+SteadyStateProblem(args...; kwargs...) = SteadyStateProblem(STD_REAL_PREC, args...; kwargs...)
 
 # Dispatched if called with Hamiltonian and Jump operators
 function SteadyStateProblem(T::Type{<:Number}, H::DataOperator, J::AbstractVector,

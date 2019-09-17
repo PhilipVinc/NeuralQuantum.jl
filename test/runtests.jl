@@ -8,6 +8,11 @@ using Test
         include("Machines/test_lut.jl")
     end
 
+    println("Testing algorithm caches...")
+    @testset "Algorithm" begin
+        include("Algorithms/Caches_test.jl")
+    end
+
     println("Testing Problems and algorithms...")
     @testset "Problem & algs" begin
         include("Problems/problem_algs.jl")
