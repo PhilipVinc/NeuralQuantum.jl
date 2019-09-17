@@ -9,6 +9,27 @@ struct RBMSplit{VT,MT} <: MatrixNeuralNetwork
 end
 @treelike RBMSplit
 
+"""
+    RBMSplit([T=Complex{STD_REAL_PREC}], N, α, [initW, initb, inita])
+
+Constructs a Restricted Bolzmann Machine to encode a vectorised density matrix,
+with weights of type `T` (Defaults to ComplexF32), `2N` input neurons,
+2N⋅α hidden neurons.
+This network does not ensure positive-definitness of the density matrix.
+
+`N` must match the size of the lattice.
+
+The initial parameters of the neurons are initialized with a rescaled normal
+distribution of width 0.01 for the coupling matrix and 0.05 for the local
+biases. The default initializers can be overriden by specifying
+
+initW=(dims...)->rescaled_normal(T, 0.01, dims...),
+initb=(dims...)->rescaled_normal(T, 0.05, dims...),
+initb=(dims...)->rescaled_normal(T, 0.01, dims...),
+
+Refs:
+    https://arxiv.org/abs/1902.07006
+"""
 RBMSplit(in::Int, α::Number, args...) = RBMSplit(ComplexF32, in, α, args...)
 RBMSplit(T::Type, in, α,
          initW=(dims...)->rescaled_normal(T, 0.01, dims...),

@@ -8,7 +8,6 @@ export Gradient
 
 Algorithm for descending along the steepest gradient with SGD-based optimizers.
 """
-# Stochastic Reconfiguration:
 struct Gradient <: Algorithm end
 
 ################################################################################

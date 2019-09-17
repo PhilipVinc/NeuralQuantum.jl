@@ -7,23 +7,28 @@ such, the first step must be defining the elements that make up the lindbladaian
 namely the Hilbert space, the Hamiltonian and the Loss operators.
 
 While it is possible to specify an arbitrary quantum system, the easiest way is
-to use one of the alredy-implemented systems. 
+to use one of the alredy-implemented systems.
+Alternatively, it is possible to define an Hamiltonian and jump operators by
+using [QuantumOptics.jl](http://github.com/bastikr/QuantumOptics.jl).
 
 ```
 using NeuralQuantum
 
 Nspins = 5 # The number of spins in the system
 
-# Compute the Hamiltonian and the list of jump operators.
-sys = quantum_ising_system(Nspins, V=0.2, g=1.0, gamma=0.1, PBC=true)
+# Create the lattice as [Nx, Ny, Nz]
+lattice = SquareLattice([Nspins],PBC=true)
+
+# Compute the liouvillian.
+liouv = quantum_ising_system(lattice, V=0.2, g=1.0, gamma=0.1, PBC=true)
 ```
 
 Next, we need to define the quantity that we wish to minimize variationally to
 find the steady state. This will be ``\langle\rho|\mathcal{L}^\dagger\mathcal{L
-}|\rho\rangle``.
+}|\rho\rangle``, sampled by computing ``\mathcal{L}|\rho``.
 I call this quantity the *problem*.
 ```
-prob = LdagLProblem(sys, compute_ss=false)
+prob = SteadyStateProblem(lind);
 ```
 
 ## Choosing the Ansatz
@@ -31,36 +36,18 @@ The next step consists in creating the network-based ansatz for the density
 matrix.
 In this example we will use a 64-bit floating point precision translational
 invariant Neural Density Matrix, with ``N_\text{spins}`` spins in the visible layer,
-3 features in the hidden layer (~ ``3N_\text{spins}`` spins) and 3 features in the
+1 features in the hidden layer (~ ``3N_\text{spins}`` spins) and 2 features in the
 ancilla.
 To increase the expressive power of the network, one may increase freely the
 number of features.
 For a complete list of all possible ansatzes refer to section [Networks](@ref).
 
 ```
-net_initial = TINDM{Float64}(Nspins, 3, 3)
+net_initial = NDM(Nspins, 1, 2)
 ```
 
-When you create a network, it has all it's weights initialized to zero. It is
-usually a good idea to initialize them to some gaussian distribution. of width
-``~0.1``.
-Often, in the machine learning community, they are initialized according
-to a uniform distribution between ``[-\frac{1}{\sqrt{N}}, \frac{1}{\sqrt{N}}]`` [ref?].
-
-```
-# Load the package with random numbers
-using Random
-
-# For reproducible results, choose a seed
-rng = MersenneTwister(12345)
-
-# Initialize the weights according to a gaussian distribution of width 1
-randn!(rng, net_initial.weights)
-
-# Set the width to 0.3
-net_initial.weights .*= 0.3
-```
-
+When you create a network, it has all it's weights distributed according to a gaussian
+with standard deviation 0.005.
 
 ## Solving for the steady state
 Having specified the quantity to minimize and the ansatz, we only need to choose
@@ -169,42 +156,5 @@ won't hold anymore information on the weights.
 
 ## Summary
 ```
-using NeuralQuantum, Random
 
-Nspins = 5 # The number of spins in the system
-
-# Compute the Hamiltonian and the list of jump operators.
-sys = quantum_ising_system(Nspins, V=0.2, g=1.0, gamma=0.1, PBC=true)
-
-# Compute the operator for the average magnetization
-mx, my, mz = magnetization([:x, :y, :z], sys)./Nspins
-
-# Create the list of observables and symbols
-obs = [(:mx, mx), (:my, my), (:mz, mz)];
-
-# Define the quantity to be minimised (the loss function)
-prob = LdagLProblem(sys, compute_ss=false)
-
-# Translational-Invariant Neural Density Matrix with 3 hidden, 3 auxiliary features
-# and Binary activation function.
-net_initial = TINDMBinaryExact{Float64}(Nspins, 3, 3)
-
-# For reproducible results, choose a seed
-rng = MersenneTwister(12345)
-
-# Initialize the weights according to a gaussian distribution of width 1
-randn!(rng, net_initial.weights)
-
-# Set the width to 0.3
-net.weights .*= 0.3
-
-# Initialize an Exact Sum Sampler
-sampler = Exact()
-
-# Initialize a GD optimizer with learning rate (step size) 0.01
-optim = GD(lr=0.1)
-
-# Optimize the weights of the neural network for 100 iterations
-net_optimized = solve(net_initial, prob, sampling_alg=sampler, optimizer=optim,
-                      max_iter=100, observables=obs, save_at=1)
 ```

@@ -14,6 +14,27 @@ struct NDM{VT,MT} <: MatrixNeuralNetwork
 end
 @treelike NDM
 
+"""
+    NDM([T=STD_REAL_PREC], N, αₕ, αₐ, [initW, initb, inita])
+
+Constructs a Neural Density Matrix with numerical precision `T` (Defaults to
+Float32), `N` input neurons, N⋅αₕ hidden neurons and N⋅αₐ ancillary neurons.
+This network ensure that the density matrix is always positive definite.
+
+The number of input neurons `N` must match the size of the lattice.
+
+The initial parameters of the neurons are initialized with a rescaled normal
+distribution of width 0.01 for the coupling matrix and 0.005 for the local
+biases. The default initializers can be overriden by specifying
+
+initW=(dims...)->rescaled_normal(T, 0.01, dims...),
+initb=(dims...)->rescaled_normal(T, 0.005, dims...),
+inita=(dims...)->rescaled_normal(T, 0.005, dims...))
+
+Refs:
+    https://arxiv.org/abs/1801.09684
+    https://arxiv.org/abs/1902.10104
+"""
 NDM(args...) = NDM(STD_REAL_PREC, args...)
 NDM(T::Type{<:Real}, in, αh, αa,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),

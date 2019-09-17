@@ -6,11 +6,30 @@ struct RBM{T} <: KetNeuralNetwork
     W::Matrix{T}
 end
 
+"""
+    RBMSplit([T=Complex{STD_REAL_PREC}], N, α, [initW, initb])
+
+Constructs a Restricted Bolzmann Machine to encode a wavefunction,
+with weights of type `T` (Defaults to ComplexF32), `N` input neurons,
+N⋅α hidden neurons.
+This is the Neural Quantum State (NQS) Ansatz.
+
+`N` must match the size of the lattice.
+
+The initial parameters of the neurons are initialized with a rescaled normal
+distribution of width 0.01 for the coupling matrix and 0.05 for the local
+biases. The default initializers can be overriden by specifying
+
+initW=(dims...)->rescaled_normal(T, 0.01, dims...),
+initb=(dims...)->rescaled_normal(T, 0.05, dims...),
+
+Refs:
+    https://arxiv.org/abs/1606.02318
+"""
 RBM(in, α, args...) = RBM(ComplexF32, in, α, args...)
 RBM(T::Type, in, α,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
-    initb=(dims...)->rescaled_normal(T, 0.05, dims...),
-    inita=(dims...)->rescaled_normal(T, 0.01, dims...)) =
+    initb=(dims...)->rescaled_normal(T, 0.05, dims...)) =
     RBM(inita(in), initb(convert(Int,α*in)),
         initW(convert(Int,α*in), in))
 
@@ -47,8 +66,8 @@ function (net::RBM{T})(c::RBMCache, σ) where T
     logℒθ = c.logℒθ
 
     #θ .= net.b .+ net.W * σ
-    copy!(c.σ, σ)
-    copy!(θ, net.b)
+    copyto!(c.σ, σ)
+    copyto!(θ, net.b)
     BLAS.gemv!('N', T(1.0), net.W, c.σ, T(1.0), θ)
 
     logℒθ .= logℒ.(θ)
