@@ -1,9 +1,9 @@
 """
-    LRhoSparseSuperopProblem <: AbstractProblem
+    LdagLSparseSuperopProblem <: AbstractProblem
 
 Problem or finding the steady state of a ℒdagℒ matrix
 """
-struct LRhoSparseSuperopProblem{B, SM} <: HermitianMatrixProblem where {B<:Basis,
+struct LdagLSparseSuperopProblem{B, SM} <: HermitianMatrixProblem where {B<:Basis,
                                                  SM<:SparseMatrixCSC}
     HilbSpace::B            # 0
     LdagL::SM
@@ -11,7 +11,7 @@ struct LRhoSparseSuperopProblem{B, SM} <: HermitianMatrixProblem where {B<:Basis
 end
 
 """
-    LRhoSparseSuperopProblem([T=STD_REAL_PREC], lindbladian)
+    LdagLSparseSuperopProblem([T=STD_REAL_PREC], lindbladian)
 
 Creates a problem for minimizing the cost function 𝒞 = ∑|ρ(σ)|²|⟨⟨σ|ℒ'ℒ |ρ⟩⟩|².
 Computes |⟨⟨σ|ℒ'ℒ |ρ⟩⟩| by building the sparse superoperator, which can be done
@@ -24,17 +24,17 @@ or the Hamiltonian and a vector of collapse operators.
 `T=STD_REAL_PREC` by default is the numerical precision used. It should match that of
 the network.
 """
-LRhoSparseSuperopProblem(args...) = LRhoSparseSuperopProblem(STD_REAL_PREC, args...)
-LRhoSparseSuperopProblem(T::Type{<:Number}, gl::GraphLindbladian) =
-    LRhoSparseSuperopProblem(T, liouvillian(gl))
-LRhoSparseSuperopProblem(T::Type{<:Number}, Ham::DataOperator, cops::Vector) =
-    LRhoSparseSuperopProblem(T, liouvillian(Ham, cops))
-LRhoSparseSuperopProblem(T::Type{<:Number}, Liouv::SparseSuperOperator) =
-    LRhoSparseSuperopProblem(first(Liouv.basis_l), Liouv.data'*Liouv.data, 0.0)
+LdagLSparseSuperopProblem(args...) = LdagLSparseSuperopProblem(STD_REAL_PREC, args...)
+LdagLSparseSuperopProblem(T::Type{<:Number}, gl::GraphLindbladian) =
+    LdagLSparseSuperopProblem(T, liouvillian(gl))
+LdagLSparseSuperopProblem(T::Type{<:Number}, Ham::DataOperator, cops::Vector) =
+    LdagLSparseSuperopProblem(T, liouvillian(Ham, cops))
+LdagLSparseSuperopProblem(T::Type{<:Number}, Liouv::SparseSuperOperator) =
+    LdagLSparseSuperopProblem(first(Liouv.basis_l), Liouv.data'*Liouv.data, 0.0)
 
-basis(prob::LRhoSparseSuperopProblem) = prob.HilbSpace
+basis(prob::LdagLSparseSuperopProblem) = prob.HilbSpace
 
-function compute_Cloc(prob::LRhoSparseSuperopProblem, net::MatrixNet, σ, lnψ=net(σ), σp=deepcopy(σ))
+function compute_Cloc(prob::LdagLSparseSuperopProblem, net::MatrixNet, σ, lnψ=net(σ), σp=deepcopy(σ))
     ℒdagℒ = prob.LdagL
     set_index!(σp, index(σ))
 
@@ -58,5 +58,5 @@ function compute_Cloc(prob::LRhoSparseSuperopProblem, net::MatrixNet, σ, lnψ=n
     C_loc
 end
 
-Base.show(io::IO, p::LRhoSparseSuperopProblem) = print(io,
-    "LRhoSparseSuperopProblem on space : $(basis(p)), computing the energy of LdagL with the sparse liouvillian")
+Base.show(io::IO, p::LdagLSparseSuperopProblem) = print(io,
+    "LdagLSparseSuperopProblem on space : $(basis(p)), computing the energy of LdagL with the sparse liouvillian")

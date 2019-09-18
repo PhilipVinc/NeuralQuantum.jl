@@ -55,13 +55,13 @@ end
 function _build_steadystate_sparsemat_problem(T::Type{<:Number}, H, J; variance=false, fullmatrix=false)
     if variance
         if fullmatrix
-            return LdagLSparseSuperopProblem(T, H, J)
+            return LRhoSparseSuperopProblem(T, H, J)
         else
             return LRhoSparseOpProblem(T, H, J)
         end
     else # not variance
         if fullmatrix
-            return LRhoSparseSuperopProblem(T, H, J)
+            return LdagLSparseSuperopProblem(T, H, J)
         else
             return LdagLSparseOpProblem(T, H, J)
         end
