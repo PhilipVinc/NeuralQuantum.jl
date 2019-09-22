@@ -29,9 +29,10 @@ end
 
 function GradientEvaluation(net::NeuralNetwork)
     wt = grad_cache(net)
+    WT = weight_type(net)
     T = out_type(net)
 
-    F = Tuple([zero(w) for w=wt.tuple_all_weights])
+    F = Tuple([zeros(WT,size(w)) for w=wt.tuple_all_weights])
 
     GradientEvaluation(zero(T),
                        F,

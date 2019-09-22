@@ -14,8 +14,6 @@ end
     val===:tuple_all_weights && return vec_data(s)
     return getproperty(getfield(s, :fields), val)
 end
-
-
 @inline vec_data(s::RealDerivative) = getfield(s, :vectorised_data)
 
 struct WirtingerDerivative{R,V} <: AbstractDerivative
@@ -44,4 +42,49 @@ function WirtingerDerivative(net::NeuralNetwork)
     i, fields_r = weight_tuple(net, fieldnames(typeof(net)), vec)
     i, fields_c = weight_tuple(net, fieldnames(typeof(net)), vec, i+1)
     return WirtingerDerivative(fields_r, fields_c, [vec])
+end
+
+
+Base.show(io::IO, der::RealDerivative) = begin
+    pn = propertynames(der)
+    str = "{"
+    for fn=pn[1:end-1]
+        str *= ":$fn, "
+    end
+    str *= ":" * string(last(pn))*" }"
+    print(io,
+    "RealDerivative with fields: ", str)
+end
+
+Base.show(io::IO, ::MIME"text/plain", der::RealDerivative) = begin
+    pn = propertynames(der)
+    str = "{"
+    for fn=pn[1:end-1]
+        str *= ":$fn, "
+    end
+    str *= ":" * string(last(pn))*" }"
+    print(io,
+    "RealDerivative with fields: ", str)
+end
+
+Base.show(io::IO, der::WirtingerDerivative) = begin
+    pn = propertynames(real(der))
+    str = "{"
+    for fn=pn[1:end-1]
+        str *= ":$fn, "
+    end
+    str *= ":" * string(last(pn))*" }"
+    print(io,
+    "WirtingerDerivative with fields: ", str)
+end
+
+Base.show(io::IO, ::MIME"text/plain", der::WirtingerDerivative) = begin
+    pn = propertynames(real(der))
+    str = "{"
+    for fn=pn[1:end-1]
+        str *= ":$fn, "
+    end
+    str *= ":" * string(last(pn))*" }"
+    print(io,
+    "WirtingerDerivative with fields: ", str)
 end

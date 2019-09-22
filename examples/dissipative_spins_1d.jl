@@ -33,7 +33,7 @@ cnet = cached(net)
 # Chose a sampler. Options are FullSumSampler() which sums over the whole space
 # ExactSampler() which does exact sampling or MCMCSamler which does a markov
 # chain.
-sampl = MCMCSampler(Metropolis(), 3000, burn=50)
+sampl = MCMCSampler(Metropolis(Nsites), 3000, burn=50)
 # Chose a sampler for the observables.
 osampl = FullSumSampler()
 
