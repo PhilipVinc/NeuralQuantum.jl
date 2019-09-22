@@ -11,18 +11,17 @@ Nsites = prod(sites)
 # Create the lattice as [Nx, Ny, Nz]
 lattice = SquareLattice(sites, PBC=true)
 # Create the hamiltonian for the QI model
-ham = quantum_ising_ham(lattice, g=1.0, V=2.0)
+Ĥ = quantum_ising_ham(lattice, g=1.0, V=2.0)
 # Create the Problem (cost function) for the given hamiltonian
 # targeting the ground state.
-prob = GroundStateProblem(T, ham)
 
 #-- Observables
 # Define the local observables to look at.
-Sx  = QuantumLattices.LocalObservable(ham, sigmax, Nsites)
-Sy  = QuantumLattices.LocalObservable(ham, sigmay, Nsites)
-Sz  = QuantumLattices.LocalObservable(ham, sigmaz, Nsites)
+Sx  = QuantumLattices.LocalObservable(Ĥ, sigmax, Nsites)
+Sy  = QuantumLattices.LocalObservable(Ĥ, sigmay, Nsites)
+Sz  = QuantumLattices.LocalObservable(Ĥ, sigmaz, Nsites)
 # Create the problem object with all the observables to be computed.
-oprob = ObservablesProblem(Sx, Sy, Sz)
+oprob = ObservablesProblem(Sx, Sy, Sz, Ĥ)
 
 
 # Define the Neural Network. A RBM with N visible spins and α=2

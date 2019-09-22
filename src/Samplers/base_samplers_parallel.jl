@@ -81,12 +81,17 @@ function _mt_sampler_cache(s::MTSampler, v, net, ::ParallelThreaded)
     scs = Vector{T}(undef, Threads.nthreads())
 
     Threads.@threads for i=1:Threads.nthreads()
-        scs[i] = _sampler_cache(sampler_list(s)[i], v, net, ParallelThreaded())
+        scs[i] = _sampler_cache(sampler_list(s)[i], v, net, ParallelThreaded(), i)
     end
 
     return MTSamplerCache(s, scs, net, v)
 end
 
+# Basic fallback: some samplers dont need any extra computation in case they are
+# parallel, and therefore the cache creation has a signature with 4 arguments, not
+# five. To fallback to use standard sampler cache if possible, we add this method.
+_sampler_cache(s::Sampler, v, net, t::ParallelThreaded, thread_i) =
+    _sampler_cache(s, v, net, t)
 
 # The call tree for init_sampler is the following: if called with multithreading
 # structures, first it updates the weight in the cached networks, then it calls

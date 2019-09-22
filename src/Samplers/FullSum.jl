@@ -41,5 +41,5 @@ function _divide_in_blocks(interval, rank, n_par)
     return iter_start:iter_end
 end
 
-_sampler_cache(s::FullSumSampler, v::FiniteBasisState, net, ::ParallelThreaded) =
-    FullSumSamplerCache(0, _divide_in_blocks(1:spacedimension(v), Threads.threadid(), Threads.nthreads()))
+_sampler_cache(s::FullSumSampler, v::FiniteBasisState, net, ::ParallelThreaded, thread_i) =
+    FullSumSamplerCache(0, _divide_in_blocks(1:spacedimension(v), thread_i, Threads.nthreads()))

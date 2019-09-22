@@ -1,6 +1,32 @@
 ## MEtropolis
 export Metropolis
-struct Metropolis <: MCMCRule end
+struct Metropolis <: MCMCRule
+    num_switches::Int
+
+    # Inner constructor to assert that the number of switches is always odd.
+    Metropolis(i) = begin
+        if iseven(i)
+            @warn """
+                Metropolis sampling with an even number of switches per step
+                is known to be non-ergodic, because it can potentially never
+                change the configuration.
+                Setting the number of switches to $(i+1).
+                """
+            i += 1
+        end
+        return new(i)
+    end
+end
+
+"""
+    Metropolis([n_switches=1])
+
+Metropolis rule for Markov Chain Monte Carlo sampling where at every step
+`n_switches` sites are switched.
+
+The number of switches must be odd, otherwise there might
+"""
+Metropolis() = Metropolis(1)
 
 function markov_chain_step!(σ, s::MCMCSampler{Metropolis}, net::Union{MatrixNet,KetNet}, c)
     # the denominator
