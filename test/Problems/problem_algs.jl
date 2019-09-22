@@ -4,7 +4,7 @@ using NeuralQuantum: LdagLSparseSuperopProblem, LRhoSparseOpProblem
 Nsites = 4
 T = Float64
 
-prob_types = [LRhoSparseSuperopProblem, LdagLSparseOpProblem]
+prob_types = [LdagLSparseSuperopProblem, LdagLSparseOpProblem]
 @testset "LdagL problem: $prob_T" for prob_T=prob_types
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=1.6, V=2.0, γ=1.0)
     net  = cached(NDM(T, Nsites, 2, 1))
@@ -33,13 +33,13 @@ end
 Nsites = 4
 T = Float64
 
-prob_types = [LdagLSparseSuperopProblem, LRhoSparseOpProblem]
+prob_types = [LRhoSparseSuperopProblem, LRhoSparseOpProblem]
 @testset "LdagL problem: $prob_T" for prob_T=prob_types
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=1.6, V=2.0, γ=1.0)
     net  = cached(NDM(T, Nsites, 2, 1))
     net  = (NDM(T, Nsites, 2, 1))
 
-    prob = NeuralQuantum.LRhoSparseSuperopProblem(T, lind);
+    prob = NeuralQuantum.LdagLSparseSuperopProblem(T, lind);
     probL = prob_T(T, lind);
 
     v    = state(prob, net)
@@ -72,7 +72,7 @@ end
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=true), g=0.0, V=0.0, γ=1.0)
     net  = cached(NDM(T, Nsites, 2, 1))
 
-    prob = LdagLSparseSuperopProblem(T, lind);
+    prob  = LRhoSparseSuperopProblem(T, lind);
     probL = LRhoSparseOpProblem(T, lind);
 
     v    = state(prob, net)
@@ -82,7 +82,7 @@ end
     rho   = dm(net, prob, false).data
     rhov  = vec(rho)
 
-    ic = NeuralQuantum.MCMCSRLEvaluationCache(net, prob); zero!(ic)
+    ic  = NeuralQuantum.MCMCSRLEvaluationCache(net, prob); zero!(ic)
     icL = NeuralQuantum.MCMCSRLEvaluationCache(net, probL); zero!(icL)
 
     Clocs_ex  = abs.((L.data*rhov)./rhov).^2
@@ -107,7 +107,7 @@ end
 using SparseArrays, Random
 
 # random
-prob_types = [LRhoSparseSuperopProblem, LdagLSparseOpProblem]
+prob_types = [LdagLSparseSuperopProblem, LdagLSparseOpProblem]
 @testset "LdagL random problem: $prob_T" for prob_T=prob_types
     Nsites=2
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=false), g=1.6, V=2.0, γ=1.0)
@@ -140,7 +140,7 @@ prob_types = [LRhoSparseSuperopProblem, LdagLSparseOpProblem]
     @test Clocs_ex ≈ Clocs_net_S
 end
 
-prob_types = [LdagLSparseSuperopProblem, LRhoSparseOpProblem]
+prob_types = [LRhoSparseSuperopProblem, LRhoSparseOpProblem]
 @testset "LdagL random problem: $prob_T" for prob_T=prob_types
     Nsites=2
     lind = quantum_ising_lind(SquareLattice([Nsites],PBC=false), g=1.6, V=2.0, γ=1.0)
