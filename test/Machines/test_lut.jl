@@ -16,7 +16,7 @@ all_machines = merge(re_machines, im_machines)
 N = 4
 T = last(num_types)
 
-@testset "Test Update_LUT $name" for name=keys(all_machines)
+@testset "Test LUT: Update_LUT $name" for name=keys(all_machines)
     for T=num_types
         net = all_machines[name](T,N)
         isnothing(lookup(net)) && continue
@@ -40,8 +40,8 @@ T = last(num_types)
             init_lut!(v, cnet, true)
             i_lut = lut(v)
             good = Bool[]
-            for f=fieldnames(typeof(i_lut))
-                push!(good, getfield(u_lut, f) ≈ getfield(i_lut, f))
+            for f=propertynames(i_lut)
+                push!(good, getproperty(u_lut, f) ≈ getproperty(i_lut, f))
             end
             push!(results, all(good))
         end
@@ -49,7 +49,7 @@ T = last(num_types)
     end
 end
 
-@testset "Test Logψ_Δ $name" for name=keys(all_machines)
+@testset "Test LUT: Logψ_Δ $name" for name=keys(all_machines)
     for T=num_types
         net = all_machines[name](T,N)
         isnothing(lookup(net)) && continue
@@ -89,7 +89,7 @@ end
 end
 
 
-@testset "Test Cached Gradient $name" for name=keys(merge(re_machines, im_machines))
+@testset "Test LUT: Cached Gradient $name" for name=keys(merge(re_machines, im_machines))
     for T=num_types
         net = all_machines[name](T,N)
         isnothing(lookup(net)) && continue
@@ -118,9 +118,9 @@ end
 
             der_c = ∇logψ(cnet, vr)
             der_l = ∇logψ(cnet, v)
-            for f=fieldnames(typeof(der_l))
-                ∇  = getfield(der_c,  f)
-                c∇ = getfield(der_l, f)
+            for f=propertynames(der_l)
+                ∇  = getproperty(der_c,  f)
+                c∇ = getproperty(der_l, f)
                 push!(grads, ∇ ≈ c∇)
             end
         end
@@ -128,7 +128,7 @@ end
     end
 end
 
-@testset "Test Cached Gradient $name" for name=keys(merge(re_machines, im_machines))
+@testset "Test LUT: Cached Gradient $name" for name=keys(merge(re_machines, im_machines))
     for T=num_types
         net = all_machines[name](T,N)
         isnothing(lookup(net)) && continue
@@ -163,10 +163,10 @@ end
             der_a = grad_cache(cnet)
             diffval, der_a = Δ_logψ_and_∇logψ!(der_a, cnet, v)
             push!(diffs, diffval_l ≈ diffval )
-            for f=fieldnames(typeof(der_l))
-                ∇  = getfield(der_c,  f)
-                c∇ = getfield(der_l, f)
-                a∇ = getfield(der_a, f)
+            for f=propertynames(der_l)
+                ∇  = getproperty(der_c,  f)
+                c∇ = getproperty(der_l, f)
+                a∇ = getproperty(der_a, f)
                 push!(grads_ex, ∇ ≈ c∇)
                 push!(grads_diff, a∇ ≈  c∇)
             end

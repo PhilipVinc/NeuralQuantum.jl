@@ -77,7 +77,7 @@ function weight_tuple(x, fnames, vec=Vector{weight_type(x)}(), start=1)
         di, val = weight_tuple(getfield(x,f), vec, start+i)
         i += di; push!(d, f=>val)
     end
-    start == 1 && push!(d, :tuple_all_weights=>[vec])
+    #start == 1 && push!(d, :tuple_all_weights=>[vec])
     i, (;d...)
 end
 

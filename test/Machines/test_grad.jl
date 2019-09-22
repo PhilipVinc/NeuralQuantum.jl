@@ -1,4 +1,5 @@
 using NeuralQuantum, Test
+using NeuralQuantum: set_index!
 num_types = [Float32, Float64]
 
 re_machines = Dict()
@@ -61,9 +62,9 @@ end
             set_index!(v, i)
             der_ad = ∇logψ(net,  v)
             ∇logψ!(cder, cnet, v)
-            for f=fieldnames(typeof(der_ad))
-                ∇  = getfield(der_ad,  f)
-                c∇ = getfield(cder, f)
+            for f=propertynames(der_ad)
+                ∇  = getproperty(der_ad,  f)
+                c∇ = getproperty(cder, f)
                 push!(grads, ∇ ≈ c∇)
             end
         end

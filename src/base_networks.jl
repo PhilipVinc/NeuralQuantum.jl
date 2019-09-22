@@ -7,7 +7,10 @@ export logψ, ∇logψ, ∇logψ!, logψ_and_∇logψ, logψ_and_∇logψ!, grad
 
 Creates a tuple holding all derivatives of the network N.
 """
-grad_cache(net::NeuralNetwork) = derivative_tuple(net)
+grad_cache(net::NeuralNetwork) = begin
+    is_analytic(net) && return RealDerivative(net)
+    return WirtingerDerivative(net)
+end
 
 # Define various aliases used a bit everywhere in networks and when testing
 """

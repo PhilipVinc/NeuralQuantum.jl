@@ -54,6 +54,7 @@ const STD_REAL_PREC =  Float32
 
 # Base elements
 include("base_states.jl")
+include("base_derivatives.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
 include("base_lookup.jl")
