@@ -5,10 +5,11 @@ os:
 julia:
     - 1.1
     - 1.2
+    - 1.3
     - nightly
 matrix:
     allow_failures:
-        - julia: nightly
+        - julia: [1.3, nightly]
         - os: osx
 notifications:
     email: false

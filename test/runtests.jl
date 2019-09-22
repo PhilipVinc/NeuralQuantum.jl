@@ -10,7 +10,7 @@ using Test
 
     println("Testing algorithm caches...")
     @testset "Algorithm" begin
-        include("Algorithms/Caches_test.jl")
+        include("Algorithms_caches/Caches_test.jl")
     end
 
     println("Testing Problems and algorithms...")
