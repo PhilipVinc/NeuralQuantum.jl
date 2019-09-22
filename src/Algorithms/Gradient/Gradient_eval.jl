@@ -17,6 +17,7 @@ function sample_network!(res::MCMCGradientEvaluationCache,
   return res
 end
 
+## Matrix whole space
 function sample_network!(res::MCMCGradientLEvaluationCache, prob::LRhoSquaredProblem,
                          net, σ, wholespace=false)
   CLO_i = res.LLO_i

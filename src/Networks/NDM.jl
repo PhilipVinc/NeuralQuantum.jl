@@ -40,10 +40,15 @@ NDM(T::Type{<:Real}, in, αh, αa,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
     initb=(dims...)->rescaled_normal(T, 0.005, dims...),
     inita=(dims...)->rescaled_normal(T, 0.005, dims...)) =
-    NDM(inita(in), initb(convert(Int,αh*in)),
-             initW(convert(Int,αh*in), in), initW(convert(Int,αa*in), in),
-             inita(in), initb(convert(Int,αh*in)), initb(convert(Int,αa*in)),
-             initW(convert(Int,αh*in), in), initW(convert(Int,αa*in), in))
+    NDM(inita(in),
+        initb(convert(Int,αh*in)),
+        initW(convert(Int,αh*in), in),
+        initW(convert(Int,αa*in), in),
+        inita(in),
+        initb(convert(Int,αh*in)),
+        initb(convert(Int,αa*in)),
+        initW(convert(Int,αh*in), in),
+        initW(convert(Int,αa*in), in))
 
 input_type(net::NDM{VT,MT}) where {VT,MT} = eltype(VT)
 weight_type(net::NDM) = input_type(net)

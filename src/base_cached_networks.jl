@@ -79,8 +79,8 @@ grad_cache(net::CachedNet) = grad_cache(net.net)
 #@inline ∇logψ(n::CachedNet, σ) = logψ_and_∇logψ(n, σ)[2]
 function logψ_and_∇logψ(n::CachedNet, σ::Vararg{N,V}) where {N,V}
     #@warn "Inefficient calling logψ_and_∇logψ for cachedNet"
-    ∇lnψ = grad_cache(n)
-    lψ   = logψ_and_∇logψ!(∇lnψ, n, σ...);
+    ∇lnψ   = grad_cache(n)
+    lψ, _g = logψ_and_∇logψ!(∇lnψ, n, σ...);
     return (lψ, ∇lnψ)
 end
 
@@ -159,6 +159,7 @@ function logψ_and_∇logψ(net::KetNeuralNetwork, σ)
 end
 
 function logψ_and_∇logψ(n::CachedNet{<:KetNeuralNetwork}, σ)
-    lψ = logψ_and_∇logψ(n.der, n.cache, n.net, config(σ));
-    return (lψ, n.der)
+    ∇lnψ = grad_cache(n)
+    lnψ = logψ_and_∇logψ!(∇lnψ, n.net, n.cache, config(σ));
+    return (lnψ, ∇lnψ)
 end

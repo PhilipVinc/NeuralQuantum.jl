@@ -32,7 +32,7 @@ function _update!(opt, x::AbstractArray{<:Number}, x̄::AbstractArray, state = n
 end
 
 function _update!(opt, x::Tuple, x̄::Tuple, state=nothing)
-  for f in fieldnames(typeof(x̄))
+  for f in propertynames(x̄)
     f̄ = getfield(x̄, f)
 #  println(f,"-->",f̄)
     f̄ === nothing || _update!(opt, getfield(x, f), f̄, state)
@@ -40,9 +40,9 @@ function _update!(opt, x::Tuple, x̄::Tuple, state=nothing)
 end
 
 function _update!(opt, x, x̄::NamedTuple, state=nothing)
-  for f in fieldnames(typeof(x̄))
+  for f in propertynames(x̄)
     f == :tuple_all_weights && continue
-    f̄ = getfield(x̄, f)
+    f̄ = getproperty(x̄, f)
 #    println(f,"-->",f̄)
     # println(f,"-->", typeof(getfield(x, f)))
 
@@ -51,8 +51,8 @@ function _update!(opt, x, x̄::NamedTuple, state=nothing)
 end
 
 function _update!(opt, x, x̄, state=nothing)
-  for f in fieldnames(typeof(x̄))
-    f̄ = getfield(x̄, f)
+  for f in propertynames(x̄)
+    f̄ = getproperty(x̄, f)
 #    println(f,"-->",f̄)
     # println(f,"-->", typeof(getfield(x, f)))
 

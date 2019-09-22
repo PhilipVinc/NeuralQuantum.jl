@@ -73,7 +73,7 @@ mutable struct SREvaluation{TL,TF,TS} <: EvaluatedAlgorithm
 end
 
 function SREvaluation(net::NeuralNetwork)
-    wt = weight_tuple(net)
+    wt = grad_cache(net)
     T = out_type(net)
 
     F = Tuple([zero(w) for w=wt.tuple_all_weights])

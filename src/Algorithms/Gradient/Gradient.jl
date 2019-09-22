@@ -28,7 +28,7 @@ mutable struct GradientEvaluation{TL,TF} <: EvaluatedAlgorithm
 end
 
 function GradientEvaluation(net::NeuralNetwork)
-    wt = weight_tuple(net)
+    wt = grad_cache(net)
     T = out_type(net)
 
     F = Tuple([zero(w) for w=wt.tuple_all_weights])
