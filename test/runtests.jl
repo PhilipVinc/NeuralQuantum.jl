@@ -5,6 +5,7 @@ using Test
     println("Testing machines...")
     @testset "Machines" begin
         include("Machines/test_grad.jl")
+        include("Machines/test_ndmcomplex.jl")
         include("Machines/test_lut.jl")
     end
 
