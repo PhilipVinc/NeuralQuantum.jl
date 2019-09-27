@@ -9,9 +9,9 @@ function sample_network!(
   E         = compute_Cloc(prob, net, σ, lnψ, res.σ)
 
   prob        = wholespace ? exp(2*real(lnψ)) : 1.0
-  res.Eave   += E
+  res.Eave   += prob * E
   res.Zave   += prob #1.0 #exp(2*real(lnψ))
-  push!(res.Evalues, E)
+  push!(res.Evalues, prob*E)
 
   for (i,_∇lnψ)=enumerate(∇lnψ.tuple_all_weights)
     res.Oave[i]  .+= prob .* _∇lnψ

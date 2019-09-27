@@ -1,4 +1,4 @@
-using NeuralQuantum
+using NeuralQuantum, SparseArrays
 using Test
 using NeuralQuantum: LdagLSparseSuperopProblem, LRhoSparseOpProblem
 Nsites = 4
@@ -65,6 +65,10 @@ prob_types = [LRhoSparseSuperopProblem, LRhoSparseOpProblem]
     evaluation_post_sampling!(SREval, ic)
     evaluation_post_sampling!(SREvalL, icL)
 
+    # those might fail in the future... just check that everything has the same
+    # name
+    @test SREval.L ≈ SREvalL.L
+    @test SREval.S[1] ≈ SREvalL.S[1]
     @test all([l≈r for (l,r)=zip(SREval.F, SREvalL.F)])
 end
 
