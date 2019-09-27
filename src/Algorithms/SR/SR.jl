@@ -131,7 +131,11 @@ function precondition!(∇x, params::SR, data::SREvaluation, iter_n)
         else
             x, hist = minresqlp(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
             #x, hist = cg(S.+ ϵ*I, F, maxiter=size(S,2)*10, log=true, verbose=true, tol=10e-10)
-            Δw .= x
+            if eltype(Δw) <: Real
+                Δw .= real.(x)
+            else
+                Δw .= x
+            end
             add_iters = 1
             while !hist.isconverged
                 println("minresqlp not conerged. Additional $(size(S,2)*10) iters for the $add_iters time.")

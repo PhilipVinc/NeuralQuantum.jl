@@ -66,7 +66,7 @@ end
 # Utility method utilised to accumulate results on a single variable
 function add!(acc::MCMCSRLEvaluationCache, o::MCMCSRLEvaluationCache)
     acc.Eave   += o.Eave
-    acc.E2ave  += o.Δave
+    acc.E2ave  += o.E2ave
     acc.Zave   += o.Zave
     append!(acc.Evalues, o.Evalues)
 
