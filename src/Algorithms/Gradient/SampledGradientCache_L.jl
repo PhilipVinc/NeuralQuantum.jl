@@ -4,6 +4,7 @@
 mutable struct MCMCGradientLEvaluationCache{T,T2,TV,TVC,TD,S} <: EvaluationSamplingCache
     Oave::TV#Vector{T}
     Eave::T
+    E2ave::T
     EOave::TVC
     LLOave::TVC
     Zave::T2
@@ -29,6 +30,7 @@ function MCMCGradientLEvaluationCache(net::NeuralNetwork, prob)
 
     cache = MCMCGradientLEvaluationCache(Oave,
                                   zero(TC),
+                                  zero(TC),
                                   EOave,
                                   LLOave,
                                   zero(real(TC)),
@@ -44,7 +46,8 @@ SamplingCache(alg::Gradient, prob::LRhoSquaredProblem, net) = MCMCGradientLEvalu
 
 function zero!(comp_vals::MCMCGradientLEvaluationCache)
     comp_vals.Eave   = 0.0
-    comp_vals.Zave = 0.0
+    comp_vals.E2ave  = 0.0
+    comp_vals.Zave   = 0.0
     resize!(comp_vals.Evalues, 0)
 
     for i=1:length(comp_vals.Oave)
@@ -59,6 +62,7 @@ end
 # Utility method utilised to accumulate results on a single variable
 function add!(acc::MCMCGradientLEvaluationCache, o::MCMCGradientLEvaluationCache)
     acc.Eave   += o.Eave
+    acc.E2ave  += o.E2ave
     acc.Zave   += o.Zave
     append!(acc.Evalues, o.Evalues)
 
@@ -79,7 +83,8 @@ end
 function evaluation_post_sampling!(out::GradientEvaluation,
                                    vals::MCMCGradientLEvaluationCache,
                                    sampler_steps = vals.Zave)
-     Eave = vals.Eave   /= sampler_steps
+     Eave  = vals.Eave   /= sampler_steps
+     E2ave = vals.E2ave  /= sampler_steps
 
      #TODO Here I am reallocating. Should think about how to fix it.
      out.L = Eave

@@ -5,6 +5,7 @@ mutable struct MCMCSRLEvaluationCache{T,T2,TV,TVC,TM,TD,S} <: EvaluationSampling
     Oave::TV#Vector{T}
     OOave::TM#Matrix{T}
     Eave::T
+    E2ave::T
     EOave::TVC
     LLOave::TVC
     Zave::T2
@@ -32,6 +33,7 @@ function MCMCSRLEvaluationCache(net::NeuralNetwork, prob)
     cache = MCMCSRLEvaluationCache(Oave,
                                   OOave,
                                   zero(TC),
+                                  zero(TC),
                                   EOave,
                                   LLOave,
                                   zero(real(TC)),
@@ -47,6 +49,7 @@ SamplingCache(alg::SR, prob::LRhoSquaredProblem, net) = MCMCSRLEvaluationCache(n
 
 function zero!(comp_vals::MCMCSRLEvaluationCache)
     comp_vals.Eave   = 0.0
+    comp_vals.E2ave  = 0.0
     comp_vals.Zave = 0.0
     resize!(comp_vals.Evalues, 0)
 
@@ -63,6 +66,7 @@ end
 # Utility method utilised to accumulate results on a single variable
 function add!(acc::MCMCSRLEvaluationCache, o::MCMCSRLEvaluationCache)
     acc.Eave   += o.Eave
+    acc.E2ave  += o.Δave
     acc.Zave   += o.Zave
     append!(acc.Evalues, o.Evalues)
 
@@ -84,7 +88,8 @@ end
 function evaluation_post_sampling!(out::SREvaluation,
                                    vals::MCMCSRLEvaluationCache,
                                    sampler_steps = vals.Zave)
-     Eave = vals.Eave   /= sampler_steps
+     Eave  = vals.Eave   /= sampler_steps
+     E2ave = vals.E2ave  /= sampler_steps
 
      #TODO Here I am reallocating. Should think about how to fix it.
      out.L = Eave
@@ -102,11 +107,11 @@ function evaluation_post_sampling!(out::SREvaluation,
 
          S = out.S[i]; F = out.F[i];
          if eltype(S) <: Real
-             S .= real.(OOave  .- (conj(Oave) .* transpose(Oave)))
-             F .= real.(LLOave .- Eave .* conj(Oave))
+             S .= real.(OOave  .- (conj.(Oave) .* transpose(Oave)))
+             F .= real.(LLOave .- Eave .* conj.(Oave))
          else
-             S .=       OOave  .- (conj(Oave) .* transpose(Oave))
-             F .=       LLOave .- Eave .* conj(Oave)
+             S .=       OOave  .- (conj.(Oave) .* transpose(Oave))
+             F .=       LLOave .- Eave .* conj.(Oave)
          end
      end
 end
