@@ -36,35 +36,36 @@ RBM(T::Type, in, α,
     RBM(inita(in), initb(convert(Int,α*in)),
         initW(convert(Int,α*in), in))
 
-input_type(net::RBM{T}) where T = real(T)
+input_type(net::RBM{VT,MT}) where {VT,MT} = real(eltype(VT))
 weight_type(net::RBM) = out_type(net)
-out_type(net::RBM{T}) where T = T
+out_type(net::RBM{VT,MT}) where {VT,MT} = eltype(VT)
 input_shape(net::RBM) = length(net.a)
-random_input_state(net::RBM{T}) where T = T.([rand(0:1) for i=1:length(net.a)])
+random_input_state(net::RBM{VT,MT}) where {VT,MT} = eltype(VT).([rand(0:1) for i=1:length(net.a)])
 is_analytic(net::RBM) = true
 
 (net::RBM)(σ::State) = net(config(σ))
-(net::RBM{T})(σ) where T = transpose(σ)*net.a .+ sum(logℒ.(net.b .+ net.W*σ))
+(net::RBM)(σ) = transpose(σ)*net.a .+ sum(logℒ.(net.b .+ net.W*σ))
 
 function Base.show(io::IO, m::RBM{T}) where T
     print(io, "RBM($(eltype(T)), n=$(length(m.a)), n_hid=$(length(m.b)) => α=$(length(m.b)/length(m.a)))")
 end
 
 # Cached version
-mutable struct RBMCache{T} <: NNCache{RBM{T}}
-    θ::Vector{T}
-    logℒθ::Vector{T}
-    σ::Vector{T}
+mutable struct RBMCache{VT} <: NNCache{RBM}
+    θ::VT
+    logℒθ::VT
+    σ::VT
     valid::Bool # = false
 end
 
-cache(net::RBM{T}) where T =
+cache(net::RBM) =
     RBMCache(similar(net.b),
              similar(net.b),
              similar(net.a),
              false)
 
-function (net::RBM{T})(c::RBMCache, σ) where T
+function (net::RBM)(c::RBMCache, σ)
+    T=eltype(net.W)
     θ = c.θ
     logℒθ = c.logℒθ
 
@@ -78,7 +79,8 @@ function (net::RBM{T})(c::RBMCache, σ) where T
     return logψ
 end
 
-function logψ_and_∇logψ!(∇logψ, net::RBM{T}, c::RBMCache, σ) where T
+function logψ_and_∇logψ!(∇logψ, net::RBM, c::RBMCache, σ)
+    T=eltype(net.W)
     θ = c.θ
     logℒθ = c.logℒθ
 
