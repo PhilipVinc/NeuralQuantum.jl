@@ -144,7 +144,7 @@ const KetNet   = Union{KetNeuralNetwork, CachedNet{<:KetNeuralNetwork}}
 @inline logψ(cnet::CachedNet{<:KetNeuralNetwork}, σ) = cnet.net(cnet.cache, config(σ))
 function logψ_and_∇logψ(net::KetNeuralNetwork, σ)
     σ = config(σ)
-    y, back = forward(net -> net(σ), net)
+    y, back = pullback(net -> net(σ), net)
 
     # This computes the gradient, which is the conjugate of the derivative
     der = back(Int8(1))[1]

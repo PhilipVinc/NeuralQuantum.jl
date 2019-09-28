@@ -5,6 +5,7 @@ struct RBM{T} <: KetNeuralNetwork
     b::Vector{T}
     W::Matrix{T}
 end
+@treelike RBM
 
 """
     RBMSplit([T=Complex{STD_REAL_PREC}], N, α, [initW, initb])

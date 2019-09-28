@@ -6,7 +6,7 @@ using Reexport
 using QuantumOptics
 using LightGraphs
 
-using Zygote: gradient, forward
+using Zygote
 using Random: AbstractRNG, MersenneTwister, GLOBAL_RNG
 using LinearAlgebra, SparseArrays, Strided
 using NNlib
@@ -101,11 +101,13 @@ include("Networks/NDMSymm.jl")
 include("Networks/RBMSplitLT.jl")
 include("Networks/NDMLT.jl")
 
+# Closed Systems
+include("Networks/ClosedSystems/RBM.jl")
+include("Networks/ClosedSystems/RBMBatched.jl")
+
 # Batch
 include("Networks/RBMSplitBatched.jl")
 
-#
-include("Networks/ClosedSystems/RBM.jl")
 
 # Problems
 export LdagLSparseOpProblem, LRhoSparseSuperopProblem, LdagLProblem, LdagLFullProblem, LdagLSparseSuperopProblem, LdagLSparseSuperopProblemlem, LRhoSparseOpProblem

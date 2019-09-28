@@ -61,7 +61,7 @@ end
 function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
     σ = config(σ)
     # Zygote's autodiff: generate the pullback
-    y, back = forward(net -> net(σ...), net)
+    y, back = pullback(net -> net(σ...), net)
 
     # This computes the gradient, which is the conjugate of the derivative
     _der = back(Int8(1))[1]
