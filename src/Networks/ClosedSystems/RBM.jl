@@ -1,9 +1,9 @@
 export RBM
 
-struct RBM{T} <: KetNeuralNetwork
-    a::Vector{T}
-    b::Vector{T}
-    W::Matrix{T}
+struct RBM{VT,MT} <: KetNeuralNetwork
+    a::VT
+    b::VT
+    W::MT
 end
 @treelike RBM
 
@@ -47,7 +47,7 @@ is_analytic(net::RBM) = true
 (net::RBM{T})(σ) where T = transpose(σ)*net.a .+ sum(logℒ.(net.b .+ net.W*σ))
 
 function Base.show(io::IO, m::RBM{T}) where T
-    print(io, "RBM{$T}, n=$(length(m.a)), n_hid=$(length(m.b)) => α=$(length(m.b)/length(m.a)))")
+    print(io, "RBM($(eltype(T)), n=$(length(m.a)), n_hid=$(length(m.b)) => α=$(length(m.b)/length(m.a)))")
 end
 
 # Cached version
@@ -59,10 +59,10 @@ mutable struct RBMCache{T} <: NNCache{RBM{T}}
 end
 
 cache(net::RBM{T}) where T =
-    RBMCache(Vector{T}(undef,length(net.b)),
-             Vector{T}(undef,length(net.b)),
-             Vector{T}(undef,length(net.a)),
-                  false)
+    RBMCache(similar(net.b),
+             similar(net.b),
+             similar(net.a),
+             false)
 
 function (net::RBM{T})(c::RBMCache, σ) where T
     θ = c.θ
