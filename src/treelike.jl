@@ -1,5 +1,6 @@
 import Adapt: adapt, adapt_storage
 import Zygote: IdSet
+export mapchildren
 
 children(x) = ()
 mapchildren(f, x) = x
