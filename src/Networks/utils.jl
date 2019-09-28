@@ -20,9 +20,20 @@ rescaled_normal(T::Type, scale::Real, dims::Integer...) = randn(T, dims...) .* T
 
 
 @inline ℒ(x) = one(x) + exp(x)
-#@inline ∂logℒ(x) = one(x)/(one(x)+exp(-x))
-const ∂logℒ = NNlib.σ
-NNlib.σ(x::Complex) = one(x)/(one(x)+exp(-x))
-#@inline logℒ(x) = log1p(exp(x))#log(one(x) + exp(x))
-const logℒ = NNlib.softplus
-NNlib.softplus(x::Complex) = log1p(exp(x))#log(one(x) + exp(x))
+@inline ∂logℒ(x) = one(x)/(one(x)+exp(-x))
+#const ∂logℒ = NNlib.σ
+#NNlib.σ(x::Complex) = one(x)/(one(x)+exp(-x))
+@inline logℒ(x) = log1p(exp(x))#log(one(x) + exp(x))
+#const logℒ = NNlib.softplus
+#NNlib.softplus(x::Complex) = log1p(exp(x))#log(one(x) + exp(x))
+
+@require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" begin
+    using .CuArrays
+
+    CuArrays.@cufunc ℒ(x) = one(x) + exp(x)
+
+    CuArrays.@cufunc ∂logℒ(x) = one(x)/(one(x)+exp(-x))
+
+    CuArrays.@cufunc logℒ(x::Real) = log1p(exp(x))
+    CuArrays.@cufunc logℒ(x::Complex) = log(one(x) + exp(x))
+end

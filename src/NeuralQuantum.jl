@@ -1,7 +1,7 @@
 module NeuralQuantum
 
 # Using statements
-using Reexport
+using Reexport, Requires
 
 using QuantumOptics
 using LightGraphs
