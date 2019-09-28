@@ -19,8 +19,8 @@ script:
                             Pkg.activate();
                             Pkg.add([PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"),
                             PackageSpec(url="https://github.com/PhilipVinc/ValueHistoriesLogger.jl"),
-                            Pkg.add(PackageSpec(name="Zygote", rev="master")),
-                            Pkg.add(PackageSpec(name="ZygoteRules", rev="master"))]);
+                            PackageSpec(name="Zygote", rev="master"),
+                            PackageSpec(name="ZygoteRules", rev="master")]);
                             println("Installed [QuantumLattices, Zygote]");
                             Pkg.instantiate();
                             println("Instantiated");
