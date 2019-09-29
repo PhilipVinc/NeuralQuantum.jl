@@ -50,7 +50,7 @@ value and it's gradient w.r.t. to the nework's parameters.
 See also: `logψ`, `logψ_and_∇logψ!`
 
 """
-function logψ_and_∇logψ(net::NeuralNetwork, σ::Vararg{N,V})where {N,V}
+function logψ_and_∇logψ(net::NeuralNetwork, σ) #::Vararg{N,V})where {N,V}
     der = grad_cache(net)
     y, der = logψ_and_∇logψ!(der, net, σ)
     return y, der
@@ -60,8 +60,14 @@ end
 # bad performance. Maybe you should hand-code the gradient of your model?
 function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
     σ = config(σ)
-    # Zygote's autodiff: generate the pullback
-    y, back = pullback(net -> net(σ...), net)
+
+    # If it is a KetNet we should not use σ... 
+    if isa(net, KetNeuralNetwork)
+        y, back = pullback(net -> net(σ), net)
+    else
+        # Zygote's autodiff: generate the pullback
+        y, back = pullback(net -> net(σ...), net)
+    end
 
     # This computes the gradient, which is the conjugate of the derivative
     _der = back(Int8(1))[1]

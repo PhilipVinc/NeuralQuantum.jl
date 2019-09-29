@@ -53,7 +53,6 @@ function markov_chain_step!(σ, s::MCMCSampler{Metropolis}, net::Union{MatrixNet
         end
     end
     c.steps_done += 1
-
     return true
 end
 

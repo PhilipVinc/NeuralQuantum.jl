@@ -98,6 +98,11 @@ end
     lψ = logψ_and_∇logψ!(der, n.net, n.cache, σ...);
     return (lψ, der)
 end
+# this is required for networks with only one state (KetNet)
+@inline function logψ_and_∇logψ!(der, n::CachedNet, σ::AbstractArray)
+    lψ = logψ_and_∇logψ!(der, n.net, n.cache, σ);
+    return (lψ, der)
+end
 
 ## Optimisation of cachednet
 update!(opt, cnet::CachedNet, Δ, state=nothing) = (update!(opt, weights(cnet), weights(Δ), state); invalidate_cache!(cnet.cache))
@@ -144,21 +149,6 @@ const KetNet   = Union{KetNeuralNetwork, CachedNet{<:KetNeuralNetwork}}
 # This overrides the standard behaviour of net(σ...) because Vector unpacking
 # should not happen
 @inline logψ(cnet::CachedNet{<:KetNeuralNetwork}, σ) = cnet.net(cnet.cache, config(σ))
-function logψ_and_∇logψ(net::KetNeuralNetwork, σ)
-    σ = config(σ)
-    y, back = pullback(net -> net(σ), net)
-
-    # This computes the gradient, which is the conjugate of the derivative
-    der = back(Int8(1))[1]
-
-    # We take the conjugate of every element
-    for key=keys(der)
-        conj!(der[key])
-    end
-    der = add_vector_field(net, der)
-
-    return y, der
-end
 
 function logψ_and_∇logψ(n::CachedNet{<:KetNeuralNetwork}, σ)
     ∇lnψ = grad_cache(n)
