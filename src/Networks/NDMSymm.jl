@@ -12,7 +12,9 @@ struct NDMSymm{T,T2,T3} <: MatrixNeuralNetwork
     bare_der::T3
     symm_map
 end
+@functor NDMSymm
 
+NDMSymm(n_in::Int, αh, αa, permutations) = NDMSymm(STD_REAL_PREC, n_in, αh, αa, permutations)
 function NDMSymm(T::Type{<:Real}, n_in, αh, αa, permutations)
     n_symm = length(permutations)
     @assert length(first(permutations)) == n_in
@@ -36,6 +38,7 @@ weights(cnet::NDMSymm)           = cnet.symm_net
 
 cache(net::NDMSymm)              = cache(net.bare_net)
 grad_cache(net::NDMSymm)         = grad_cache(net.symm_net)
+trainable(net::NDMSymm)          = trainable(net.symm_net)
 weight_tuple(net::NDMSymm, args...) = weight_tuple(weights(net), args...)
 update!(opt, cnet::NDMSymm, Δ, state=nothing) = (res = update!(opt, weights(cnet), weights(Δ), state);
                                             set_bare_params!(cnet.bare_net, cnet.symm_net, cnet.symm_map);

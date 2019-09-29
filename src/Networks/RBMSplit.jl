@@ -7,7 +7,7 @@ struct RBMSplit{VT,MT} <: MatrixNeuralNetwork
     Wr::MT
     Wc::MT
 end
-@treelike RBMSplit
+@functor RBMSplit
 
 """
     RBMSplit([T=Complex{STD_REAL_PREC}], N, α, [initW, initb, inita])

@@ -5,7 +5,7 @@ struct RBM{VT,MT} <: KetNeuralNetwork
     b::VT
     W::MT
 end
-@treelike RBM
+@functor RBM
 
 """
     RBMSplit([T=Complex{STD_REAL_PREC}], N, α, [initW, initb])

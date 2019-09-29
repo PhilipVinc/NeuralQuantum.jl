@@ -7,7 +7,7 @@ struct NDMComplex{VT,MT} <: MatrixNeuralNetwork
     W::MT
     X::MT
 end
-@treelike NDMComplex
+@functor NDMComplex
 
 """
     NDMComplex([T=STD_REAL_PREC], N, αₕ, αₐ, [initW, initb, inita])

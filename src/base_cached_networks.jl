@@ -34,6 +34,8 @@ struct CachedNet{N, NC} <: NeuralNetwork
     cache::NC
 end
 
+trainable(cnet::CachedNet) = trainable(cnet.net)
+
 """
     cached(net)
 

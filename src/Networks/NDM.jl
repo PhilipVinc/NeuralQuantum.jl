@@ -12,7 +12,7 @@ struct NDM{VT,MT} <: MatrixNeuralNetwork
     w_λ::MT
     u_λ::MT
 end
-@treelike NDM
+@functor NDM
 
 """
     NDM([T=STD_REAL_PREC], N, αₕ, αₐ, [initW, initb, inita])
