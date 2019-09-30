@@ -72,7 +72,7 @@ the wrapped data structure.
 """
 weights(net) = net
 weights(cnet::CachedNet) = cnet.net
-grad_cache(net::CachedNet) = grad_cache(net.net)
+#grad_cache(net::CachedNet) = grad_cache(net.net)
 
 @inline (cnet::CachedNet)(σ...) = logψ(cnet, σ...)
 # When you call logψ on a cached net use the cache to compute the net

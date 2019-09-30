@@ -32,8 +32,10 @@ Base.imag(s::WirtingerDerivative) = s.c_derivatives
 end
 
 function RealDerivative(net::NeuralNetwork)
-    vec    = similar(trainable_first(net), out_type(net), trainable_length(net))
-    i, fields = weight_tuple(net, fieldnames(typeof(net)), vec)
+    pars = trainable(net)
+
+    vec    = similar(trainable_first(pars), out_type(net), _tlen(pars))
+    i, fields = weight_tuple(pars, propertynames(pars), vec)
     return RealDerivative(fields, [vec])
 end
 
