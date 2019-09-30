@@ -19,8 +19,8 @@ function MCMCGradientEvaluationCache(net::NeuralNetwork, prob)
     TC = Complex{real(out_type(net))}
     der_vec = grad_cache(net).tuple_all_weights
 
-    Oave  = [zero(dvec) for dvec=der_vec]
-    EOave = [zeros(TC, size(dvec)) for dvec=der_vec]
+    Oave  = [similar(dvec)      for dvec=der_vec]
+    EOave = [similar(dvec, TC)  for dvec=der_vec]
 
     cache = MCMCGradientEvaluationCache(Oave,
                                         zero(TC),
