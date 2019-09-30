@@ -48,7 +48,6 @@ value and it's gradient w.r.t. to the nework's parameters.
     time.
 
 See also: `logψ`, `logψ_and_∇logψ!`
-
 """
 function logψ_and_∇logψ(net::NeuralNetwork, σ) #::Vararg{N,V})where {N,V}
     der = grad_cache(net)
@@ -61,7 +60,7 @@ end
 function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
     σ = config(σ)
 
-    # If it is a KetNet we should not use σ... 
+    # If it is a KetNet we should not use σ...
     if isa(net, KetNeuralNetwork)
         y, back = pullback(net -> net(σ), net)
     else
@@ -96,6 +95,7 @@ input_type(net::NeuralNetwork) = error("Not Implemented")
 Returns the numerical `eltype` of the output of the network.
 """
 out_type(net::NeuralNetwork) = error("Not Implemented")
+
 """
     input_shape(net)
 
@@ -132,7 +132,7 @@ is_analytic(net::NeuralNetwork) = false
 
 Returns the total number of parameters of the neural network.
 """
-num_params(net::NeuralNetwork) = sum([length(getfield(net, f)) for f=fieldnames(typeof(net))])
+num_params(net::NeuralNetwork) = trainable_length(net)
 
 # TODO does this even make sense?!
 # the idea was that a shallow-copy of the weights of the net is not

@@ -16,6 +16,15 @@ end
 end
 @inline vec_data(s::RealDerivative) = getfield(s, :vectorised_data)
 
+function RealDerivative(net::NeuralNetwork)
+    pars = trainable(net)
+
+    vec    = similar(trainable_first(pars), out_type(net), _tlen(pars))
+    i, fields = weight_tuple(pars, propertynames(pars), vec)
+    return RealDerivative(fields, [vec])
+end
+
+
 struct WirtingerDerivative{R,V} <: AbstractDerivative
     r_derivatives::R
     c_derivatives::R
@@ -29,14 +38,6 @@ Base.imag(s::WirtingerDerivative) = s.c_derivatives
 @inline function Base.getproperty(s::WirtingerDerivative, val::Symbol)
     val===:tuple_all_weights && return vec_data(s)
     return getfield(s, val)
-end
-
-function RealDerivative(net::NeuralNetwork)
-    pars = trainable(net)
-
-    vec    = similar(trainable_first(pars), out_type(net), _tlen(pars))
-    i, fields = weight_tuple(pars, propertynames(pars), vec)
-    return RealDerivative(fields, [vec])
 end
 
 function WirtingerDerivative(net::NeuralNetwork)

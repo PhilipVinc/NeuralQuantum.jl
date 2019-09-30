@@ -44,7 +44,8 @@ random_input_state(net::RBM{VT,MT}) where {VT,MT} = eltype(VT).([rand(0:1) for i
 is_analytic(net::RBM) = true
 
 (net::RBM)(σ::State) = net(config(σ))
-(net::RBM)(σ) = transpose(σ)*net.a .+ sum(logℒ.(net.b .+ net.W*σ))
+(net::RBM)(σ::AbstractVector) = transpose(net.a)*σ .+ sum(logℒ.(net.b .+ net.W*σ))
+(net::RBM)(σ::AbstractMatrix) = transpose(net.a)*σ .+ sum(logℒ.(net.b .+ net.W*σ), dims=1)
 
 function Base.show(io::IO, m::RBM{T}) where T
     print(io, "RBM($(eltype(T)), n=$(length(m.a)), n_hid=$(length(m.b)) => α=$(length(m.b)/length(m.a)))")

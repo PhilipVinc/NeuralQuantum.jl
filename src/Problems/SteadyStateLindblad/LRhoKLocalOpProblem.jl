@@ -48,9 +48,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
         r=local_index(row(𝝝), sites(op))
         for (mel, changes)=op.op_conns[r] #diffs_hnh
             set_index!(𝝝p_row, index(row(𝝝)))
-            for (site,val)=changes
-                setat!(𝝝p_row, site, val)
-            end
+            apply!(𝝝p_row, changes)
 
             lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
             C_loc_i  =  -1.0im * mel * exp(lnψ_i - lnψ)
@@ -68,9 +66,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
         r=local_index(col(𝝝), sites(op))
         for (mel, changes)=op.op_conns[r]
             set_index!(𝝝p_col, index(col(𝝝)))
-            for (site,val)=changes
-                setat!(𝝝p_col, site, val)
-            end
+            apply!(𝝝p_col, changes)
 
             lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
             C_loc_i  =  1.0im * conj(mel) * exp(lnψ_i - lnψ)
@@ -93,15 +89,11 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
 
                 for (mel_r, changes_r)=op_r.op_conns[r_r]
                     set_index!(𝝝p_row, index(row(𝝝)))
-                    for (site,val)=changes_r
-                        setat!(𝝝p_row, site, val)
-                    end
+                    apply!(𝝝p_row, changes_r)
 
                     for (mel_c, changes_c)=op_c.op_conns[r_c]
                         set_index!(𝝝p_col, index(col(𝝝)))
-                        for (site,val)=changes_c
-                            setat!(𝝝p_col, site, val)
-                        end
+                        apply!(𝝝p_col, changes_c)
 
                         lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
                         C_loc_i  =  (mel_r) * conj(mel_c) *  exp(lnψ_i - lnψ)

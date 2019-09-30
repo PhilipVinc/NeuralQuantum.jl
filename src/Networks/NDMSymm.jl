@@ -34,12 +34,12 @@ out_type(net::NDMSymm)           = out_type(net.bare_net)
 input_shape(net::NDMSymm)        =  input_shape(net.bare_net)
 random_input_state(net::NDMSymm) = random_input_state(net.bare_net)
 is_analytic(net::NDMSymm)        = is_analytic(net.bare_net)
-weights(cnet::NDMSymm)           = cnet.symm_net
+#weights(cnet::NDMSymm)           = cnet.symm_net
 
 cache(net::NDMSymm)              = cache(net.bare_net)
 grad_cache(net::NDMSymm)         = grad_cache(net.symm_net)
 trainable(net::NDMSymm)          = trainable(net.symm_net)
-weight_tuple(net::NDMSymm, args...) = weight_tuple(weights(net), args...)
+#weight_tuple(net::NDMSymm, args...) = weight_tuple(weights(net), args...)
 update!(opt, cnet::NDMSymm, Δ, state=nothing) = (res = update!(opt, weights(cnet), weights(Δ), state);
                                             set_bare_params!(cnet.bare_net, cnet.symm_net, cnet.symm_map);
                                             res)

@@ -16,3 +16,5 @@ export local_dimension, spacedimension
 export nsites, toint, index, index_to_int, flipped, row, col, config
 export add!, zero!
 export setat!, set!, set_index!, rand!
+
+apply!(σ::State, cngs::Nothing) = σ

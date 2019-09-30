@@ -10,7 +10,7 @@ mutable struct NAryState{T <: Number, N} <: FiniteBasisState
 end
 NAryState{T,N}(n, i_σ=0) where {T, N} = NAryState(T, N, n, i_σ)
 
-NAryState(N::Int, n, args...) = NAryState(Float32, N, n, args...)
+NAryState(N::Int, n, args...) = NAryState(STD_REAL_PREC, N, n, args...)
 function NAryState(T::Type, N::Int, n, i_σ=0)
     @assert N>= 0
     @assert i_σ >= 0
@@ -140,8 +140,8 @@ end
 # -- end
 
 function apply!(state::NAryState, changes::StateChanges)
-    for (id, val)=changes
-        setat!(state, id, val)
+    for (site, val)=changes
+        setat!(state, site, val)
     end
     return state
 end

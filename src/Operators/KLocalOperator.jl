@@ -132,12 +132,6 @@ function row_valdiff!(conn::OpConnection, op::KLocalOperator, v::State)
     # Find row index
     r = local_index(v, sites(op))
 
-    # Return values
-#mel = op.mel[r]
-#    tc  = op.to_change[r]
-#    nv  = op.new_values[r]
-
-#    append!(conn, (mel, tc, nv))
     append!(conn, op.op_conns[r])
 end
 

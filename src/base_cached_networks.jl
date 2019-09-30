@@ -70,15 +70,14 @@ Access the underlying structure holding the weights of the network. This is usef
 when dealing with Symmetrized networks or cached networks, as it gives access to
 the wrapped data structure.
 """
-weights(net) = net
-weights(cnet::CachedNet) = cnet.net
+weights(net) = trainable(net)
+#weights(cnet::CachedNet) = cnet.net
 #grad_cache(net::CachedNet) = grad_cache(net.net)
 
 @inline (cnet::CachedNet)(σ...) = logψ(cnet, σ...)
 # When you call logψ on a cached net use the cache to compute the net
 @inline logψ(cnet::CachedNet, σ...) = cnet.net(cnet.cache, config(σ)...)
 
-#@inline ∇logψ(n::CachedNet, σ) = logψ_and_∇logψ(n, σ)[2]
 function logψ_and_∇logψ(n::CachedNet, σ::Vararg{N,V}) where {N,V}
     #@warn "Inefficient calling logψ_and_∇logψ for cachedNet"
     ∇lnψ   = grad_cache(n)
@@ -112,6 +111,7 @@ apply!(opt, val1::Union{NeuralNetwork, CachedNet}, val2::Union{NeuralNetwork, Ca
 # The common operations are forwarded to the underlying network.
 input_type(cnet::CachedNet) = input_type(cnet.net)
 out_type(cnet::CachedNet) = out_type(cnet.net)
+weight_type(cnet::CachedNet) = weight_type(cnet.net)
 input_shape(net::CachedNet) = input_shape(cnet.net)
 random_input_state(cnet::CachedNet) = random_input_state(cnet.net)
 is_analytic(cnet::CachedNet) = is_analytic(cnet.net)
