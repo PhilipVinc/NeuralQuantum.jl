@@ -1,4 +1,4 @@
-function QuantumOptics.expect(Obs::Union{GraphOperator, SparseOperator},
+function QuantumOpticsBase.expect(Obs::Union{GraphOperator, SparseOperator},
                      net::NeuralNetwork, sampler::Sampler=FullSumSampler())
 
     oprob = ObservablesProblem(NeuralQuantum.input_type(net), Obs)
