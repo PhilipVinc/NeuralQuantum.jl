@@ -5,18 +5,17 @@ export weight_tuple
 
 Returns the first array in trainable(net), by recursively applying first to it.
 """
-trainable_first(net::NeuralNetwork) = trainable_first(trainable(net))
-trainable_first(tup)                = trainable_first(first(tup))
+trainable_first(net) = trainable_first(first(trainable(net)))
 trainable_first(x::AbstractArray)   = x
 
 """
     trainable_length
 
 """
-trainable_length(net::NeuralNetwork) = _tlen(trainable(net))
+trainable_length(net::NeuralNetwork) = _tlen(net)
 function _tlen(t)
     i = 0
-    for el=t
+    for el=trainable(t)
         i+=_tlen(el)
     end
     return i
