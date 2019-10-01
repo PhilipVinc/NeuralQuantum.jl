@@ -3,7 +3,7 @@ module NeuralQuantum
 # Using statements
 using Reexport, Requires
 
-using QuantumOptics
+using QuantumOpticsBase
 using LightGraphs
 
 using Zygote
@@ -26,7 +26,7 @@ export Optimisers
 # Imports
 import Base: length, UInt, eltype, copy, deepcopy, iterate
 import Random: rand!
-import QuantumOptics: basis
+import QuantumOpticsBase: basis
 
 # Abstract Types
 abstract type NeuralNetwork end
@@ -195,6 +195,10 @@ function __init__()
 
         CuArrays.@cufunc logℒ(x::Real) = log1p(exp(x))
         CuArrays.@cufunc logℒ(x::Complex) = log(one(x) + exp(x))
+    end
+
+    @require QuantumOptics="6e0679c1-51ea-5a7c-ac74-d61b76210b0c" begin
+
     end
 end
 
