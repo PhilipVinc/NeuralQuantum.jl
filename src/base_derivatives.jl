@@ -8,19 +8,20 @@ struct RealDerivative{NT,V} <: AbstractDerivative
 end
 
 @inline Base.propertynames(s::RealDerivative) = propertynames(getfield(s, :fields))
-@inline Base.getindex(s::RealDerivative, val::Symbol) =
+@inline Base.getindex(s::RealDerivative, val) =
     getproperty(s, val)
-@inline function Base.getproperty(s::RealDerivative, val::Symbol)
+@inline function Base.getproperty(s::RealDerivative, val)
     val===:tuple_all_weights && return vec_data(s)
     return getproperty(getfield(s, :fields), val)
 end
 @inline vec_data(s::RealDerivative) = getfield(s, :vectorised_data)
+@inline fields(s::RealDerivative) = getfield(s, :fields)
 
 function RealDerivative(net::NeuralNetwork)
     pars = trainable(net)
 
     vec    = similar(trainable_first(pars), out_type(net), _tlen(pars))
-    i, fields = weight_tuple(pars, propertynames(pars), vec)
+    i, fields = weight_tuple(net, vec)
     return RealDerivative(fields, [vec])
 end
 
@@ -35,7 +36,7 @@ vec_data(s::WirtingerDerivative)  = s.vectorised_data
 Base.real(s::WirtingerDerivative) = s.r_derivatives
 Base.imag(s::WirtingerDerivative) = s.c_derivatives
 
-@inline function Base.getproperty(s::WirtingerDerivative, val::Symbol)
+@inline function Base.getproperty(s::WirtingerDerivative, val)
     val===:tuple_all_weights && return vec_data(s)
     return getfield(s, val)
 end

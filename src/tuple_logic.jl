@@ -29,24 +29,35 @@ Returns a named tuple holding all the fields in the network, and an
 extra field named `tuple_all_weights` who has the same type
 """
 weight_tuple(cnet::CachedNet) = weight_tuple(cnet.net)
-weight_tuple(net) = weight_tuple(net, fieldnames(typeof(net)))[2]
-function weight_tuple(x, fnames,
-                      vec=similar(trainable_first(x), 0),
+weight_tuple(net::NeuralNetwork) = weight_tuple(net)[2]
+function weight_tuple(obj, vec=similar(trainable_first(x), 0),
                       start=1)
+    x = trainable(obj)
     i = 0
-    d=Dict{Symbol, Any}()
-    for f=fnames
-        di, val = weight_tuple(getfield(x,f), vec, start+i)
-        i += di; push!(d, f=>val)
+    if x isa Tuple
+        d=Vector()
+        for f=propertynames(x)
+            di, val = weight_tuple(getfield(x,f), vec, start+i)
+            i += di; push!(d, val)
+        end
+        #start == 1 && push!(d, :tuple_all_weights=>[vec])
+        i, Tuple(d)
+    else
+        d=Dict{Symbol, Any}()
+        for f=propertynames(x)
+            di, val = weight_tuple(getfield(x,f), vec, start+i)
+            i += di; push!(d, f=>val)
+        end
+        #start == 1 && push!(d, :tuple_all_weights=>[vec])
+        i, (;d...)
     end
-    #start == 1 && push!(d, :tuple_all_weights=>[vec])
-    i, (;d...)
 end
 
-function weight_tuple(x::Tuple, vec::AbstractVector, start)
+function weight_tuple(obj::Tuple, vec::AbstractVector, start)
+    x = trainable(obj)
     i = 0
     d=Vector()
-    for f=fieldnames(typeof(x))
+    for f=propertynames(x)
         di, val = weight_tuple(getfield(x,f), vec, start+i)
         i += di; push!(d, val)
     end
