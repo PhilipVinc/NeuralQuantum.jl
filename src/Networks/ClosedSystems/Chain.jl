@@ -5,6 +5,9 @@ struct Chain{T<:Tuple} <: KetNeuralNetwork
   Chain(xs...) = new{typeof(xs)}(xs)
 end
 
+@forward Chain.layers Base.getindex, Base.length, Base.first, Base.last,
+  Base.iterate, Base.lastindex
+
 functor(c::Chain) = c.layers, ls -> Chain(ls...)
 
 applychain(::Tuple{}, x) = x

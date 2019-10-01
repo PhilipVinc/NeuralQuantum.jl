@@ -20,6 +20,6 @@ function RealDerivative(net::NeuralNetwork, batch_sz::Int)
     pars = trainable(net)
 
     vec    = similar(trainable_first(pars), out_type(net), _tlen(pars), batch_sz)
-    i, fields = batched_weight_tuple(pars, propertynames(pars), vec)
+    i, fields = batched_weight_tuple(net, vec)
     return RealDerivative(fields, [vec])
 end

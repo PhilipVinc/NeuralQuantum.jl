@@ -2,6 +2,7 @@ module NeuralQuantum
 
 # Using statements
 using Reexport, Requires
+using MacroTools: @forward
 
 using QuantumOpticsBase
 using LightGraphs

@@ -76,29 +76,29 @@ end
 function batched_weight_tuple(grad_tup, bsz=1)
     all_weights = grad_tup.tuple_all_weights
     all_weghts_new = [similar(w, length(w), bsz) for w=all_weights][1]
-    return batched_weight_tuple(grad_tup, propertynames(grad_tup), all_weghts_new)[2]
+    return batched_weight_tuple(grad_tup, all_weghts_new)[2]
 end
 
-function batched_weight_tuple(x, fnames, vec::AbstractMatrix, start=1)
+function batched_weight_tuple(obj, vec::AbstractMatrix, start=1)
+    x = trainable(obj)
     i = 0
-    d=Dict{Symbol, Any}()
-    for f=fnames
-        f==:tuple_all_weights && continue
-        di, val = batched_weight_tuple(getproperty(x,f), vec, start+i)
-        i += di; push!(d, f=>val)
+    if x isa Tuple
+        d=Vector()
+        for f=propertynames(x)
+            f==:tuple_all_weights && continue
+            di, val = batched_weight_tuple(getfield(x,f), vec, start+i)
+            i += di; push!(d, val)
+        end
+        i, Tuple(d)
+    else
+        d=Dict{Symbol, Any}()
+        for f=propertynames(x)
+            f==:tuple_all_weights && continue
+            di, val = batched_weight_tuple(getfield(x,f), vec, start+i)
+            i += di; push!(d, f=>val)
+        end
+        i, (;d...)
     end
-    #start == 1 && push!(d, :tuple_all_weights=>[vec])
-    i, (;d...)
-end
-
-function batched_weight_tuple(x::Tuple, vec::AbstractMatrix, start)
-    i = 0
-    d=Vector()
-    for f=fieldnames(typeof(x))
-        di, val = batched_weight_tuple(getproperty(x,f), vec, start+i)
-        i += di; push!(d, val)
-    end
-    i, Tuple(d)
 end
 
 function batched_weight_tuple(x::AbstractArray{<:Number}, vec::AbstractMatrix, start)
