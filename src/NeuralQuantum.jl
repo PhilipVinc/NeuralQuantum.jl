@@ -104,6 +104,8 @@ include("Networks/NDMLT.jl")
 # Closed Systems
 include("Networks/ClosedSystems/RBM.jl")
 include("Networks/ClosedSystems/RBMBatched.jl")
+include("Networks/ClosedSystems/Chain.jl")
+include("Networks/ClosedSystems/SimpleLayers.jl")
 
 # Batch
 include("Networks/RBMSplitBatched.jl")
