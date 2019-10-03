@@ -43,6 +43,7 @@ abstract type OpenTimeEvolutionProblem <: AbstractSteadyStateProblem end
 abstract type OperatorEstimationProblem <: AbstractProblem end
 
 abstract type Sampler end
+abstract type AbstractAccumulator end
 
 # Type describing the parallel backend used by a solver.
 abstract type ParallelType end

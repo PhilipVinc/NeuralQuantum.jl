@@ -1,4 +1,5 @@
-mutable struct LocalComputator{A,B,C,D,E,F,N}
+mutable struct LocalComputator{a,A,B,C,D,E,F,N} <: AbstractAccumulator
+    cur_ψval::a     # The last value seen of <σ|ψ>
     ψ_vals::A       # Stores all the values <σ|ψ> computed for this chain
     ψ_counter::B    # Stores a counter, referring to how many non zero
                     # elements referring to σ we have found
@@ -23,6 +24,7 @@ function LocalComputator(net, σ, batch_sz)
     OT        = out_type(net)
     f         = trainable_first(net)
 
+    cur_ψval  = zero(OT)
     ψ_vals    = similar(f, OT, 1, 2)
     ψ0_buf    = similar(f, OT, 1, batch_sz)
     ψ_counter = zeros(Int, batch_sz)
@@ -32,7 +34,7 @@ function LocalComputator(net, σ, batch_sz)
     _σ        = deepcopy(σ)
     v         = similar(f, IT, length(config(σ)), batch_sz)
 
-    return LocalComputator(ψ_vals, ψ_counter, 0,
+    return LocalComputator(cur_ψval, ψ_vals, ψ_counter, 0,
                            Oloc, 0,
                            mel_buf, ψ0_buf, v, 0,
                            _σ, batch_sz, cached(net, batch_sz))
@@ -51,6 +53,7 @@ end
 function Base.push!(c::LocalComputator, ψval::Number)
     c.cur_ψ             += 1
     c.ψ_counter[c.cur_ψ] = 0
+    c.cur_ψval           = ψval
     return c
 end
 
@@ -63,11 +66,15 @@ function (c::LocalComputator)(mel, cngs, v)
         c.Oloc[i] += mel
         c.n_tot   +=  1
     else
+        # Increase the step in our internal buffer
+        # this is guaranteed to always be < max_capacity
         c.buf_n = c.buf_n + 1
 
         c.ψ_counter[i] += 1
-        c.ψ0_buf[c.buf_n] = c.ψ_vals[i]
-        apply!(v, cngs)
+        c.ψ0_buf[c.buf_n] = c.cur_ψ #c.ψ_vals[i]
+
+        σ = set_index!(c.σ, index(v))
+        apply!(σ, cngs)
         c.mel_buf[c.buf_n] = mel
         c.v_buf[:,c.buf_n] .= config(v)
         c.buf_n == c.batch_sz && process_buffer!(c)
@@ -85,7 +92,7 @@ function process_buffer!(c::LocalComputator, k=c.batch_sz)
     out = net(c.v_buf)
     out .-= c.ψ0_buf
     out .= exp.(out)
-    #collect
+    #collect ? if using the gpu... need to think about this
 
     i = c.cur_ψ
     while k>0

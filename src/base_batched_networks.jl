@@ -9,6 +9,8 @@ end
 
 cached(net::NeuralNetwork, batch_sz::Int) =
     CachedNet(net, cache(net, batch_sz))
+cached(net::CachedNet, batch_sz::Int) =
+    CachedNet(net.net, cache(net.net, batch_sz))
 
 #
 grad_cache(net::NeuralNetwork, batch_sz) = begin
