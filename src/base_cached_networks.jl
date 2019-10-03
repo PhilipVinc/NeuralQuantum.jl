@@ -44,7 +44,7 @@ arrays for intermediate results for improved performance. This object will
 behave identically to a standard network `net`.
 """
 cached(net::NeuralNetwork) = CachedNet(net, cache(net))
-cached(net::CachedNet) = throw("Can't build cached net of cached network!")
+cached(net::CachedNet) = CachedNet(net.net, cache(net))
 
 # When copying shallow copy the net but deepcopy the der_vec
 """
@@ -71,8 +71,6 @@ when dealing with Symmetrized networks or cached networks, as it gives access to
 the wrapped data structure.
 """
 weights(net) = trainable(net)
-#weights(cnet::CachedNet) = cnet.net
-#grad_cache(net::CachedNet) = grad_cache(net.net)
 
 @inline (cnet::CachedNet)(σ...) = logψ(cnet, σ...)
 # When you call logψ on a cached net use the cache to compute the net
@@ -109,11 +107,7 @@ apply!(opt, val1::Union{NeuralNetwork, CachedNet}, val2::Union{NeuralNetwork, Ca
     apply!(weights(val1), weights(val2), args...)
 
 # The common operations are forwarded to the underlying network.
-input_type(cnet::CachedNet) = input_type(cnet.net)
 out_type(cnet::CachedNet) = out_type(cnet.net)
-weight_type(cnet::CachedNet) = weight_type(cnet.net)
-input_shape(net::CachedNet) = input_shape(cnet.net)
-random_input_state(cnet::CachedNet) = random_input_state(cnet.net)
 is_analytic(cnet::CachedNet) = is_analytic(cnet.net)
 num_params(cnet::CachedNet) = num_params(cnet.net)
 
@@ -130,21 +124,18 @@ Base.show(io::IO, ::MIME"text/plain", m::CachedNet) = print(io, "CachedNet{$(m.n
 # representing row and column of a density matrix in the same space.
 abstract type MatrixNeuralNetwork <: NeuralNetwork end
 const MatrixNet   = Union{MatrixNeuralNetwork, CachedNet{<:MatrixNeuralNetwork}}
-#random_input_state(net) = sample_input_type(net).([rand(0:1) for i=1:input_length(model)])
 
 # Thing for Pure Neural Network
 # A MatrixNeuralNetwork is a network for a state that has a bi-partite state,
 # representing row and column of a density matrix in the same space.
 abstract type PureNeuralNetwork <: NeuralNetwork end
 const PureNet   = Union{PureNeuralNetwork, CachedNet{<:PureNeuralNetwork}}
-#random_input_state(net) = sample_input_type(net).([rand(0:1) for i=1:input_length(model)])
 
 # Thing for Pure-state (Closed system) Neural Network
 # A MatrixNeuralNetwork is a network for a state that has a bi-partite state,
 # representing row and column of a density matrix in the same space.
 abstract type KetNeuralNetwork <: NeuralNetwork end
 const KetNet   = Union{KetNeuralNetwork, CachedNet{<:KetNeuralNetwork}}
-#random_input_state(net) = sample_input_type(net).([rand(0:1) for i=1:input_length(model)])
 
 # This overrides the standard behaviour of net(σ...) because Vector unpacking
 # should not happen

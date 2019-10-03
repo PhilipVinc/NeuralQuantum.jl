@@ -93,10 +93,13 @@ export duplicate
 
 # Neural Networks
 include("Networks/utils.jl")
-include("Networks/RBMSplit.jl")
-include("Networks/NDM.jl")
-include("Networks/NDMComplex.jl")
-include("Networks/NDMSymm.jl")
+
+# Mixed Density Matrices
+include("Networks/MixedDensityMatrix/NDM.jl")
+include("Networks/MixedDensityMatrix/NDMComplex.jl")
+include("Networks/MixedDensityMatrix/NDMSymm.jl")
+include("Networks/MixedDensityMatrix/RBMSplit.jl")
+include("Networks/MixedDensityMatrix/RBMSplitBatched.jl")
 
 # LT
 include("Networks/RBMSplitLT.jl")
@@ -105,11 +108,11 @@ include("Networks/NDMLT.jl")
 # Closed Systems
 include("Networks/ClosedSystems/RBM.jl")
 include("Networks/ClosedSystems/RBMBatched.jl")
+
+# FFNN
 include("Networks/ClosedSystems/Chain.jl")
 include("Networks/ClosedSystems/SimpleLayers.jl")
 
-# Batch
-include("Networks/RBMSplitBatched.jl")
 
 
 # Problems
@@ -185,6 +188,8 @@ include("utils/loading.jl")
 include("IterativeInterface/BaseIterativeSampler.jl")
 include("IterativeInterface/IterativeSampler.jl")
 include("IterativeInterface/MTIterativeSampler.jl")
+
+include("IterativeInterface/Batched/LocalComputator.jl")
 export sample!
 
 
