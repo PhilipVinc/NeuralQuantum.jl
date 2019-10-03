@@ -1,4 +1,4 @@
-mutable struct LocalComputator{a,A,B,C,D,E,F,N} <: AbstractAccumulator
+mutable struct LocalKetAccumulator{a,A,B,C,D,E,F,N} <: AbstractAccumulator
     cur_ψval::a     # The last value seen of <σ|ψ>
     ψ_vals::A       # Stores all the values <σ|ψ> computed for this chain
     ψ_counter::B    # Stores a counter, referring to how many non zero
@@ -19,7 +19,7 @@ mutable struct LocalComputator{a,A,B,C,D,E,F,N} <: AbstractAccumulator
     bnet::N
 end
 
-function LocalComputator(net, σ, batch_sz)
+function LocalKetAccumulator(net, σ, batch_sz)
     IT        = input_type(net)
     OT        = out_type(net)
     f         = trainable_first(net)
@@ -34,13 +34,13 @@ function LocalComputator(net, σ, batch_sz)
     _σ        = deepcopy(σ)
     v         = similar(f, IT, length(config(σ)), batch_sz)
 
-    return LocalComputator(cur_ψval, ψ_vals, ψ_counter, 0,
-                           Oloc, 0,
-                           mel_buf, ψ0_buf, v, 0,
-                           _σ, batch_sz, cached(net, batch_sz))
+    return LocalKetAccumulator(cur_ψval, ψ_vals, ψ_counter, 0,
+                               Oloc, 0,
+                               mel_buf, ψ0_buf, v, 0,
+                               _σ, batch_sz, cached(net, batch_sz))
 end
 
-function init!(c::LocalComputator, ψ_vals)
+function init!(c::LocalKetAccumulator, ψ_vals)
     c.ψ_vals = ψ_vals
     c.cur_ψ  = 0
     c.buf_n  = 0
@@ -50,14 +50,14 @@ function init!(c::LocalComputator, ψ_vals)
     return c
 end
 
-function Base.push!(c::LocalComputator, ψval::Number)
+function Base.push!(c::LocalKetAccumulator, ψval::Number)
     c.cur_ψ             += 1
     c.ψ_counter[c.cur_ψ] = 0
     c.cur_ψval           = ψval
     return c
 end
 
-function (c::LocalComputator)(mel, cngs, v)
+function (c::LocalKetAccumulator)(mel, cngs, v)
     i = c.cur_ψ
 
     # If we have no changes, simply add the element to ⟨σ|Ô|ψ⟩ because
@@ -83,10 +83,10 @@ function (c::LocalComputator)(mel, cngs, v)
     return c
 end
 
-finalize!(c::LocalComputator) =
+finalize!(c::LocalKetAccumulator) =
     process_buffer!(c, c.buf_n)
 
-function process_buffer!(c::LocalComputator, k=c.batch_sz)
+function process_buffer!(c::LocalKetAccumulator, k=c.batch_sz)
     net = c.bnet
 
     out = net(c.v_buf)

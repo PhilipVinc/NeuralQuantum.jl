@@ -190,7 +190,7 @@ include("IterativeInterface/BaseIterativeSampler.jl")
 include("IterativeInterface/IterativeSampler.jl")
 include("IterativeInterface/MTIterativeSampler.jl")
 
-include("IterativeInterface/Batched/LocalComputator.jl")
+include("IterativeInterface/Batched/LocalKetAccumulator.jl")
 export sample!
 
 
