@@ -84,10 +84,12 @@ end
 """
     input_type(net) -> Type
 
-Returns the numerical `eltype` of the input for efficiently evaluating in a
-type-stable way the network.
+Returns the numerical `eltype` of the input of the network.
+By default it returns `real(eltype(trainable_first(net)))`, but you should
+ensure this result is correct (or specialize input_type for your network) so
+that the computation is type stable
 """
-input_type(net::NeuralNetwork) = error("Not Implemented")
+input_type(net::NeuralNetwork) = real(eltype(trainable_first(net)))
 
 """
     out_type(net) -> Type
@@ -95,29 +97,6 @@ input_type(net::NeuralNetwork) = error("Not Implemented")
 Returns the numerical `eltype` of the output of the network.
 """
 out_type(net::NeuralNetwork) = error("Not Implemented")
-
-"""
-    input_shape(net)
-
-This returns the shape of the numerical input that should be provided to the
-network, inside a tuple. This is basically the shape of the input layer.
-
-If the network encodes a Matrix, then it will be a tuple with two equal-length
-states. If the network encodes a Ket it will be a tuple with a single element
-of length equal to the number of input units.
-"""
-input_shape(net::NeuralNetwork) = error("Not Implemented")
-
-"""
-    random_input_state(net)
-
-Returns a random input state that can be fed into the network. This is not of
-type `State`, but is rather the underlying numerical values.
-
-This method is used for testing and to construct states. The shape of the state
-will be the same of `input_shape`.
-"""
-random_input_state(net::NeuralNetwork) = error("Not Implemented")
 
 """
     is_analytic(net) -> Bool

@@ -36,11 +36,7 @@ RBM(T::Type, in, α,
     RBM(inita(in), initb(convert(Int,α*in)),
         initW(convert(Int,α*in), in))
 
-input_type(net::RBM{VT,MT}) where {VT,MT} = real(eltype(VT))
-weight_type(net::RBM) = out_type(net)
 out_type(net::RBM{VT,MT}) where {VT,MT} = eltype(VT)
-input_shape(net::RBM) = length(net.a)
-random_input_state(net::RBM{VT,MT}) where {VT,MT} = eltype(VT).([rand(0:1) for i=1:length(net.a)])
 is_analytic(net::RBM) = true
 
 (net::RBM)(σ::State) = net(config(σ))

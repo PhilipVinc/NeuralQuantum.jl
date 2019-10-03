@@ -28,11 +28,7 @@ function NDMSymm(T::Type{<:Real}, n_in, αh, αa, permutations)
     NDMSymm(bare_net, symm_net, ∇b_mat, ∇h_mat, ∇d_mat, ∇w_mat, ∇u_mat, bare_der, permutations)
 end
 
-input_type(net::NDMSymm)         = input_type(net.bare_net)
-weight_type(net::NDMSymm)        = out_type(net.bare_net)
 out_type(net::NDMSymm)           = out_type(net.bare_net)
-input_shape(net::NDMSymm)        =  input_shape(net.bare_net)
-random_input_state(net::NDMSymm) = random_input_state(net.bare_net)
 is_analytic(net::NDMSymm)        = is_analytic(net.bare_net)
 #weights(cnet::NDMSymm)           = cnet.symm_net
 

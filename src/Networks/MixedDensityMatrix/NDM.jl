@@ -50,12 +50,7 @@ NDM(T::Type{<:Real}, in, αh, αa,
         initW(convert(Int,αh*in), in),
         initW(convert(Int,αa*in), in))
 
-input_type(net::NDM{VT,MT}) where {VT,MT} = eltype(VT)
-weight_type(net::NDM) = input_type(net)
 out_type(net::NDM{VT,MT}) where {VT,MT} = Complex{eltype(VT)}
-input_shape(net::NDM) = (length(net.b_μ), length(net.b_μ))
-random_input_state(net::NDM{VT,MT}) where {VT,MT} =
-    (eltype(VT).([rand(0:1) for i=1:length(net.b_μ)]), eltype(VT).([rand(0:1) for i=1:length(net.b_μ)]))
 is_analytic(net::NDM) = true
 
 Base.show(io::IO, m::NDM) = print(io,

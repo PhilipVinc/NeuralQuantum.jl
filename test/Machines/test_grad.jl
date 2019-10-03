@@ -23,9 +23,7 @@ N = 4
         net = all_machines[name](T,N)
         cnet = cached(net)
 
-        @test NeuralQuantum.input_type(net) == real(T)
         @test NeuralQuantum.out_type(net) == Complex{real(T)}
-        @test NeuralQuantum.input_shape(net) == (N, N)
         @test NeuralQuantum.is_analytic(net)
     end
 end

@@ -44,12 +44,7 @@ NDMComplex(T::Type{<:Complex}, in, αh, αa,
                initW(convert(Int,αa*in), in),
                initW(convert(Int,αh*in), in))
 
-input_type(net::NDMComplex{VT,MT}) where {VT,MT} = real(eltype(VT))
-weight_type(net::NDMComplex) = eltype(net.a)
 out_type(net::NDMComplex{VT,MT}) where {VT,MT} = eltype(VT)
-input_shape(net::NDMComplex) = (length(net.a), length(net.a))
-random_input_state(net::NDMComplex{VT,MT}) where {VT,MT} =
-    (input_type(net).([rand(0:1) for i=1:length(net.a)]), input_type(net).([rand(0:1) for i=1:length(net.a)]))
 is_analytic(net::NDMComplex) = false
 
 Base.show(io::IO, m::NDMComplex) = print(io,

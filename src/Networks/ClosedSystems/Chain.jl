@@ -1,6 +1,6 @@
-export Dense, Chain, WSum
+export Chain
 
-struct Chain{T<:Tuple} <: KetNeuralNetwork
+struct Chain{T<:Tuple}
   layers::T
   Chain(xs...) = new{typeof(xs)}(xs)
 end
@@ -16,7 +16,6 @@ applychain(fs::Tuple, x) = applychain(Base.tail(fs), first(fs)(x))
 (c::Chain)(x) = applychain(c.layers, x)
 
 Base.getindex(c::Chain, i::AbstractArray) = Chain(c.layers[i]...)
-Base.length(c::Chain) = lenght(c.layers)
 
 
 function Base.show(io::IO, c::Chain)
@@ -60,4 +59,3 @@ end
 
 is_analytic(net::Chain) = true
 out_type(net::Chain) = ComplexF64
-weight_type(net::Chain) = eltype(trainable_first)
