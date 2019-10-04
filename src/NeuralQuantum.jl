@@ -108,6 +108,8 @@ include("Networks/ClosedSystems/RBMBatched.jl")
 include("Networks/ClosedSystems/Chain.jl")
 include("Networks/ClosedSystems/SimpleLayers.jl")
 
+# Wrappers
+include("Networks/NetworkWrappers.jl")
 
 
 # Problems
