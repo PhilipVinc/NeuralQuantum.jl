@@ -8,7 +8,7 @@ end
 (l::Dense)(x) = logℒ.(l.W*x .+ l.b)
 
 function Dense(in::Integer, out::Integer, σ = identity;
-               initW = glorot_uniform, initb = zeros)
+               initW = glorot_uniform, initb = glorot_uniform)
   return Dense(initW(out, in), initb(out))
 end
 
@@ -113,7 +113,7 @@ end
 (l::DenseSplit)((σr, σc)) = logℒ.(l.Wr*σr .+ l.Wc*σc .+ l.b)
 
 function DenseSplit(in::Integer, out::Integer, σ = identity;
-               initW = glorot_uniform, initb = zeros)
+               initW = glorot_uniform, initb = glorot_uniform)
   return Dense(initW(out, in), initW(out, in), initb(out))
 end
 

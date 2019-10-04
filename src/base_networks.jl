@@ -60,6 +60,9 @@ end
 function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
     σ = config(σ)
 
+    # Old implementation. Probably must be resuscitated one day, but not compatible
+    # with our implementation of gradient caches and trainable.
+    #=
     # If it is a KetNet we should not use σ...
     if isa(net, KetNeuralNetwork)
         y, back = pullback(net -> net(σ), net)
@@ -70,8 +73,15 @@ function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
 
     # This computes the gradient, which is the conjugate of the derivative
     _der = back(Int8(1))[1]
+    =#
 
-    conjcopy_leaves!(der, _der)
+    pars = params(net)
+    fun = isa(net, KetNeuralNetwork) ? ()->net(σ) : ()->net(σ...)
+    y, back = pullback(fun, pars)
+    _der = back(Int8(1))
+
+    # Convert the AD derivative to our contiguous type.
+    apply_recurse!(fields(der), _der, net)
     return y, der
 end
 

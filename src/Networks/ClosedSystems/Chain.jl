@@ -53,7 +53,7 @@ function logψ_and_∇logψ!(∇lnψ, net::Chain, c::ChainCache, σ)
     lnψ = net(c, σ)
 
     # backward
-    backpropchain(fields(∇lnψ), net.layers, c.caches, 1.0)
+    backpropchain(∇lnψ, net.layers, c.caches, 1.0)
     return lnψ, ∇lnψ
 end
 

@@ -95,3 +95,19 @@ Base.show(io::IO, ::MIME"text/plain", der::WirtingerDerivative) = begin
     print(io,
     "WirtingerDerivative with fields: ", str)
 end
+
+Base.isapprox(x::RealDerivative, y::RealDerivative; kwargs...) =
+    _isapprox(fields(x), fields(y); kwargs...)
+
+function _isapprox(x, y; kwargs...)
+    kx = propertynames(x)
+    ky = propertynames(y)
+    all(kx .== ky) || return false
+    for f=kx
+        _isapprox(getproperty(x, f), getproperty(y, f); kwargs...) || return false
+    end
+    return true
+end
+
+_isapprox(x::AbstractArray, y::AbstractArray; kwargs...) =
+    isapprox(x, y; kwargs...)
