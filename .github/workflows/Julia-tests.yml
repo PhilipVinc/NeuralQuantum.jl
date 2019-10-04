@@ -19,10 +19,11 @@ jobs:
       - name: "Run Tests"
         run: |
             julia --color=yes --project=@. -e 'using Pkg;
+                            Pkg.activate();
+                            Pkg.instantiate();
                             Pkg.add([PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"),
                             PackageSpec(name="Zygote", rev="master"),
                             PackageSpec(name="ZygoteRules", rev="master")]);
                             println("Installed [QuantumLattices]");
-                            Pkg.instantiate();
                             println("Instantiated");'
             julia --color=yes --project=@. -e "using Pkg; Pkg.test(coverage=true)"
