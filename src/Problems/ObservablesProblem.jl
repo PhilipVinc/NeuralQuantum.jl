@@ -63,7 +63,7 @@ function ObservablesProblem(T::Type{<:Number}, obs::Any...; operator=true)
                 op = el
             end
             push!(names, Symbol(name))
-            if op isa QuantumOptics.DataOperator
+            if op isa QuantumOpticsBase.DataOperator
                 if op isa DenseOperator
                     op = SparseOperator(op)
                 end

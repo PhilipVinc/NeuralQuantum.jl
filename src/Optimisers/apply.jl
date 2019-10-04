@@ -31,11 +31,12 @@ function _update!(opt, x::AbstractArray{<:Number}, x̄::AbstractArray, state = n
   return state
 end
 
-function _update!(opt, x::Tuple, x̄::Tuple, state=nothing)
+#function _update!(opt, x::Tuple, x̄::Tuple, state=nothing)
+function _update!(opt, x, x̄::Tuple, state=nothing)
   for f in propertynames(x̄)
-    f̄ = getfield(x̄, f)
-#  println(f,"-->",f̄)
-    f̄ === nothing || _update!(opt, getfield(x, f), f̄, state)
+    f̄ = getindex(x̄, f)
+
+    f̄ === nothing || _update!(opt, getindex(x, f), f̄, state)
   end
 end
 
@@ -43,8 +44,6 @@ function _update!(opt, x, x̄::NamedTuple, state=nothing)
   for f in propertynames(x̄)
     f == :tuple_all_weights && continue
     f̄ = getproperty(x̄, f)
-#    println(f,"-->",f̄)
-    # println(f,"-->", typeof(getfield(x, f)))
 
     f̄ === nothing || _update!(opt, getfield(x, f), f̄, state)
   end
@@ -52,22 +51,12 @@ end
 
 function _update!(opt, x, x̄, state=nothing)
   for f in propertynames(x̄)
-    f̄ = getproperty(x̄, f)
-#    println(f,"-->",f̄)
-    # println(f,"-->", typeof(getfield(x, f)))
-
-    f̄ === nothing || _update!(opt, getfield(x, f), f̄, state)
-  end
-end
-
-# Package Integration
-
-using Requires
-
-@init @require Colors="5ae59095-9a9b-59fe-a467-6f913c188581" begin
-  function _update(opt, x::Colors.RGB{T}, x̄::NamedTuple) where T
-    Colors.RGB{T}(clamp(_update(opt, x.r, x̄.r)[1], 0, 1),
-                  clamp(_update(opt, x.g, x̄.g)[1], 0, 1),
-                  clamp(_update(opt, x.b, x̄.b)[1], 0, 1)), nothing
+    if f isa Int
+      f̄ = getindex(x̄, f)
+      f̄ === nothing || _update!(opt, getindex(x, f), f̄, state)
+    else
+      f̄ = getproperty(x̄, f)
+      f̄ === nothing || _update!(opt, getfield(x, f), f̄, state)
+    end
   end
 end

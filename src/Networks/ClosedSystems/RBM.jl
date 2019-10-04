@@ -36,15 +36,12 @@ RBM(T::Type, in, α,
     RBM(inita(in), initb(convert(Int,α*in)),
         initW(convert(Int,α*in), in))
 
-input_type(net::RBM{VT,MT}) where {VT,MT} = real(eltype(VT))
-weight_type(net::RBM) = out_type(net)
 out_type(net::RBM{VT,MT}) where {VT,MT} = eltype(VT)
-input_shape(net::RBM) = length(net.a)
-random_input_state(net::RBM{VT,MT}) where {VT,MT} = eltype(VT).([rand(0:1) for i=1:length(net.a)])
 is_analytic(net::RBM) = true
 
 (net::RBM)(σ::State) = net(config(σ))
-(net::RBM)(σ) = transpose(σ)*net.a .+ sum(logℒ.(net.b .+ net.W*σ))
+(net::RBM)(σ::AbstractVector) = transpose(net.a)*σ .+ sum(logℒ.(net.b .+ net.W*σ))
+(net::RBM)(σ::AbstractMatrix) = transpose(net.a)*σ .+ sum(logℒ.(net.b .+ net.W*σ), dims=1)
 
 function Base.show(io::IO, m::RBM{T}) where T
     print(io, "RBM($(eltype(T)), n=$(length(m.a)), n_hid=$(length(m.b)) => α=$(length(m.b)/length(m.a)))")
@@ -64,30 +61,30 @@ cache(net::RBM) =
              similar(net.a),
              false)
 
-function (net::RBM)(c::RBMCache, σ)
+function (net::RBM)(c::RBMCache, σ_r)
     T=eltype(net.W)
     θ = c.θ
     logℒθ = c.logℒθ
 
     #θ .= net.b .+ net.W * σ
-    copyto!(c.σ, σ)
+    σ = copyto!(c.σ, σ_r)
     copyto!(θ, net.b)
-    BLAS.gemv!('N', T(1.0), net.W, c.σ, T(1.0), θ)
+    BLAS.gemv!('N', T(1.0), net.W, σ, T(1.0), θ)
 
     logℒθ .= logℒ.(θ)
     logψ = dot(σ,net.a) + sum(logℒθ)
     return logψ
 end
 
-function logψ_and_∇logψ!(∇logψ, net::RBM, c::RBMCache, σ)
+function logψ_and_∇logψ!(∇logψ, net::RBM, c::RBMCache, σ_r)
     T=eltype(net.W)
     θ = c.θ
     logℒθ = c.logℒθ
 
     #θ .= net.b .+ net.W * σ
-    copyto!(c.σ, σ)
+    σ = copyto!(c.σ, σ_r)
     copyto!(θ, net.b)
-    BLAS.gemv!('N', T(1.0), net.W, c.σ, T(1.0), θ)
+    BLAS.gemv!('N', T(1.0), net.W, σ, T(1.0), θ)
 
     logℒθ .= logℒ.(θ)
     logψ = dot(σ,net.a) + sum(logℒθ)

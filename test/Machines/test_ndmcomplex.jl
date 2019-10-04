@@ -1,5 +1,4 @@
 using NeuralQuantum, Test
-using NeuralQuantum: random_input_state
 
 num_types = [Float32, Float64]
 
@@ -16,9 +15,7 @@ N = 4
         net = machines[name](T,N)
         cnet = cached(net)
 
-        @test NeuralQuantum.input_type(net) == real(T)
         @test NeuralQuantum.out_type(net) == Complex{real(T)}
-        @test NeuralQuantum.input_shape(net) == (N, N)
         @test NeuralQuantum.is_analytic(net) == false
     end
 end

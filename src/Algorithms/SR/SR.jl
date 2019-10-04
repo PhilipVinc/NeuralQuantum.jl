@@ -73,10 +73,9 @@ mutable struct SREvaluation{TL,TF,TS} <: EvaluatedAlgorithm
 end
 
 function SREvaluation(net::NeuralNetwork)
-    wt = grad_cache(net) # this should be weight_type
-    WT = weight_type(net)
-    T = out_type(net)
-
+    wt = grad_cache(net) # this should be weight type
+    WT = eltype(trainable_first(net))
+    T  = out_type(net)
 
     F = Tuple([zeros(WT,size(w)) for w=wt.tuple_all_weights])
     S = Tuple([zeros(WT,size(w*w')) for w=wt.tuple_all_weights])
@@ -89,7 +88,7 @@ function SREvaluation(net::NeuralNetwork)
 end
 
 EvaluatedNetwork(alg::SR, net) =
-    SREvaluation(weights(net))
+    SREvaluation(net)
 
 # Utility method utilised to accumulate results on a single variable
 function add!(acc::SREvaluation, o::SREvaluation)

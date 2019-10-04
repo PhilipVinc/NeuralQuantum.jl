@@ -39,12 +39,7 @@ RBMSplit(T::Type, in, α,
              initb(convert(Int, α*in)),
              initW(convert(Int, α*in), in), initW(convert(Int, α*in), in))
 
-input_type(net::RBMSplit)  = real(eltype(net.ar))
-weight_type(net::RBMSplit) = out_type(net)
 out_type(net::RBMSplit)    = eltype(net.Wr)
-input_shape(net::RBMSplit) = (length(net.ar), length(net.ac))
-random_input_state(net::RBMSplit) =
-    (eltype(net.ar).([rand(0:1) for i=1:length(net.ar)]), eltype(net.ar).([rand(0:1) for i=1:length(net.ar)]))
 is_analytic(net::RBMSplit) = true
 
 

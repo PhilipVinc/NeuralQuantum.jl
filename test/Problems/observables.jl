@@ -1,5 +1,5 @@
 using NeuralQuantum, LinearAlgebra, Statistics
-using Test, QuantumOptics
+using Test, QuantumOpticsBase
 using NeuralQuantum: LdagLSparseSuperopProblem, LRhoSparseOpProblem
 Nsites = 4
 T = Float64

@@ -13,6 +13,7 @@ struct KLocalOperatorSum{VS<:AbstractVector,VOp} <: AbsLinearOperator
 end
 
 KLocalOperatorSum(op::KLocalOperator) = KLocalOperatorSum([sites(op)], [op])
+KLocalOperatorSum(op::AbsLinearOperator) = KLocalOperatorSum([sites(op)], [op])
 
 ## Accessors
 operators(op::KLocalOperatorSum) = op.operators
@@ -45,7 +46,14 @@ function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperatorSum, v::S
     conn
 end
 
-function Base.sum!(op_sum::KLocalOperatorSum, op::KLocalOperator)
+function accumulate_connections!(acc::AbstractAccumulator, ∑Ô::KLocalOperatorSum, v::State)
+    for Ô=operators(∑Ô)
+        accumulate_connections!(acc, Ô, v)
+    end
+    return acc
+end
+
+function Base.sum!(op_sum::KLocalOperatorSum, op::AbsLinearOperator)
     id = findfirst(isequal(sites(op)), op_sum.sites)
 
     if isnothing(id)

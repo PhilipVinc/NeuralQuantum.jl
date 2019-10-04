@@ -1,7 +1,7 @@
-function QuantumOptics.expect(Obs::Union{GraphOperator, SparseOperator},
+function QuantumOpticsBase.expect(Obs::Union{GraphOperator, SparseOperator},
                      net::NeuralNetwork, sampler::Sampler=FullSumSampler())
 
-    oprob = ObservablesProblem(NeuralQuantum.input_type(net), Obs)
+    oprob = ObservablesProblem(eltype(trainable_first(net)), Obs)
     ov          = state(oprob, net)
     mosampl     = multithread(sampler);
     oitercache  = SamplingCache(oprob)
@@ -9,7 +9,6 @@ function QuantumOptics.expect(Obs::Union{GraphOperator, SparseOperator},
     moc         = init_sampler!(mosampl, net, ov)
 
     sample_net = sampler isa FullSumSampler ? sample_network_wholespace! : sample_network!
-    #println(sample_net)
     init_sampler!(mosampl, net, ov, moc)
     #Threads.@threads
     for i=1:Threads.nthreads()

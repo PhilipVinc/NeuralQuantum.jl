@@ -3,7 +3,6 @@ os:
     - linux
     - osx
 julia:
-    - 1.1
     - 1.2
     - 1.3
     - nightly
@@ -15,15 +14,12 @@ notifications:
     email: false
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-    - travis_wait 20 julia --color=yes -e 'using Pkg;
+    - travis_wait 20 julia --project=@. --color=yes -e 'using Pkg;
                             Pkg.activate();
-                            Pkg.add([PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"),
-                            PackageSpec(url="https://github.com/PhilipVinc/ValueHistoriesLogger.jl"),
-                            PackageSpec(name="Zygote", rev="master"),
-                            PackageSpec(name="ZygoteRules", rev="master")]);
-                            println("Installed [QuantumLattices, Zygote]");
-                            Pkg.instantiate();
                             println("Instantiated");
+                            Pkg.instantiate();
+                            Pkg.add(PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"));
+                            println("Installed [QuantumLattices, Zygote]");
                             println("Developed");
                             Pkg.test(coverage=true)';
 after_success:

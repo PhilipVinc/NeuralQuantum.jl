@@ -2,8 +2,9 @@ module NeuralQuantum
 
 # Using statements
 using Reexport, Requires
+using MacroTools: @forward
 
-using QuantumOptics
+using QuantumOpticsBase
 using LightGraphs
 
 using Zygote
@@ -26,7 +27,7 @@ export Optimisers
 # Imports
 import Base: length, UInt, eltype, copy, deepcopy, iterate
 import Random: rand!
-import QuantumOptics: basis
+import QuantumOpticsBase: basis
 
 # Abstract Types
 abstract type NeuralNetwork end
@@ -42,6 +43,7 @@ abstract type OpenTimeEvolutionProblem <: AbstractSteadyStateProblem end
 abstract type OperatorEstimationProblem <: AbstractProblem end
 
 abstract type Sampler end
+abstract type AbstractAccumulator end
 
 # Type describing the parallel backend used by a solver.
 abstract type ParallelType end
@@ -57,7 +59,6 @@ include("base_states.jl")
 include("base_derivatives.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
-include("base_lookup.jl")
 include("base_batched_networks.jl")
 include("treelike.jl") # from flux
 include("tuple_logic.jl")
@@ -73,7 +74,6 @@ include("States/PurifiedState.jl")
 include("States/DiagonalStateWrapper.jl")
 export local_index
 include("States/ModifiedState.jl")
-include("States/LUState.jl")
 export ModifiedState
 
 # Linear Operators
@@ -92,21 +92,24 @@ export duplicate
 
 # Neural Networks
 include("Networks/utils.jl")
-include("Networks/RBMSplit.jl")
-include("Networks/NDM.jl")
-include("Networks/NDMComplex.jl")
-include("Networks/NDMSymm.jl")
 
-# LT
-include("Networks/RBMSplitLT.jl")
-include("Networks/NDMLT.jl")
+# Mixed Density Matrices
+include("Networks/MixedDensityMatrix/NDM.jl")
+include("Networks/MixedDensityMatrix/NDMComplex.jl")
+include("Networks/MixedDensityMatrix/NDMSymm.jl")
+include("Networks/MixedDensityMatrix/RBMSplit.jl")
+include("Networks/MixedDensityMatrix/RBMSplitBatched.jl")
 
 # Closed Systems
 include("Networks/ClosedSystems/RBM.jl")
 include("Networks/ClosedSystems/RBMBatched.jl")
 
-# Batch
-include("Networks/RBMSplitBatched.jl")
+# FFNN
+include("Networks/ClosedSystems/Chain.jl")
+include("Networks/ClosedSystems/SimpleLayers.jl")
+
+# Wrappers
+include("Networks/NetworkWrappers.jl")
 
 
 # Problems
@@ -131,7 +134,7 @@ include("Problems/ObservablesProblem.jl")
 
 
 # gen state
-export state, state_lut
+export state
 include("generate_state.jl")
 
 # Algorithms
@@ -169,8 +172,6 @@ include("Samplers/MCMCSampler.jl")
 include("Samplers/MCMCRules/Metropolis.jl")
 include("Samplers/MCMCRules/Nagy.jl")
 
-include("base_diffeval.jl")
-
 # other
 include("utils/densitymatrix.jl")
 include("utils/expectation_values.jl")
@@ -182,6 +183,8 @@ include("utils/loading.jl")
 include("IterativeInterface/BaseIterativeSampler.jl")
 include("IterativeInterface/IterativeSampler.jl")
 include("IterativeInterface/MTIterativeSampler.jl")
+
+include("IterativeInterface/Batched/LocalKetAccumulator.jl")
 export sample!
 
 
@@ -195,6 +198,10 @@ function __init__()
 
         CuArrays.@cufunc logℒ(x::Real) = log1p(exp(x))
         CuArrays.@cufunc logℒ(x::Complex) = log(one(x) + exp(x))
+    end
+
+    @require QuantumOptics="6e0679c1-51ea-5a7c-ac74-d61b76210b0c" begin
+
     end
 end
 

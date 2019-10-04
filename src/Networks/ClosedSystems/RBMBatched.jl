@@ -29,7 +29,7 @@ cache(net::RBM, batch_sz) = begin
 end
 
 (net::RBM)(c::RBMBatchedCache, σ::State) = net(c, config(σ))
-function (net::RBM)(c::RBMBatchedCache, σ::AbstractArray)
+function (net::RBM)(c::RBMBatchedCache, σ_r::AbstractArray)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
@@ -37,7 +37,7 @@ function (net::RBM)(c::RBMBatchedCache, σ::AbstractArray)
     T = eltype(θ)
 
     # copy the states to complex valued states for the computations.
-    copyto!(c.σ, σ)
+    σ = copyto!(c.σ, σ_r)
 
     #θ .= net.b .+ net.W * σ
     mul!(θ, net.W, σ)
@@ -52,7 +52,7 @@ function (net::RBM)(c::RBMBatchedCache, σ::AbstractArray)
     return res
 end
 
-function logψ_and_∇logψ!(∇logψ, net::RBM, c::RBMBatchedCache, σ)
+function logψ_and_∇logψ!(∇logψ, net::RBM, c::RBMBatchedCache, σ_r)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
@@ -62,7 +62,7 @@ function logψ_and_∇logψ!(∇logψ, net::RBM, c::RBMBatchedCache, σ)
     T = eltype(θ)
 
     # copy the states to complex valued states for the computations.
-    copyto!(c.σ, σ)
+    σ = copyto!(c.σ, σ_r)
 
     #θ .= net.b .+ net.W * σ
     mul!(θ, net.W, σ)

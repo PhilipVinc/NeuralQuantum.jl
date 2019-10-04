@@ -28,9 +28,7 @@ num_types = [Float32, Float64]
         end
         @test vals ≈ cvals
         @test all(grads)
-        @test NeuralQuantum.input_type(net) == real(T)
         @test NeuralQuantum.out_type(net) == Complex{real(T)}
-        @test NeuralQuantum.input_shape(net) == (N, N)
         @test NeuralQuantum.is_analytic(net)
     end
 

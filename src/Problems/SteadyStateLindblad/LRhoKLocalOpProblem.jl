@@ -48,9 +48,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
         r=local_index(row(𝝝), sites(op))
         for (mel, changes)=op.op_conns[r] #diffs_hnh
             set_index!(𝝝p_row, index(row(𝝝)))
-            for (site,val)=changes
-                setat!(𝝝p_row, site, val)
-            end
+            apply!(𝝝p_row, changes)
 
             lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
             C_loc_i  =  -1.0im * mel * exp(lnψ_i - lnψ)
@@ -68,9 +66,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
         r=local_index(col(𝝝), sites(op))
         for (mel, changes)=op.op_conns[r]
             set_index!(𝝝p_col, index(col(𝝝)))
-            for (site,val)=changes
-                setat!(𝝝p_col, site, val)
-            end
+            apply!(𝝝p_col, changes)
 
             lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
             C_loc_i  =  1.0im * conj(mel) * exp(lnψ_i - lnψ)
@@ -93,15 +89,11 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
 
                 for (mel_r, changes_r)=op_r.op_conns[r_r]
                     set_index!(𝝝p_row, index(row(𝝝)))
-                    for (site,val)=changes_r
-                        setat!(𝝝p_row, site, val)
-                    end
+                    apply!(𝝝p_row, changes_r)
 
                     for (mel_c, changes_c)=op_c.op_conns[r_c]
                         set_index!(𝝝p_col, index(col(𝝝)))
-                        for (site,val)=changes_c
-                            setat!(𝝝p_col, site, val)
-                        end
+                        apply!(𝝝p_col, changes_c)
 
                         lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
                         C_loc_i  =  (mel_r) * conj(mel_c) *  exp(lnψ_i - lnψ)
@@ -122,69 +114,3 @@ end
 # pretty printing
 Base.show(io::IO, p::LRhoKLocalOpProblem) = print(io,
     "LRhoKLocalOpProblem on space $(basis(p)) computing the variance of Lrho using the sparse liouvillian")
-
-# Variant for when the state has a LookUpTable and resorts to computing
-# only lut updates.
-function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
-                       net::MatrixNet, 𝝝::S,
-                       _lnψ=nothing, _𝝝p::NS=nothing) where {S<:LUState, NS<:Union{Nothing, S}}
-    # hey
-    HnH = prob.HnH
-    L_ops = prob.L_ops
-
-    for el=LLO_i
-      el .= 0.0
-    end
-    𝝝s = state(𝝝)
-    no_changes = changes(row(𝝝s))
-
-    C_loc = zero(Complex{real(out_type(net))})
-
-    # ⟨σ|Hρ|σt⟩ (using hermitianity of HdH)
-    # TODO should be non allocating!
-    diffs_hnh = row_valdiff(HnH, raw_state(row(𝝝s)))
-    for (mel, changes)=diffs_hnh
-        Δ_lnψ, ∇lnψ_i = Δ_logψ_and_∇logψ!(∇lnψ, net, 𝝝, changes, no_changes)
-
-        C_loc_i  =  -1.0im * mel * exp(Δ_lnψ)
-        for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
-          LLOave .+= C_loc_i .* _∇lnψ
-        end
-        C_loc  += C_loc_i
-    end
-
-    # ⟨σ|ρHᴴ|σt⟩
-    resize!(diffs_hnh, 0)
-    row_valdiff!(diffs_hnh, HnH, raw_state(col(𝝝s)))
-    for (mel, changes)=diffs_hnh
-        Δ_lnψ, ∇lnψ_i = Δ_logψ_and_∇logψ!(∇lnψ, net, 𝝝, no_changes, changes)
-
-        C_loc_i  =  1.0im * conj(mel) * exp(Δ_lnψ)
-        for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
-          LLOave .+= C_loc_i .* _∇lnψ
-        end
-        C_loc  += C_loc_i
-    end
-
-    # L rho Ldag H #ok
-    # -im ⟨σ|L ρ Lᴴ|σt⟩
-    for L=L_ops
-        diffs_r = row_valdiff(L, raw_state(row(𝝝s)))
-        diffs_c = row_valdiff(L, raw_state(col(𝝝s)))
-
-        for (mel_r, changes_r)=diffs_r
-
-            for (mel_c, changes_c)=diffs_c
-                Δ_lnψ, ∇lnψ_i = Δ_logψ_and_∇logψ!(∇lnψ, net, 𝝝, changes_r, changes_c)
-
-                C_loc_i  =  (mel_r) * conj(mel_c) *  exp(Δ_lnψ)
-                for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
-                  LLOave .+= C_loc_i .* _∇lnψ
-                end
-                C_loc  += C_loc_i
-            end
-        end
-    end
-
-    return C_loc
-end

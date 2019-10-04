@@ -48,7 +48,6 @@ value and it's gradient w.r.t. to the nework's parameters.
     time.
 
 See also: `logψ`, `logψ_and_∇logψ!`
-
 """
 function logψ_and_∇logψ(net::NeuralNetwork, σ) #::Vararg{N,V})where {N,V}
     der = grad_cache(net)
@@ -61,7 +60,10 @@ end
 function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
     σ = config(σ)
 
-    # If it is a KetNet we should not use σ... 
+    # Old implementation. Probably must be resuscitated one day, but not compatible
+    # with our implementation of gradient caches and trainable.
+    #=
+    # If it is a KetNet we should not use σ...
     if isa(net, KetNeuralNetwork)
         y, back = pullback(net -> net(σ), net)
     else
@@ -71,11 +73,15 @@ function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
 
     # This computes the gradient, which is the conjugate of the derivative
     _der = back(Int8(1))[1]
+    =#
 
-    for key=keys(_der)
-        conj!(_der[key])
-        copyto!(der[key], _der[key])
-    end
+    pars = params(net)
+    fun = isa(net, KetNeuralNetwork) ? ()->net(σ) : ()->net(σ...)
+    y, back = pullback(fun, pars)
+    _der = back(Int8(1))
+
+    # Convert the AD derivative to our contiguous type.
+    apply_recurse!(fields(der), _der, net)
     return y, der
 end
 
@@ -85,10 +91,12 @@ end
 """
     input_type(net) -> Type
 
-Returns the numerical `eltype` of the input for efficiently evaluating in a
-type-stable way the network.
+Returns the numerical `eltype` of the input of the network.
+By default it returns `real(eltype(trainable_first(net)))`, but you should
+ensure this result is correct (or specialize input_type for your network) so
+that the computation is type stable
 """
-input_type(net::NeuralNetwork) = error("Not Implemented")
+input_type(net::NeuralNetwork) = real(eltype(trainable_first(net)))
 
 """
     out_type(net) -> Type
@@ -96,28 +104,6 @@ input_type(net::NeuralNetwork) = error("Not Implemented")
 Returns the numerical `eltype` of the output of the network.
 """
 out_type(net::NeuralNetwork) = error("Not Implemented")
-"""
-    input_shape(net)
-
-This returns the shape of the numerical input that should be provided to the
-network, inside a tuple. This is basically the shape of the input layer.
-
-If the network encodes a Matrix, then it will be a tuple with two equal-length
-states. If the network encodes a Ket it will be a tuple with a single element
-of length equal to the number of input units.
-"""
-input_shape(net::NeuralNetwork) = error("Not Implemented")
-
-"""
-    random_input_state(net)
-
-Returns a random input state that can be fed into the network. This is not of
-type `State`, but is rather the underlying numerical values.
-
-This method is used for testing and to construct states. The shape of the state
-will be the same of `input_shape`.
-"""
-random_input_state(net::NeuralNetwork) = error("Not Implemented")
 
 """
     is_analytic(net) -> Bool
@@ -132,7 +118,7 @@ is_analytic(net::NeuralNetwork) = false
 
 Returns the total number of parameters of the neural network.
 """
-num_params(net::NeuralNetwork) = sum([length(getfield(net, f)) for f=fieldnames(typeof(net))])
+num_params(net::NeuralNetwork) = trainable_length(net)
 
 # TODO does this even make sense?!
 # the idea was that a shallow-copy of the weights of the net is not
