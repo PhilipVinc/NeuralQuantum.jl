@@ -71,10 +71,7 @@ function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
     # This computes the gradient, which is the conjugate of the derivative
     _der = back(Int8(1))[1]
 
-    for key=keys(_der)
-        conj!(_der[key])
-        copyto!(der[key], _der[key])
-    end
+    conjcopy_leaves!(der, _der)
     return y, der
 end
 

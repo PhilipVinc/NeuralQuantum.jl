@@ -113,3 +113,19 @@ function batched_weight_tuple(x::AbstractArray{<:Number}, vec::AbstractMatrix, s
     end
     return length(x), reshpd_params
 end # ? stridedView?
+
+#
+"""
+    conjcopy_leaves!(out, in)
+
+Recursively maps all fields of `in`, conjugating them and copying to the respective
+field of `out`.
+"""
+conjcopy_leaves!(out, in::Union{Tuple,NamedTuple}) = begin
+    for key=keys(in)
+        conjcopy_leaves!(out[key], in[key])
+    end
+    return out
+end
+
+conjcopy_leaves!(out::AbstractArray, in::AbstractArray) = copyto!(out, conj!(in))

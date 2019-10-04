@@ -103,8 +103,8 @@ include("Networks/MixedDensityMatrix/RBMSplit.jl")
 include("Networks/MixedDensityMatrix/RBMSplitBatched.jl")
 
 # LT
-include("Networks/RBMSplitLT.jl")
-include("Networks/NDMLT.jl")
+#include("Networks/MixedDensityMatrix/RBMSplitLT.jl")
+#include("Networks/MixedDensityMatrix/NDMLT.jl")
 
 # Closed Systems
 include("Networks/ClosedSystems/RBM.jl")
