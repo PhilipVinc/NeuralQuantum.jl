@@ -59,7 +59,6 @@ include("base_states.jl")
 include("base_derivatives.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
-include("base_lookup.jl")
 include("base_batched_networks.jl")
 include("treelike.jl") # from flux
 include("tuple_logic.jl")
@@ -75,7 +74,6 @@ include("States/PurifiedState.jl")
 include("States/DiagonalStateWrapper.jl")
 export local_index
 include("States/ModifiedState.jl")
-include("States/LUState.jl")
 export ModifiedState
 
 # Linear Operators
@@ -101,10 +99,6 @@ include("Networks/MixedDensityMatrix/NDMComplex.jl")
 include("Networks/MixedDensityMatrix/NDMSymm.jl")
 include("Networks/MixedDensityMatrix/RBMSplit.jl")
 include("Networks/MixedDensityMatrix/RBMSplitBatched.jl")
-
-# LT
-#include("Networks/MixedDensityMatrix/RBMSplitLT.jl")
-#include("Networks/MixedDensityMatrix/NDMLT.jl")
 
 # Closed Systems
 include("Networks/ClosedSystems/RBM.jl")
@@ -138,7 +132,7 @@ include("Problems/ObservablesProblem.jl")
 
 
 # gen state
-export state, state_lut
+export state
 include("generate_state.jl")
 
 # Algorithms
@@ -175,8 +169,6 @@ include("Samplers/FullSum.jl")
 include("Samplers/MCMCSampler.jl")
 include("Samplers/MCMCRules/Metropolis.jl")
 include("Samplers/MCMCRules/Nagy.jl")
-
-include("base_diffeval.jl")
 
 # other
 include("utils/densitymatrix.jl")

@@ -6,7 +6,6 @@ using Test
     @testset "Machines" begin
         include("Machines/test_grad.jl")
         include("Machines/test_ndmcomplex.jl")
-        include("Machines/test_lut.jl")
     end
 
     println("Testing algorithm caches...")

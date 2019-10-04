@@ -1,7 +1,7 @@
 using NeuralQuantum
 using Test
 using NeuralQuantum: LdagLSparseSuperopProblem, LRhoSparseOpProblem, LRhoKLocalOpProblem
-using NeuralQuantum: init_lut!, HamiltonianGSEnergyProblem
+using NeuralQuantum: HamiltonianGSEnergyProblem
 
 Nsites = 4
 T = Float64

@@ -1,7 +1,6 @@
 using NeuralQuantum
 using Test
 using NeuralQuantum: LdagLSparseSuperopProblem, LRhoSparseOpProblem, LRhoKLocalOpProblem
-using NeuralQuantum: init_lut!
 
 Nsites = 4
 T = Float64
@@ -27,7 +26,7 @@ function test_ldagl_op(T, Nsites, net, lind)
 
     for i=1:spacedimension(v)
         set_index!(v, i)
-        init_lut!(set_index!(vL, i), net)
+        set_index!(vL, i)
         NeuralQuantum.sample_network!(ic,     prob,  net, v);
         NeuralQuantum.sample_network!(icL_fb, probL, net, v);
         NeuralQuantum.sample_network!(icL,    probL, net, vL);

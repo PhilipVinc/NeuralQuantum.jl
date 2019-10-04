@@ -103,17 +103,3 @@ end
     test_state_properties(s, 3, 4*2, Float32, Tuple{AbstractArray, AbstractArray})
     test_state_dyn_double(s)
 end
-
-@testset "LU: WrappedChanges : NAryState" begin
-    sb = NAryState(3, 4)
-    s = LUState(ModifiedState(sb), nothing)
-    test_state_properties(s, 3, 4, Float32, AbstractArray)
-    test_state_dyn_single(s)
-end
-
-@testset "LU: WrappedChanges : Double-NAryState" begin
-    sb = ModifiedState(NAryState(3, 4))
-    s = LUState(DoubleState(sb), nothing)
-    test_state_properties(s, 3, 4*2, Float32, Tuple{AbstractArray, AbstractArray})
-    test_state_dyn_double(s)
-end

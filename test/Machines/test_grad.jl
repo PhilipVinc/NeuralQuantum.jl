@@ -11,6 +11,9 @@ re_machines["NDM"] = ma
 ma = (T, N) -> RBMSplit(T, N, 2)
 im_machines["RBMSplit"] = ma
 
+ma = (T, N) -> RBM(T, N, 2)
+im_machines["RBM"] = ma
+
 all_machines = merge(re_machines, im_machines)
 
 N = 4
@@ -21,7 +24,6 @@ N = 4
             T = Complex{T}
         end
         net = all_machines[name](T,N)
-        cnet = cached(net)
 
         @test NeuralQuantum.out_type(net) == Complex{real(T)}
         @test NeuralQuantum.is_analytic(net)
@@ -29,7 +31,7 @@ N = 4
 end
 
 
-@testset "Test Cached Value $name" for name=keys(all_machines)
+@testset "Test cached evaluation $name" for name=keys(all_machines)
     for T=num_types
         net = all_machines[name](T,N)
         cnet = cached(net)
@@ -42,12 +44,17 @@ end
             push!(vals, net(v))
             push!(cvals, cnet(v))
         end
+        # Test evaluation
         @test vals ≈ cvals
+        # Test cached vals have the same type
+        all(typeof.(cvals) .== typeof(first(cvals)))
+        # and same type as exact computation
+        @test typeof(first(vals)) == typeof(first(cvals))
     end
 end
 
 
-@testset "Test Cached Gradient $name" for name=keys(all_machines)
+@testset "Test cached gradient $name" for name=keys(all_machines)
     for T=num_types
         net = all_machines[name](T,N)
         cnet = cached(net)
