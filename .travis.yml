@@ -19,7 +19,7 @@ script:
                             Pkg.activate();
                             println("Instantiated");
                             Pkg.instantiate();
-                            Pkg.add(PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"))
+                            Pkg.add(PackageSpec(url="https://github.com/PhilipVinc/QuantumLattices.jl"));
                             println("Installed [QuantumLattices, Zygote]");
                             println("Developed");
                             Pkg.test(coverage=true)';
