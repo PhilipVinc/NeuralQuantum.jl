@@ -30,7 +30,7 @@ cache(net::RBMSplit, batch_sz) = begin
                   false)
 end
 
-function (net::RBMSplit)(c::RBMSplitBatchedCache, σr_r, σc_r)
+function logψ!(out::AbstractArray, net::RBMSplit, c::RBMSplitBatchedCache, σr_r, σc_r)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
@@ -53,10 +53,13 @@ function (net::RBMSplit)(c::RBMSplitBatchedCache, σr_r, σc_r)
     res .+= res_tmp
     Base.mapreducedim!(identity, +, res, logℒθ)
 
-    return res
+    # TODO make this better
+    copyto!(out, 1, res, 1, length(out))
+
+    return out
 end
 
-function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitBatchedCache, σr_r, σc_r)
+function logψ_and_∇logψ!(∇logψ, out, net::RBMSplit, c::RBMSplitBatchedCache, σr_r, σc_r)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
@@ -91,5 +94,8 @@ function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitBatchedCache, �
     _batched_outer_prod!(∇logψ.Wr, ∂logℒθ, σr)
     _batched_outer_prod!(∇logψ.Wc, ∂logℒθ, σc)
 
-    return res
+    # TODO make this better
+    copyto!(out, 1, res, 1, length(out))
+
+    return out
 end

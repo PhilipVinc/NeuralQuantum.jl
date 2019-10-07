@@ -27,9 +27,9 @@ cache(net::RBM, batch_sz) = begin
                   similar(net.b, n_v, batch_sz),
                   false)
 end
+batch_size(c::RBMBatchedCache) = size(c.θ, 2)
 
-(net::RBM)(c::RBMBatchedCache, σ::State) = net(c, config(σ))
-function (net::RBM)(c::RBMBatchedCache, σ_r::AbstractArray)
+function logψ!(out::AbstractArray, net::RBM, c::RBMBatchedCache, σ_r::AbstractArray)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
@@ -49,10 +49,13 @@ function (net::RBM)(c::RBMBatchedCache, σ_r::AbstractArray)
     conj!(res)
     Base.mapreducedim!(identity, +, res, logℒθ)
 
-    return res
+    # TODO make this better
+    copyto!(out, 1, res, 1, length(out))
+
+    return out
 end
 
-function logψ_and_∇logψ!(∇logψ, net::RBM, c::RBMBatchedCache, σ_r)
+function logψ_and_∇logψ!(∇logψ, out, net::RBM, c::RBMBatchedCache, σ_r)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
@@ -81,5 +84,8 @@ function logψ_and_∇logψ!(∇logψ, net::RBM, c::RBMBatchedCache, σ_r)
 
     _batched_outer_prod!(∇logψ.W, ∂logℒθ, σ)
 
-    return res
+    # TODO make this better
+    copyto!(out, 1, res, 1, length(out))
+
+    return out
 end
