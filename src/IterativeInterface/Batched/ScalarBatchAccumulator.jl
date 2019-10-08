@@ -92,6 +92,6 @@ function process_accumulator!(c::ScalarBatchAccumulator)
 
     out_buf .*= c.mel_buf
     init!(c)
-    
+
     return out_buf
 end

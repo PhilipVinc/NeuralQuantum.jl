@@ -23,10 +23,10 @@ function GradientBatchAccumulator(net::NeuralNetwork, v::State, batch_sz)
     ∇out_buf = grad_cache(net, batch_sz)
 
     ψ0_buf = similar(w, out_type(net), 1, batch_sz)
-    ∇0_buf = similar(vec_data(∇out_buf))
+    ∇0_buf = grad_cache(net, batch_sz)
     mel_buf = similar(w, out_type(net), 1, batch_sz)
 
-    return ScalarBatchAccumulator(
+    return GradientBatchAccumulator(
         bnet, in_buf, out_buf, ∇out_buf,
         ψ0_buf, ∇0_buf, mel_buf, 0, batch_sz)
 end
@@ -45,21 +45,22 @@ function (c::GradientBatchAccumulator)(mel, v, ψ0, ∇0_buf)
     c.ψ0_buf[c.buf_n]   = ψ0
     c.mel_buf[c.buf_n]  = mel
     store_state!(c.in_buf, v, c.buf_n)
-    c.∇0_buf[:,c.buf_n] .= ∇0_buf
+    c∇0_buf = vec_data(c.∇0_buf)[1]
+    c∇0_buf[:,c.buf_n] .= vec_data(∇0_buf)[1]
 end
 
 function process_accumulator!(c::GradientBatchAccumulator)
     out_buf   = c.out_buf
     ∇out      = c.∇out_buf
-    
+
     logψ_and_∇logψ!(c.∇out_buf, c.out_buf, c.bnet, c.in_buf)
     out_buf .-= c.ψ0_buf      #logΔ
     out_buf  .= exp.(out_buf) #exp(logΔ)
     #collect ? if using the gpu... need to think about this
 
+    out_buf .*= c.mel_buf
     vec_data(∇out) .-= vec_data(c.∇0_buf)
     vec_data(∇out) .* c.mel_buf
-    out_buf .*= c.mel_buf
 
     c.buf_n = 0
 
