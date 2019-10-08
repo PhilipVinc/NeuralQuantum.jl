@@ -36,3 +36,44 @@ Internally uses the fact that R is a StridedView
     end=#
     return R
 end
+
+@inline function _batched_outer_prod!(R::StridedView, α, vb, wb)
+    #@unsafe_strided R begin
+        @inbounds @simd for i=1:size(R, 3)
+            for j=1:size(wb, 1)
+                for k=1:size(vb, 1)
+                    R[k,j,i] = α * vb[k,i]*conj(wb[j,i])
+                end
+            end
+        end
+    #end
+
+    #=@unsafe_strided R vb wb begin
+        for i=1:size(R, 3)
+            BLAS.ger!(1.0, vb[:,i], wb[:,i], R[:,:,i])
+        end
+    end=#
+    return R
+end
+
+@inline function _batched_outer_prod_∑!(R::StridedView, α, vb, wb, vb2, wb2)
+        @inbounds @simd for i=1:size(R, 3)
+            for j=1:size(wb, 1)
+                for k=1:size(vb, 1)
+                    R[k,j,i] = α * (vb[k,i]*conj(wb[j,i]) + vb2[k,i]*conj(wb2[j,i]))
+                end
+            end
+        end
+    return R
+end
+
+@inline function _batched_outer_prod_Δ!(R::StridedView, α, vb, wb, vb2, wb2)
+        @inbounds @simd for i=1:size(R, 3)
+            for j=1:size(wb, 1)
+                for k=1:size(vb, 1)
+                    R[k,j,i] = α * (vb[k,i]*conj(wb[j,i]) - vb2[k,i]*conj(wb2[j,i]))
+                end
+            end
+        end
+    return R
+end
