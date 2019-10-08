@@ -95,6 +95,7 @@ include("Networks/utils.jl")
 
 # Mixed Density Matrices
 include("Networks/MixedDensityMatrix/NDM.jl")
+include("Networks/MixedDensityMatrix/NDMBatched.jl")
 include("Networks/MixedDensityMatrix/NDMComplex.jl")
 include("Networks/MixedDensityMatrix/NDMSymm.jl")
 include("Networks/MixedDensityMatrix/RBMSplit.jl")

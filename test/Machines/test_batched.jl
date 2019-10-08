@@ -7,6 +7,9 @@ machines = Dict()
 ma = (T, N) -> RBMSplit(T, N, 2)
 machines["RBMSplit"] = ma
 
+ma = (T, N) -> NDM(T, N, 2, 3)
+machines["NDM"] = ma
+
 ma = (T, N) -> RBM(T, N, 2)
 machines["RBM"] = ma
 

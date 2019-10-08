@@ -141,9 +141,6 @@ cache(net::NDM) =
               similar(net.d_λ, complex(eltype(net.d_λ))),
               similar(net.d_λ, eltype(net.d_λ)),
               similar(net.d_λ, complex(eltype(net.d_λ))),
-                  #VT(T, length(net.h_μ)), zeros(T, length(net.h_μ)),
-                  #VT(T, length(net.h_μ)), zeros(T, length(net.h_μ)),
-                  #zeros(Complex{T}, length(net.d_λ)), zeros(T, length(net.d_λ)), zeros(Complex{T}, length(net.d_λ)),
 
               similar(net.b_μ),
               -1,
@@ -296,13 +293,13 @@ function logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, σr,σc)
     _Π .= _Π_tmp
     LinearAlgebra.BLAS.gemv!('N', T(0.5), W.u_μ, Δσ, T(0.0), _Π_tmp)
     _Π .+= T(1.0)im.* _Π_tmp
-    #@info "_Π diff " maximum(abs.(_Π - (T(0.5)  * transpose(transpose(∑σ)*W.u_λ) + T(0.5)im* transpose(transpose(Δσ)*W.u_μ) .+ W.d_λ)))
 
     # --- End common terms with computation of ψ --- #
 
     # Compute additional terms for derivatives
     ∂logℒ_λ_σp = c.∂logℒ_λ_σp; ∂logℒ_λ_σp .= ∂logℒ.(θλ_σp)
     ∂logℒ_μ_σp = c.∂logℒ_μ_σp; ∂logℒ_μ_σp .= ∂logℒ.(θμ_σp)
+
     ∂logℒ_Π    = c.∂logℒ_Π;    ∂logℒ_Π    .= ∂logℒ.(_Π)
 
     # Store the derivatives
