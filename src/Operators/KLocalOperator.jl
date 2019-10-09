@@ -103,6 +103,10 @@ function KLocalOperatorRow(T::Type{<:Number}, sites::AbstractVector, hilb_dims::
                         mel, to_change, new_values, op_conns, new_indices)
 end
 
+KLocalOperator(op::KLocalOperator, mat::AbstractMatrix) =
+    KLocalOperatorRow(copy(sites(op)),  copy(hilb_dims(op)), mat)
+
+
 ## Accessors
 """
     sites(op::KLocalOperator)
@@ -147,6 +151,7 @@ function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperator, v::Stat
 
     append!(conn, (mel, ids))
 end
+
 function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperator, v::State)
     # If it is a doublestate, we are probably computing Operator x densitymatrix,
     # so we only iterate along the column of v
@@ -163,8 +168,9 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperator, v
     return acc
 end
 
-# sum
-function sum_samesite!(op_l::KLocalOperator, op_r::KLocalOperator)
+_sum_samesite(op_l::KLocalOperator, op_r::KLocalOperator) = _sum_samesite!(duplicate(op_l), op_r)
+
+function _sum_samesite!(op_l::KLocalOperator, op_r::KLocalOperator)
     @assert op_l.sites == op_r.sites
     @assert length(op_l.mel) == length(op_r.mel)
 
@@ -204,24 +210,110 @@ function sum_samesite!(op_l::KLocalOperator, op_r::KLocalOperator)
     return op_l
 end
 
-sum_samesite(op_l::KLocalOperator, op_r::KLocalOperator) = sum_samesite!(duplicate(op_l), op_r)
-
-Base.transpose(op::KLocalOperator) = KLocalOperatorRow(deepcopy(op.sites),
-                                                       deepcopy(op.hilb_dims),
-                                                       transpose(op.mat)|>collect)
+Base.transpose(op::KLocalOperator) =
+    KLocalOperator(op, collect(transpose(op.mat)))
 
 function Base.conj!(op::KLocalOperator)
     conj!(op.mat)
-    conj!(op.op_conns)
+    map(conj!, op.op_conns)
     for el=op.mel
-        conj!.(el)
+        conj!(el)
     end
     return op
 end
 
 Base.conj(op::KLocalOperator) = conj!(duplicate(op))
+Base.adjoint(op::KLocalOperator) = conj(transpose(op))
 
-Base.adjoint(op::KLocalOperator) = conj(tranpose(op))
+*(a::Number, b::KLocalOperator) =
+    _op_alpha_prod(b,a)
+*(b::KLocalOperator, a::Number) =
+    _op_alpha_prod(b,a)
+_op_alpha_prod(op::KLocalOperator, a::Number) =
+    KLocalOperator(op, a*op.mat)
+
+function *(opl::KLocalOperator, opr::KLocalOperator)
+    if sites(opl) == sites(opr)
+        return KLocalOperator(opl, opl.mat * opr.mat)
+    else
+        disjoint = true
+        for s=sites(opr)
+            if s ∈ sites(opl)
+                disjoint = false
+                break
+            end
+        end
+        if disjoint
+            _kop_kop_disjoint_prod(opl,opr)
+        else
+            _kop_kop_joint_prod(opl, opr)
+        end
+    end
+end
+
+function _kop_kop_disjoint_prod(opl::KLocalOperator, opr::KLocalOperator)
+    sl = sites(opl); sr = sites(opr)
+    if length(sl) == 1 && length(sr) == 1
+        # it's commutative
+        if sl[1] > sr[1]
+            _op =opl
+            opl = opr
+            opr = _op
+        end
+        sl = first(sites(opl))
+        sr = first(sites(opr))
+
+        hilb_dim_l = first(hilb_dims(opl))
+        hilb_dim_r = first(hilb_dims(opr))
+
+        # inverted also in QuantumOptics... who knows why
+        mat = kron(opr.mat, opl.mat)
+        return KLocalOperatorRow([sl, sr], [hilb_dim_l, hilb_dim_r], mat)
+    else
+        sites_new = sort(vcat(sites(opl), sites(opr)))
+        ids_l = [findfirst(i .==sites_new) for i=sites(opl)]
+        ids_r = [findfirst(i .==sites_new) for i=sites(opr)]
+        throw("to implement error $(sites(opl)) and $(sites(opr))")
+    end
+end
+
+function _kop_kop_joint_prod(opl::KLocalOperator, opr::KLocalOperator)
+    sl = sites(opl); sr = sites(opr)
+    if length(sl) == 1 || length(sr) == 1
+        reversed = false
+        if length(sl) == 1
+            _op = opl
+            opl = opr
+            opr = _op
+            reversed = true
+        end
+        # opl has many dims, opr only 1
+        sr = first(sites(opr))
+        r_index = findfirst(sr .== sl)
+        hdim_r = first(hilb_dims(opr))
+
+        matrices = [Matrix(I, d, d) for d=hilb_dims(opl)]
+        matrices[r_index] = opr.mat
+        mat_r = kron(matrices...)
+        prod_mat = reversed ? mat_r*opl.mat : opl.mat*mat_r
+
+        return KLocalOperator(opl, prod_mat)
+    else
+        sites_new = sort(vcat(sites(opl), sites(opr)))
+        ids_l = [findfirst(i .==sites_new) for i=sites(opl)]
+        ids_r = [findfirst(i .==sites_new) for i=sites(opr)]
+        throw("to implement error")
+    end
+end
+
+function permutesystems(a::AbstractMatrix, h_dims::Vector, perm::Vector{Int})
+    #@assert length(a.basis_l.bases) == length(a.basis_r.bases) == length(perm)
+    #@assert isperm(perm)
+    data = reshape(a, [h_dims; h_dims]...)
+    data = permutedims(data, [perm; perm .+ length(perm)])
+    data = reshape(data, prod(h_dims), prod(h_dims))
+    return data
+end
 
 Base.eltype(::T) where {T<:KLocalOperator} = eltype(T)
 Base.eltype(T::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {SV,M,Vel,Vti,Vtc,Vtv,OC} =

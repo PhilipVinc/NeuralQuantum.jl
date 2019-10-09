@@ -83,9 +83,12 @@ include("Operators/OpConnection.jl")
 include("Operators/OpConnectionIndex.jl")
 include("Operators/KLocalOperator.jl")
 include("Operators/KLocalOperatorSum.jl")
+include("Operators/KLocalOperatorTensor.jl")
+include("Operators/KLocalLiouvillian.jl")
+
 include("Operators/GraphConversion.jl")
 export OpConnection
-export KLocalOperator, KLocalOperatorSum, KLocalOperatorRow, operators
+export KLocalOperator, KLocalOperatorTensor, KLocalOperatorSum, KLocalOperatorRow, operators
 export row_valdiff, row_valdiff_index, col_valdiff, sites, conn_type
 export duplicate
 
@@ -191,7 +194,7 @@ export sample!
 
 function __init__()
     @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" begin
-        using .CuArrays
+        import .CuArrays: CuArrays
 
         CuArrays.@cufunc ℒ(x) = one(x) + exp(x)
 
