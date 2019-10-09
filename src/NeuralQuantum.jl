@@ -9,7 +9,7 @@ using LightGraphs
 
 using Zygote
 using Random: AbstractRNG, MersenneTwister, GLOBAL_RNG
-using LinearAlgebra, SparseArrays, Strided
+using LinearAlgebra, SparseArrays, Strided, UnsafeArrays
 using NNlib
 
 include("IterativeSolvers/minresqlp.jl")

@@ -90,15 +90,17 @@ end
 
 
 #
-grad_cache(net::NeuralNetwork, batch_sz) = begin
-    is_analytic(net) && return RealDerivative(net, batch_sz)
-    return WirtingerDerivative(net, batch_sz)
+grad_cache(net::NeuralNetwork, batch_sz) =
+    grad_cache(out_type(net), net, batch_sz)
+grad_cache(T::Type{<:Number}, net::NeuralNetwork, batch_sz) = begin
+    is_analytic(net) && return RealDerivative(T, net, batch_sz)
+    return WirtingerDerivative(T, net, batch_sz)
 end
 
-function RealDerivative(net::NeuralNetwork, batch_sz::Int)
+function RealDerivative(T::Type{<:Number}, net::NeuralNetwork, batch_sz::Int)
     pars = trainable(net)
 
-    vec    = similar(trainable_first(pars), out_type(net), _tlen(pars), batch_sz)
+    vec    = similar(trainable_first(pars), T, _tlen(pars), batch_sz)
     i, fields = batched_weight_tuple(net, vec)
     return RealDerivative(fields, [vec])
 end
@@ -123,13 +125,17 @@ end
 store_state!(cache::AbstractArray,
              v::AbstractVector,
              i::Integer) = begin
-    cache[:,i] .= v
+    #@uviews cache v begin
+        uview(cache, :, i) .= v
+    #end
 end
 
 store_state!((cache_l, cache_r)::NTuple{2,<:AbstractMatrix},
              (vl, vr)::NTuple{2,<:AbstractVector},
              i::Integer) = begin
-    cache_l[:,i] .= vl
-    cache_r[:,i] .= vr
+    #@uviews cache_l cache_r vl vr begin
+        uview(cache_l, :,i) .= vl
+        uview(cache_r, :,i) .= vr
+    #end
     return nothing
 end

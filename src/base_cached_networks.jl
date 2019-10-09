@@ -62,6 +62,7 @@ Constructs the `NNCache{typeof(net)}` object that holds the cache for this netwo
 If it has not been implemented returns nothing.
 """
 cache(net) = nothing
+cache(net::CachedNet) = cache(net.net)
 
 """
     weights(net)
