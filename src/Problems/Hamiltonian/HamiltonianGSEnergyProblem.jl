@@ -53,9 +53,7 @@ function compute_Cloc(prob::HamiltonianGSEnergyProblem{B,SM}, net::KetNet, σ::S
         r = local_index(σ, sites(op))
         for (mel, changes)=op.op_conns[r]
             set_index!(σp, index(σ))
-            for (site,val)=changes
-                setat!(σp, site, val)
-            end
+            apply!(σp, changes)
 
             log_ratio = logψ(net, σp) - lnψ
             C_loc += mel * exp(log_ratio)
