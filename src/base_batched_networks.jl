@@ -115,20 +115,34 @@ end
 
 
 ## Things for batched states
-preallocate_state_batch(arrT::AbstractArray,
+preallocate_state_batch(arrT::Array,
                         T::Type{<:Real},
                         v::NAryState,
                         batch_sz) =
-    similar(arrT, T, nsites(v), batch_sz)
+    _std_state_batch(arrT, T, v, batch_sz)
 
-preallocate_state_batch(arrT::AbstractArray,
+preallocate_state_batch(arrT::Array,
                         T::Type{<:Real},
                         v::DoubleState,
-                        batch_sz) = begin
+                        batch_sz) =
+    _std_state_batch(arrT, T, v, batch_sz)
+
+
+_std_state_batch(arrT::AbstractArray,
+                 T::Type{<:Number},
+                 v::NAryState,
+                 batch_sz) =
+    similar(arrT, T, nsites(v), batch_sz)
+
+_std_state_batch(arrT::AbstractArray,
+                 T::Type{<:Number},
+                 v::DoubleState,
+                 batch_sz) = begin
     vl = similar(arrT, T, nsites(row(v)), batch_sz)
     vr = similar(arrT, T, nsites(col(v)), batch_sz)
     return (vl, vr)
 end
+
 
 @inline store_state!(cache::Array,
              v::AbstractVector,
