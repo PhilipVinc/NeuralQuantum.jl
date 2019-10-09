@@ -56,27 +56,35 @@ function setat!(v::DoubleState, i::Int, val)
     i > v.n ? setat!(v.σ_row, i-v.n, val) : setat!(v.σ_col, i, val)
 end
 
+"""
+    apply!(state::State, changes)
+
+Applies the changes `changes` to the `state`.
+If `state isa DoubleState` then single-value changes
+are applied to the columns of the state (in order to
+compute matrix-operator products). Otherwise it should
+be a tuple with changes of row and columns
+"""
 function apply!(state::DoubleState, changes::StateChanges)
-    for (site, val) = row(changes)
+    for (site, val) = changes
+        #setat!(col(state), site, val)
+        # The code below automatically applies it only
+        # to columns.
         setat!(state, site, val)
     end
 end
 
-function apply!(state::DoubleState, changes::Tuple{StateChanges})
+function apply!(state::DoubleState, changes::Tuple)
     changes_r, changes_c = changes
-    for (id, val) = row(changes_r)
-        setat!(row(state), id, val)
-    end
-    for (id, val) = col(changes_c)
-        setat!(col(state), id, val)
-    end
+    apply!(row(state), changes_r)
+    apply!(col(state), changes_c)
     return state
 end
 
 set_index!(v::DoubleState, i::Integer) = set!(v, index_to_int(v, i))
 function set!(v::DoubleState, i::Integer)
     row = div(i, spacedimension(v.σ_row)) #row = i>>(nsites(state.σ_row))
-    col = i - row*spacedimension(v.σ_row)#col = i - (row<< nsites(state.σ_row))
+    col = i - row*spacedimension(v.σ_row) #col = i - (row<< nsites(state.σ_row))
 
     set!(v.σ_col, row) #i
     set!(v.σ_row, col) #j

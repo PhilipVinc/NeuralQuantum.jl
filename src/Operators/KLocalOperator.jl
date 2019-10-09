@@ -112,6 +112,8 @@ acts, in no particular order.
 """
 sites(op::KLocalOperator) = op.sites
 
+hilb_dims(op::KLocalOperator) = op.hilb_dims
+
 operators(op::KLocalOperator) = (op,)
 
 conn_type(top::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {SV, M, Vel, Vti, Vtc, Vtv, OC} =

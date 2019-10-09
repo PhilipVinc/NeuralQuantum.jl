@@ -109,24 +109,14 @@ function (net::RBMSplit)(c::RBMSplitCache, σr_r, σc_r)
 end
 
 function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, σr_r, σc_r)
-    θ      = c.θ
-    θ_tmp  = c.θ_tmp
-    logℒθ  = c.logℒθ
+    # Forward pass
+    lnψ = net(c, σr_r, σc_r)
+
+    σr = c.σr;
+    σc = c.σc;
+    θ = c.θ
     ∂logℒθ = c.∂logℒθ
-    T      = eltype(θ)
 
-    # copy the states to complex valued states for the computations.
-    σr = c.σr; copyto!(σr, σr_r)
-    σc = c.σc; copyto!(σc, σc_r)
-
-    #θ .= net.b .+
-    #        net.Wr*σr .+
-    #            net.Wc*σc
-    mul!(θ, net.Wr, σr)
-    mul!(θ_tmp, net.Wc, σc)
-    θ .+= net.b .+ θ_tmp
-
-    logℒθ  .= logℒ.(θ)
     ∂logℒθ .= ∂logℒ.(θ)
 
     ∇logψ.ar .= σr
@@ -135,6 +125,5 @@ function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitCache, σr_r, �
     ∇logψ.Wr .= ∂logℒθ .* transpose(σr)
     ∇logψ.Wc .= ∂logℒθ .* transpose(σc)
 
-    lnψ = dot(σr,net.ar) + dot(σc,net.ac) + sum(logℒθ)
     return lnψ
 end

@@ -48,8 +48,8 @@ function logψ!(out::AbstractArray, net::RBMSplit, c::RBMSplitBatchedCache, σr_
     logℒθ .= NeuralQuantum.logℒ.(θ)
 
     #res = σr'*net.ar + σc'*net.ac # + sum(logℒθ, dims=1)
-    mul!(res_tmp, net.ar', σr)
-    mul!(res, net.ac', σc)
+    mul!(res_tmp, transpose(net.ar), σr)
+    mul!(res, transpose(net.ac), σc)
     res .+= res_tmp
     Base.mapreducedim!(identity, +, res, logℒθ)
 
@@ -88,8 +88,6 @@ function logψ_and_∇logψ!(∇logψ, out, net::RBMSplit, c::RBMSplitBatchedCac
     ∇logψ.ar .= σr
     ∇logψ.ac .= σc
     ∇logψ.b  .= ∂logℒθ
-    #∇logψ.Wr .= ∂logℒθ .* transpose(σr)
-    #∇logψ.Wc .= ∂logℒθ .* transpose(σc)
 
     _batched_outer_prod!(∇logψ.Wr, ∂logℒθ, σr)
     _batched_outer_prod!(∇logψ.Wc, ∂logℒθ, σc)
