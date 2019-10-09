@@ -18,6 +18,8 @@ function init_sampler!(sampler::FullSumSampler, net, σ::FiniteBasisState, c::Fu
     return c
 end
 
+chain_length(s::FullSumSampler, c::FullSumSamplerCache) = length(c.interval)
+
 done(s::FullSumSampler, σ, c) = c.last_position >= length(c.interval)
 
 function samplenext!(σ, s::FullSumSampler, net, c)

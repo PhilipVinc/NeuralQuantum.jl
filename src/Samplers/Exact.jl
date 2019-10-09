@@ -35,6 +35,8 @@ function init_sampler!(sampler::ExactSampler, net::Union{MatrixNet,KetNet}, σ, 
     return c
 end
 
+chain_length(s::ExactSampler, c::ExactSamplerCache) = s.samples_length
+
 done(s::ExactSampler, σ, c) = c.steps_done >= s.samples_length
 
 function samplenext!(σ, s::ExactSampler, net::Union{MatrixNet,KetNet}, c)

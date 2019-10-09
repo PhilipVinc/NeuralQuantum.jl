@@ -30,3 +30,10 @@ provided, one will be initialized and returned. The state σ is the first in the
 list of sampled states.
 """
 init_sampler!(s::Sampler, net, σ) = init_sampler!(s, net, σ, cache(s, σ, net))
+
+"""
+    chain_length(sampler, sampler_cache) -> Int
+
+Returns the estimated length of the chain.
+"""
+function chain_length end
