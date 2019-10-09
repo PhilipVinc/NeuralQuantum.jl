@@ -37,7 +37,7 @@ batch_size(cache::NNBatchedCache) = throw("Not Implemented")
 @inline logψ!(out::AbstractArray, cnet::CachedNet, σ::AbstractArray) =
     logψ!(out, cnet.net, cnet.cache, σ)
 @inline logψ!(out::AbstractArray, cnet::CachedNet, σ::State) =
-    logψ!(out, cnet.net, cnet.cache, config(σ))
+    logψ!(out, cnet, config(σ))
 
 # Definition for allocating evaluation of batched cached networks
 # Shadowing things at ~80 of base_cached_networks.jl
@@ -79,10 +79,8 @@ end
     return out, der
 end
 
-@inline function logψ_and_∇logψ!(der, out, n::CachedNet, σ::State) where N
-    logψ_and_∇logψ!(der, out, n.net, n.cache, config(σ))
-    return (out, der)
-end
+@inline function logψ_and_∇logψ!(der, out, n::CachedNet, σ::State) =
+    logψ_and_∇logψ!(der, out, n, config(σ))
 @inline function logψ_and_∇logψ!(der, out, n::CachedNet, σ::NTuple{N,<:AbstractArray}) where N
     logψ_and_∇logψ!(der, out, n.net, n.cache, σ...)
     return (out, der)
