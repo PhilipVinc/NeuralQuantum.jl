@@ -85,13 +85,17 @@ the output, as it is preallocated and will be used for further
 computations of the accumulator.
 """
 function process_accumulator!(c::ScalarBatchAccumulator)
-    out_buf  = logψ!(c.out_buf, c.bnet, c.in_buf)
-    out_buf .-= c.ψ0_buf
-    out_buf  .= exp.(out_buf)
+    out = c.out_buf
+
+    # Compute the batch of logψ neural networks
+    logψ!(out, c.bnet, c.in_buf)
+
+    # compute the local contributions
+    out .= c.mel_buf .* exp.(out .- c.ψ0_buf)
     #collect ? if using the gpu... need to think about this
 
-    out_buf .*= c.mel_buf
+    # Reset th ecounter of the batch accumulator
     init!(c)
 
-    return out_buf
+    return out
 end
