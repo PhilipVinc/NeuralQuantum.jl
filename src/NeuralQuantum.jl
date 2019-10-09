@@ -132,6 +132,7 @@ include("Problems/SteadyStateLindblad/build_SteadyStateProblem.jl")
 
 # Hamiltonian problems
 include("Problems/Hamiltonian/HamiltonianGSEnergyProblem.jl")
+include("Problems/Hamiltonian/HamiltonianGSVarianceProblem.jl")
 include("Problems/Hamiltonian/build_GroundStateProblem.jl")
 
 # Observables problem
