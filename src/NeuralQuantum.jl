@@ -121,6 +121,7 @@ export LdagLSparseOpProblem, LRhoSparseSuperopProblem, LdagLProblem, LdagLFullPr
 include("Problems/SteadyStateLindblad/LdagLSparseOpProblem.jl")
 include("Problems/SteadyStateLindblad/LdagLSparseSuperopProblem.jl")
 include("Problems/SteadyStateLindblad/LRhoKLocalOpProblem.jl")
+include("Problems/SteadyStateLindblad/LRhoKLocalSOpProblem.jl")
 include("Problems/SteadyStateLindblad/LRhoSparseOpProblem.jl")
 include("Problems/SteadyStateLindblad/LRhoSparseSuperopProblem.jl")
 const LdagLFullProblem = LRhoSparseSuperopProblem
