@@ -202,14 +202,14 @@ export sample!
 
 function __init__()
     @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" begin
-        import .CuArrays: CuArrays
+        import .CuArrays: CuArrays, @cufunc
 
-        CuArrays.@cufunc ℒ(x) = one(x) + exp(x)
+    #=    @cufunc NeuralQuantum.ℒ(x) = one(x) + exp(x)
 
-        CuArrays.@cufunc ∂logℒ(x) = one(x)/(one(x)+exp(-x))
+        @cufunc NeuralQuantum.∂logℒ(x) = one(x)/(one(x)+exp(-x))
 
-        CuArrays.@cufunc logℒ(x::Real) = log1p(exp(x))
-        CuArrays.@cufunc logℒ(x::Complex) = log(one(x) + exp(x))
+        @cufunc NeuralQuantum.logℒ(x::Real) = log1p(exp(x))
+        @cufunc NeuralQuantum.logℒ(x::Complex) = log(one(x) + exp(x))=#
     end
 
     @require QuantumOptics="6e0679c1-51ea-5a7c-ac74-d61b76210b0c" begin
