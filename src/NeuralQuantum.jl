@@ -191,6 +191,9 @@ include("IterativeInterface/IterativeSampler.jl")
 include("IterativeInterface/MTIterativeSampler.jl")
 
 include("IterativeInterface/Batched/LocalKetAccumulator.jl")
+include("IterativeInterface/Batched/LocalGradAccumulator.jl")
+include("IterativeInterface/Batched/Accumulator.jl")
+
 export sample!
 
 
