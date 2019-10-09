@@ -59,7 +59,6 @@ include("base_states.jl")
 include("base_derivatives.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
-include("base_batched_networks.jl")
 include("treelike.jl") # from flux
 include("tuple_logic.jl")
 
@@ -72,12 +71,13 @@ include("States/NAryState.jl")
 include("States/DoubleState.jl")
 include("States/PurifiedState.jl")
 include("States/DiagonalStateWrapper.jl")
-export local_index
 include("States/ModifiedState.jl")
-export ModifiedState
+export ModifiedState, local_index
+
+include("base_batched_networks.jl")
 
 # Linear Operators
-import Base: +
+import Base: +, *
 include("Operators/BaseOperators.jl")
 include("Operators/OpConnection.jl")
 include("Operators/OpConnectionIndex.jl")
