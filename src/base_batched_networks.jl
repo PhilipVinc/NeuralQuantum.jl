@@ -79,7 +79,7 @@ end
     return out, der
 end
 
-@inline function logψ_and_∇logψ!(der, out, n::CachedNet, σ::State) =
+@inline logψ_and_∇logψ!(der, out, n::CachedNet, σ::State) =
     logψ_and_∇logψ!(der, out, n, config(σ))
 @inline function logψ_and_∇logψ!(der, out, n::CachedNet, σ::NTuple{N,<:AbstractArray}) where N
     logψ_and_∇logψ!(der, out, n.net, n.cache, σ...)
