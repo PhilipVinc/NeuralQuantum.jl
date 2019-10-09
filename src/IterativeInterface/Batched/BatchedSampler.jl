@@ -98,6 +98,7 @@ function sample!(is::BatchedSampler)
     Nv   = length(vi_vec)
     vc   = is.vc
 
+    # Those won't work on the cpu
     ψvals_data    = uview(is.ψvals)
     ∇vals_data    = uview(first(vec_data(is.∇vals)))
     ∇ψ_batch_data = uview(first(vec_data(is.∇ψ_batch)))

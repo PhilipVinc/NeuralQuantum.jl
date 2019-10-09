@@ -3,6 +3,8 @@ export logψ!
 # Definitions for batched evaluation of networks
 # When the networrks are not cached and therefore allocate
 # the result structure
+@inline logψ!(out::AbstractArray, net::NeuralNetwork, σ::State) where N =
+    out .= logψ(net, config(σ))
 @inline logψ!(out::AbstractArray, net::NeuralNetwork, σ::NTuple{N,<:AbstractArray}) where N =
     out .= logψ(net, σ)
 @inline logψ!(out::AbstractArray, net::NeuralNetwork, σ::AbstractArray) =
@@ -34,6 +36,8 @@ batch_size(cache::NNBatchedCache) = throw("Not Implemented")
     logψ!(out, net.net, net.cache, σ...)
 @inline logψ!(out::AbstractArray, cnet::CachedNet, σ::AbstractArray) =
     logψ!(out, cnet.net, cnet.cache, σ)
+@inline logψ!(out::AbstractArray, cnet::CachedNet, σ::State) =
+    logψ!(out, cnet.net, cnet.cache, config(σ))
 
 # Definition for allocating evaluation of batched cached networks
 # Shadowing things at ~80 of base_cached_networks.jl
@@ -75,6 +79,10 @@ end
     return out, der
 end
 
+@inline function logψ_and_∇logψ!(der, out, n::CachedNet, σ::State) where N
+    logψ_and_∇logψ!(der, out, n.net, n.cache, config(σ))
+    return (out, der)
+end
 @inline function logψ_and_∇logψ!(der, out, n::CachedNet, σ::NTuple{N,<:AbstractArray}) where N
     logψ_and_∇logψ!(der, out, n.net, n.cache, σ...)
     return (out, der)
@@ -122,20 +130,22 @@ preallocate_state_batch(arrT::AbstractArray,
     return (vl, vr)
 end
 
-store_state!(cache::AbstractArray,
+@inline store_state!(cache::Array,
              v::AbstractVector,
              i::Integer) = begin
     #@uviews cache v begin
         uview(cache, :, i) .= v
     #end
+    return cache
 end
 
-store_state!((cache_l, cache_r)::NTuple{2,<:AbstractMatrix},
+@inline store_state!(cache::NTuple{2,<:Matrix},
              (vl, vr)::NTuple{2,<:AbstractVector},
              i::Integer) = begin
+    cache_l, cache_r = cache
     #@uviews cache_l cache_r vl vr begin
         uview(cache_l, :,i) .= vl
         uview(cache_r, :,i) .= vr
     #end
-    return nothing
+    return cache
 end
