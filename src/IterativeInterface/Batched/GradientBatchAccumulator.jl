@@ -75,5 +75,6 @@ function process_accumulator!(c::GradientBatchAccumulator)
     ∇out .-= ∇0
     ∇out .*= c.mel_buf
 
-    return c.out2_buf, c.∇out_buf
+    return nothing
+    #return c.out2_buf, c.∇out_buf
 end

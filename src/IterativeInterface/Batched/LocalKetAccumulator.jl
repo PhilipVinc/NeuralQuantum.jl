@@ -49,26 +49,52 @@ function Base.push!(c::LocalKetAccumulator, ψval::Number)
     return c
 end
 
-function (c::LocalKetAccumulator)(mel, cngs, v)
-    i = c.cur_ψ
+# I don't really need two versions of this command,
+# but Julia is stupid so I need.
+function (c::LocalKetAccumulator)(mel::Number, cngs_l, cngs_r, v::State)
+    n_cngs_l = isnothing(cngs_l) ? 0 : length(cngs_l)
+    n_cngs_r = isnothing(cngs_r) ? 0 : length(cngs_r)
+
+    mel == 0.0 && return c
+
+    # If we have no changes, simply add the element to ⟨σ|Ô|ψ⟩ because
+    # exp(logψ(σ)-logψ(σ)) = exp(0) = 1
+    if n_cngs_l == 0 && n_cngs_r == 0
+        c.Oloc[c.cur_ψ] += mel
+        c.n_tot   +=  1
+    else
+        σ = set_index!(c.σ, index(v))
+        apply!(σ, cngs_l, cngs_r)
+        _send_to_accumulator(c, mel, σ)
+    end
+    return c
+end
+
+function (c::LocalKetAccumulator)(mel::Number, cngs::StateChanges, v::State)
+    mel == 0.0 && return c
 
     # If we have no changes, simply add the element to ⟨σ|Ô|ψ⟩ because
     # exp(logψ(σ)-logψ(σ)) = exp(0) = 1
     if length(cngs) == 0
-        c.Oloc[i] += mel
+        c.Oloc[c.cur_ψ] += mel
         c.n_tot   +=  1
     else
-        c.ψ_counter[i] += 1
-
         σ = set_index!(c.σ, index(v))
         apply!(σ, cngs)
-
-        c.acc(mel, config(σ), c.cur_ψval)
-        isfull(c.acc) && process_buffer!(c)
+        _send_to_accumulator(c, mel, σ)
     end
-
     return c
 end
+
+function _send_to_accumulator(c::LocalKetAccumulator, mel, σ)
+    c.ψ_counter[c.cur_ψ] += 1
+
+    cσ = config(σ)
+    c.acc(mel, config(σ), c.cur_ψval)
+    isfull(c.acc) && process_buffer!(c)
+    return c
+end
+
 
 finalize!(c::LocalKetAccumulator) =
     process_buffer!(c, c.acc.buf_n)

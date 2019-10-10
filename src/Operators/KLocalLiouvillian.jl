@@ -6,8 +6,9 @@ struct KLocalLiouvillian{T,A,B,C} <: AbsLinearOperator
 end
 
 function KLocalLiouvillian(HnH, Lops)
-    HnH_l = -1.0im * KLocalOperatorTensor(HnH, nothing)
-    HnH_r =  1.0im * KLocalOperatorTensor(nothing, HnH')
+    T = eltype(HnH)
+    HnH_l = T(-1.0im) * KLocalOperatorTensor(HnH, nothing)
+    HnH_r = T(1.0im) * KLocalOperatorTensor(nothing, HnH')
 
     LLdag_list = [KLocalOperatorTensor(L, conj(L)) for L=Lops]
     LLdag = isempty(LLdag_list) ? [] : sum(LLdag_list)

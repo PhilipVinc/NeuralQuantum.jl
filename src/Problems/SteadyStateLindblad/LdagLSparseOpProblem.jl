@@ -53,7 +53,7 @@ function LdagLSparseOpProblem(T::Type{<:Number}, Hilb::Basis, Ham::DataOperator,
     for i=1:length(c_ops)
         c_ops[i]       = c_ops_q[i].data
         c_ops_trans[i] = transpose(c_ops[i])
-        H_eff         -= 0.5im * (c_ops[i]'*c_ops[i])
+        H_eff         -= T(0.5im) * (c_ops[i]'*c_ops[i])
     end
 
     LdH_ops     = Vector{ST}(undef, length(c_ops))
@@ -93,6 +93,9 @@ function compute_Cloc(prob::LdagLSparseOpProblem, net::MatrixNet, 𝝝, lnψ=net
     LdH_ops = prob.LdH_ops
     HdL_ops = prob.HdL_ops
     LdL_ops_t = prob.LdL_ops_t
+
+    T  = real(out_type(net))
+    CT = Complex{T}
 
     σ  = row(𝝝)
     σt = col(𝝝)
@@ -182,7 +185,7 @@ function compute_Cloc(prob::LdagLSparseOpProblem, net::MatrixNet, 𝝝, lnψ=net
 
           log_ratio = logψ(net, 𝝝p) - lnψ
           #@assert (mat[i_σ_p, i_σt_p] - log_ratio) == 0
-          ΔE  = -1.0im * val_σ_p * LdH.nzval[int_row_id] *  exp(log_ratio) # mat[i_σ_p, i_σt_p]
+          ΔE  = -T(1.0)im * val_σ_p * LdH.nzval[int_row_id] *  exp(log_ratio) # mat[i_σ_p, i_σt_p]
           C_loc  += ΔE # 2.0*real(ΔE)
         end
       end
@@ -205,7 +208,7 @@ function compute_Cloc(prob::LdagLSparseOpProblem, net::MatrixNet, 𝝝, lnψ=net
           log_ratio = logψ(net, 𝝝p) - lnψ
           #@assert (mat[i_σt_p, i_σ_p] - log_ratio) == 0
 
-          ΔE  = 1.0im * conj(val_σ_p) * conj(LdH.nzval[int_row_id]) *  exp(log_ratio) # mat[i_σt_p, i_σ_p]
+          ΔE  = T(1.0)im * conj(val_σ_p) * conj(LdH.nzval[int_row_id]) *  exp(log_ratio) # mat[i_σt_p, i_σ_p]
           C_loc  += ΔE # 2.0*real(ΔE)
         end
       end
@@ -230,7 +233,7 @@ function compute_Cloc(prob::LdagLSparseOpProblem, net::MatrixNet, 𝝝, lnψ=net
           log_ratio = logψ(net, 𝝝p) - lnψ
           #@assert (mat[i_σ_p, i_σt_p] - log_ratio) == 0
 
-          ΔE  = 1.0im * conj(val_σ_p) * HdL.nzval[int_row_id] * exp(log_ratio) # mat[i_σ_p, i_σt_p]
+          ΔE  = T(1.0)im * conj(val_σ_p) * HdL.nzval[int_row_id] * exp(log_ratio) # mat[i_σ_p, i_σt_p]
           C_loc  += ΔE # 2.0*real(ΔE)
         end
       end
@@ -253,7 +256,7 @@ function compute_Cloc(prob::LdagLSparseOpProblem, net::MatrixNet, 𝝝, lnψ=net
           log_ratio = logψ(net, 𝝝p) - lnψ
           #@assert (mat[i_σt_p, i_σ_p] - log_ratio) == 0
 
-          ΔE  = -1.0im * val_σ_p * conj(HdL.nzval[int_row_id]) * exp(log_ratio) # mat[i_σt_p, i_σ_p]
+          ΔE  = -T(1.0)im * val_σ_p * conj(HdL.nzval[int_row_id]) * exp(log_ratio) # mat[i_σt_p, i_σ_p]
           C_loc  += ΔE # 2.0*real(ΔE)
         end
       end

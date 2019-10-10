@@ -118,21 +118,27 @@ function sample!(is::BatchedSampler)
         store_state!(vc, config(is.v), j)
     end
     @views logψ_and_∇logψ!(is.∇ψ_batch, ψvals_data[i:end], is.bnet, vc)
-    ∇vals_data[:,i:i+l-1] .= ∇ψ_batch_data[:,1:l]
+    @views ∇vals_data[:,i:i+l-1] .= ∇ψ_batch_data[:,1:l]
+
+    compute_local_term!(is)
+    return is.accum
+end
+
+function compute_local_term!(is::BatchedSampler)
+    vi_vec = is.vi_vec
+    ψvals_data    = uview(is.ψvals)
+    ∇vals_data    = uview(first(vec_data(is.∇vals)))
+    ∇ψ_batch_data = uview(first(vec_data(is.∇ψ_batch)))
 
     ## Ended sampling those things
     accum = is.accum
     init!(accum)
-    @time begin
-        for (i, σi)=enumerate(vi_vec)
-            σ = set_index!(is.v, σi)
-            @views push!(accum, is.ψvals[i], ∇vals_data[:,i])
-            accumulate_connections!(accum, is.problem.L, σ)
-        end
-    finalize!(accum)
+    for (i, σi)=enumerate(vi_vec)
+        σ = set_index!(is.v, σi)
+        @views push!(accum, is.ψvals[i], ∇vals_data[:,i])
+        accumulate_connections!(accum, is.problem.L, σ)
     end
-
-    return is.accum
+    finalize!(accum)
 end
 
 Base.show(io::IO, is::BatchedSampler) = print(io,

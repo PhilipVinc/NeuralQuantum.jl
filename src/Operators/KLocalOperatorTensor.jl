@@ -105,14 +105,14 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperatorTen
 
         for (mel,changes)=op_l.op_conns[r]
             #fun(mel, 1.0, changes, nothing, v)
-            acc(mel, (changes, nothing), v)
+            acc(mel, changes, nothing, v)
         end
     elseif op_l === nothing
         r = local_index(col(v), sites(op_r))
 
         for (mel,changes)=op_r.op_conns[r]
             #fun(1.0, mel, nothing, changes, v)
-            acc(mel, (nothing, changes), v)
+            acc(mel, nothing, changes, v)
         end
     else
         r_r = local_index(row(v), sites(op_l))
@@ -120,8 +120,7 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperatorTen
 
         for (mel_r, changes_r)=op_l.op_conns[r_r]
             for (mel_c, changes_c)=op_r.op_conns[r_c]
-                #fun(mel_r, mel_c, changes_r, changes_c, v)
-                acc(mel_r*mel_c, (changes_r, changes_c), v)
+                acc(mel_r*mel_c, changes_r, changes_c, v)
             end
         end
     end
