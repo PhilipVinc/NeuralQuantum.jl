@@ -122,8 +122,8 @@ finalize!(c::LocalGradAccumulator) =
 function process_buffer!(c::LocalGradAccumulator, k=length(c.acc))
     #out, ∇out = process_accumulator!(c.acc)
     process_accumulator!(c.acc)
-    out  = c.acc.out2_buf
-    ∇out = c.acc.∇out_buf
+    out  = c.acc.res
+    ∇out = c.acc.∇res
     #collect ? if using the gpu... need to think about this
 
     # Unsafe stuff can't be returned!

@@ -1,10 +1,12 @@
-mutable struct GradientBatchAccumulator{N,A,B,C,D,E,F}
+mutable struct GradientBatchAccumulator{N,A,B,C,D,E,F,B2,F2}
     bnet::N
 
     in_buf::A       # the matrix of Nsites x batchsz used as state
     out_buf::B
-    out2_buf::B
     ∇out_buf::F
+
+    res::B2
+    ∇res::F2
 
     ψ0_buf::C       # Buffers alls the <σ|ψ> of the denominator
     ∇0_buf::E
@@ -21,16 +23,18 @@ function GradientBatchAccumulator(net::NeuralNetwork, v::State, batch_sz)
     w        = trainable_first(net)
     RT       = real(eltype(w))
     in_buf   = preallocate_state_batch(w, RT, v, batch_sz)
-    out_buf  = similar(w, CT, 1, batch_sz)
-    out2_buf = similar(w, CT, 1, batch_sz)
-    ∇out_buf = grad_cache(CT, net, batch_sz)
+    out_buf  = similar(w, out_type(bnet), 1, batch_sz)
+    ∇out_buf = grad_cache(net, batch_sz)
+
+    res      = similar(w, CT, 1, batch_sz)
+    ∇res     = grad_cache(CT, net, batch_sz)
 
     ψ0_buf = similar(w, out_type(net), 1, batch_sz)
     ∇0_buf = grad_cache(net, batch_sz)
     mel_buf = similar(w, CT, 1, batch_sz)
 
     return GradientBatchAccumulator(
-        bnet, in_buf, out_buf, out2_buf, ∇out_buf,
+        bnet, in_buf, out_buf, ∇out_buf, res, ∇res,
         ψ0_buf, ∇0_buf, mel_buf, 0, batch_sz)
 end
 
@@ -61,20 +65,20 @@ function process_accumulator!(c::GradientBatchAccumulator)
     ∇out      = c.∇out_buf
     init!(c)
 
-    logψ_and_∇logψ!(c.∇out_buf, c.out_buf, c.bnet, c.in_buf)
+    logψ_and_∇logψ!(∇out, out_buf, c.bnet, c.in_buf)
     #out_buf .-= c.ψ0_buf      #logΔ
     #out_buf  .= exp.(out_buf) #exp(logΔ)
     #out_buf .*= c.mel_buf
 
-    c.out2_buf .= c.mel_buf .* exp.(out_buf .- c.ψ0_buf)
+    c.res .= c.mel_buf .* exp.(out_buf .- c.ψ0_buf)
     #collect ? if using the gpu... need to think about this
 
-    ∇out = vec_data(c.∇out_buf)[1]
+    ∇res = vec_data(c.∇res)[1]
+    ∇out = vec_data(∇out)[1]
     ∇0   = vec_data(c.∇0_buf)[1]
 
-    ∇out .-= ∇0
-    ∇out .*= c.mel_buf
+    ∇res .= c.mel_buf .* (∇out .- ∇0)
 
     return nothing
-    #return c.out2_buf, c.∇out_buf
+    #return c.out2_buf, c.∇out2_buf
 end
