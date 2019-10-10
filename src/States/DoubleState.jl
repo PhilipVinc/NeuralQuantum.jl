@@ -74,8 +74,8 @@ function apply!(state::DoubleState, changes::StateChanges)
     end
 end
 
-function apply!(state::DoubleState, changes::Tuple)
-    changes_r, changes_c = changes
+#function apply!(state::DoubleState, changes_r::StateChanges, changes_c::StateChanges)
+function apply!(state::DoubleState, changes_r, changes_c)
     apply!(row(state), changes_r)
     apply!(col(state), changes_c)
     return state

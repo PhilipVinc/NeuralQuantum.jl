@@ -108,7 +108,8 @@ function batched_weight_tuple(x::AbstractArray{<:Number}, vec::AbstractMatrix, s
     @views data_vec = vec[start:start+length(x)-1, :]
     reshpd_params = reshape(data_vec, size(x)..., bsz)
     reshpd_params .= x
-    if reshpd_params isa Base.ReshapedArray
+    if x isa Array
+    #if reshpd_params isa Base.ReshapedArray
         reshpd_params = StridedView(reshpd_params)
     end
     return length(x), reshpd_params
