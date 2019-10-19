@@ -109,7 +109,12 @@ end
 end
 
 ## Optimisation of cachednet
-update!(opt, cnet::CachedNet, Δ, state=nothing) = (update!(opt, weights(cnet), weights(Δ), state); invalidate_cache!(cnet.cache))
+update!(opt, cnet::CachedNet, Δ, state=nothing) = begin
+    update!(opt, weights(cnet), weights(Δ), state)
+    invalidate_cache!(cnet.cache)
+    return nothing
+end
+
 apply!(opt, val1::Union{NeuralNetwork, CachedNet}, val2::Union{NeuralNetwork, CachedNet}, args...) =
     apply!(weights(val1), weights(val2), args...)
 

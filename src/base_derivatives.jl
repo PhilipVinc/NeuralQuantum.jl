@@ -19,6 +19,8 @@ end
 @inline vec_data(s::RealDerivative) = getfield(s, :vectorised_data)
 @inline fields(s::RealDerivative) = getfield(s, :fields)
 
+weights(der::RealDerivative) = der
+
 function RealDerivative(net::NeuralNetwork)
     pars = trainable(net)
 
