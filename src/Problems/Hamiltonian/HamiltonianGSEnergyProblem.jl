@@ -7,7 +7,6 @@ end
 
 HamiltonianGSEnergyProblem(args...) = HamiltonianGSEnergyProblem(STD_REAL_PREC, args...)
 HamiltonianGSEnergyProblem(T::Type{<:Real}, gl::GraphOperator; operators=true) = begin
-    T = Complex{T}
     if operators
         return HamiltonianGSEnergyProblem(basis(gl), to_linear_operator(gl, T), 0.0)
     else
@@ -15,7 +14,7 @@ HamiltonianGSEnergyProblem(T::Type{<:Real}, gl::GraphOperator; operators=true) =
     end
 end
 HamiltonianGSEnergyProblem(T::Type{<:Number}, Ham::SparseOperator) =
-    HamiltonianGSEnergyProblem(Ham.basis_l, convert(Complex{T}, data(Ham)), 0.0)
+    HamiltonianGSEnergyProblem(Ham.basis_l, Complex{T}.(data(Ham)), 0.0)
 
 basis(prob::HamiltonianGSEnergyProblem) = prob.HilbSpace
 
