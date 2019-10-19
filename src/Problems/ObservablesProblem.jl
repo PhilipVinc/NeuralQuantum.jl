@@ -41,7 +41,7 @@ function ObservablesProblem(T::Type{<:Number}, obs::Any...; operator=true)
                 op = el
             end
             push!(names, Symbol(name))
-            push!(matrices_trans, to_linear_operator(op))
+            push!(matrices_trans, to_linear_operator(op, T))
             b = basis(op)
         end
 

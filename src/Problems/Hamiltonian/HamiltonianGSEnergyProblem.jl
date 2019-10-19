@@ -6,15 +6,16 @@ struct HamiltonianGSEnergyProblem{B, SM} <: HermitianMatrixProblem where {B<:Bas
 end
 
 HamiltonianGSEnergyProblem(args...) = HamiltonianGSEnergyProblem(STD_REAL_PREC, args...)
-HamiltonianGSEnergyProblem(T::Type{<:Number}, gl::GraphOperator; operators=true) = begin
+HamiltonianGSEnergyProblem(T::Type{<:Real}, gl::GraphOperator; operators=true) = begin
+    T = Complex{T}
     if operators
-        return HamiltonianGSEnergyProblem(basis(gl), to_linear_operator(gl), 0.0)
+        return HamiltonianGSEnergyProblem(basis(gl), to_linear_operator(gl, T), 0.0)
     else
         return HamiltonianGSEnergyProblem(T, SparseOperator(gl))
     end
 end
 HamiltonianGSEnergyProblem(T::Type{<:Number}, Ham::SparseOperator) =
-    HamiltonianGSEnergyProblem(Ham.basis_l, data(Ham), 0.0)
+    HamiltonianGSEnergyProblem(Ham.basis_l, convert(Complex{T}, data(Ham)), 0.0)
 
 basis(prob::HamiltonianGSEnergyProblem) = prob.HilbSpace
 

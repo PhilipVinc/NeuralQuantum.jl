@@ -17,6 +17,7 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector, T::Union{Nothing,
 
     # default type
     T = isnothing(T) ?  eltype(first(ham_locs).data) : T
+    T = T<:Real ? Complex{T} : T
 
     op_loc = KLocalOperatorRow(T, [1], [length(basis(first(ham_locs)))],
                                first(ham_locs).data)
@@ -100,6 +101,7 @@ function to_linear_operator(op::GraphOperator, T::Union{Nothing, Type{<:Number}}
 
     # default type
     T = isnothing(T) ?  eltype(first(op_locs).data) : T
+    T = T<:Real ? Complex{T} : T
 
     op_loc = KLocalOperatorRow(T, [1], [length(basis(first(op_locs)))],
                         first(op_locs).data)
