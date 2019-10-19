@@ -97,8 +97,8 @@ function logψ!(out::AbstractArray, W::NDM, c::NDMBatchedCache, σr_r, σc_r)
     _Π_tmp  = c._Π_tmp
     T       = eltype(c.θλ_σ)
 
-    σr = c.σr; copyto!(σr, σr_r)
-    σc = c.σc; copyto!(σc, σc_r)
+    σr = c.σr; copy!(σr, σr_r)
+    σc = c.σc; copy!(σc, σc_r)
 
     if !c.valid || c.σ_row_cache ≠ σr
         c.σ_row_cache .= σr
@@ -179,8 +179,8 @@ function logψ_and_∇logψ!(∇logψ, out, W::NDM, c::NDMBatchedCache, σr_r, �
     _Π_tmp  = c._Π_tmp
     T       = eltype(c.θλ_σ)
 
-    σr = c.σr; copyto!(σr, σr_r)
-    σc = c.σc; copyto!(σc, σc_r)
+    σr = c.σr; copy!(σr, σr_r)
+    σc = c.σc; copy!(σc, σc_r)
 
     if !c.valid || c.σ_row_cache ≠ σr
         c.σ_row_cache .= σr

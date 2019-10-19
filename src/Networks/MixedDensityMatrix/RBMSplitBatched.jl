@@ -34,13 +34,13 @@ function logψ!(out::AbstractArray, net::RBMSplit, c::RBMSplitBatchedCache, σr_
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
-    res = c.res
+    res = out
     res_tmp = c.res_tmp
     T = eltype(θ)
 
     # copy the states to complex valued states for the computations.
-    σr = c.σr; copyto!(σr, σr_r)
-    σc = c.σc; copyto!(σc, σc_r)
+    σr = c.σr; σr .= σr_r #copyto!(σr, σr_r)
+    σc = c.σc; σc .= σc_r #copyto!(σc, σc_r)
 
     mul!(θ, net.Wr, σr)
     mul!(θ_tmp, net.Wc, σc)
@@ -54,7 +54,7 @@ function logψ!(out::AbstractArray, net::RBMSplit, c::RBMSplitBatchedCache, σr_
     Base.mapreducedim!(identity, +, res, logℒθ)
 
     # TODO make this better
-    copyto!(out, 1, res, 1, length(out))
+    #copyto!(out, 1, res, 1, length(out))
 
     return out
 end
@@ -64,13 +64,13 @@ function logψ_and_∇logψ!(∇logψ, out, net::RBMSplit, c::RBMSplitBatchedCac
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
     ∂logℒθ = c.∂logℒθ
-    res = c.res
+    res = out
     res_tmp = c.res_tmp
     T = eltype(θ)
 
     # copy the states to complex valued states for the computations.
-    σr = c.σr; copyto!(σr, σr_r)
-    σc = c.σc; copyto!(σc, σc_r)
+    σr = c.σr; σr .= σr_r #copyto!(σr, σr_r)
+    σc = c.σc; σc .= σc_r #copyto!(σc, σc_r)
 
     mul!(θ, net.Wr, σr)
     mul!(θ_tmp, net.Wc, σc)
@@ -93,7 +93,7 @@ function logψ_and_∇logψ!(∇logψ, out, net::RBMSplit, c::RBMSplitBatchedCac
     _batched_outer_prod!(∇logψ.Wc, ∂logℒθ, σc)
 
     # TODO make this better
-    copyto!(out, 1, res, 1, length(out))
+    #copyto!(out, 1, res, 1, length(out))
 
     return out
 end
