@@ -67,7 +67,11 @@ end
 function weight_tuple(x::AbstractArray{<:Number}, vec::AbstractVector, start)
     length(vec) < start+length(x)-1 && resize!(vec, start+length(x)-1)
     @views data_vec = vec[start:start+length(x)-1]
-    reshpd_params = reshape(data_vec, size(x))
+    if size(x) == size(data_vec)
+        reshpd_params = data_vec
+    else
+        reshpd_params = reshape(data_vec, size(x))
+    end
     reshpd_params .= x
     return length(x), reshpd_params
 end
@@ -106,12 +110,15 @@ function batched_weight_tuple(x::AbstractArray{<:Number}, vec::AbstractMatrix, s
     bsz = size(vec, 2)
 
     @views data_vec = vec[start:start+length(x)-1, :]
-    reshpd_params = reshape(data_vec, size(x)..., bsz)
-    reshpd_params .= x
-    if x isa Array
-    #if reshpd_params isa Base.ReshapedArray
-        reshpd_params = StridedView(reshpd_params)
+    if size(data_vec) != (size(x)..., bsz)
+        reshpd_params = reshape(data_vec, size(x)..., bsz)
+        if x isa Array
+            reshpd_params = StridedView(reshpd_params)
+        end
+    else
+        reshpd_params = data_vec
     end
+    #reshpd_params .= x
     return length(x), reshpd_params
 end # ? stridedView?
 
