@@ -23,7 +23,7 @@ function LocalGradAccumulator(net, σ, n_tot, batch_sz)
     cur_ψval  = zero(OT)
     cur_∇ψ    = grad_cache(net)
     ψ_counter = zeros(Int, n_tot)
-    Oloc      = similar(f, CT, n_tot)
+    Oloc      = collect(similar(f, CT, n_tot))
     ∇Oloc     = grad_cache(CT, net, n_tot)
 
     _σ        = deepcopy(σ)
@@ -122,7 +122,7 @@ finalize!(c::LocalGradAccumulator) =
 function process_buffer!(c::LocalGradAccumulator, k=length(c.acc))
     #out, ∇out = process_accumulator!(c.acc)
     process_accumulator!(c.acc)
-    out  = c.acc.res
+    out  = collect(c.acc.res)
     ∇out = c.acc.∇res
     #collect ? if using the gpu... need to think about this
 

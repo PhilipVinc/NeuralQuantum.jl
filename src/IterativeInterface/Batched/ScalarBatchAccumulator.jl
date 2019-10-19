@@ -16,14 +16,16 @@ will be throw otherwise)
 The configuration should be passed as a vector (if ket) or as a tuple
 of two vectors (if density matrix).
 """
-mutable struct ScalarBatchAccumulator{N,A,B,C,D}
+mutable struct ScalarBatchAccumulator{N,A,B,Cc,Cg,Dc,Dg}
     bnet::N         # A batched version of the cached neural network
 
     in_buf::A       # the matrix of Nsites x batchsz used as input
     out_buf::B      # The row vector of outputs
 
-    ψ0_buf::C       # Buffers alls the <σ|ψ> of the denominator
-    mel_buf::D      # ⟨σ|Ô|σ'⟩ in the buffer
+    ψ0_buf_c::Cc       # Buffers alls the <σ|ψ> of the denominator
+    ψ0_buf_g::Cg       # Buffers alls the <σ|ψ> of the denominator
+    mel_buf_c::Dc      # ⟨σ|Ô|σ'⟩ in the buffer
+    mel_buf_g::Dg      # ⟨σ|Ô|σ'⟩ in the buffer
 
     buf_n::Int      # Counter for elements in buffer
     batch_sz::Int   # batch size
@@ -37,12 +39,14 @@ function ScalarBatchAccumulator(net::NeuralNetwork, v::State, batch_sz)
     in_buf  = preallocate_state_batch(w, RT, v, batch_sz)
     out_buf = similar(w, out_type(net), 1, batch_sz)
 
-    ψ0_buf  = similar(w, out_type(net), 1, batch_sz)
-    mel_buf = similar(w, out_type(net), 1, batch_sz)
+    ψ0_buf_c  = zeros(out_type(net), 1, batch_sz)
+    ψ0_buf_g  = similar(w, out_type(net), 1, batch_sz)
+    mel_buf_c = zeros(out_type(net), 1, batch_sz)
+    mel_buf_g = similar(w, out_type(net), 1, batch_sz)
 
     return ScalarBatchAccumulator(
         bnet, in_buf, out_buf,
-        ψ0_buf, mel_buf, 0, batch_sz)
+        ψ0_buf_c, ψ0_buf_g, mel_buf_c, mel_buf_g, 0, batch_sz)
 end
 
 
@@ -65,8 +69,8 @@ function (c::ScalarBatchAccumulator)(mel, v, ψ0)
     # this should be guaranteed to always be < max_capacity
     c.buf_n = c.buf_n + 1
 
-    c.ψ0_buf[c.buf_n]   = ψ0
-    c.mel_buf[c.buf_n]  = mel
+    c.ψ0_buf_c[c.buf_n]   = ψ0
+    c.mel_buf_c[c.buf_n]  = mel
     store_state!(c.in_buf, v, c.buf_n)
 end
 
@@ -90,8 +94,11 @@ function process_accumulator!(c::ScalarBatchAccumulator)
     # Compute the batch of logψ neural networks
     logψ!(out, c.bnet, c.in_buf)
 
+    ψ0_buf  = isnothing(c.ψ0_buf_g)  ? c.ψ0_buf_c : copy!(c.ψ0_buf_g, c.ψ0_buf_c)
+    mel_buf = isnothing(c.mel_buf_g) ? c.ψ0_buf_c : copy!(c.mel_buf_g, c.mel_buf_c)
+
     # compute the local contributions
-    out .= c.mel_buf .* exp.(out .- c.ψ0_buf)
+    out .= mel_buf .* exp.(out .- ψ0_buf)
     #collect ? if using the gpu... need to think about this
 
     # Reset th ecounter of the batch accumulator

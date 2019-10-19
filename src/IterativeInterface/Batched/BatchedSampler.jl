@@ -89,7 +89,7 @@ function sample!(is::BatchedSampler)
     init_sampler!(is.sampler, is.net, is.v, is.sampler_cache)
     #vc_vec = zeros(0)
     vi_vec = is.vi_vec .= 0
-    for i=1:9999999999
+    for i=1:typemax(Int)
         vi_vec[i] = index(is.v)
         !samplenext!(is.v, is.sampler, is.net, is.sampler_cache) && break
     end
@@ -121,12 +121,15 @@ function sample!(is::BatchedSampler)
     @views ∇vals_data[:,i:i+l-1] .= ∇ψ_batch_data[:,1:l]
 
     compute_local_term!(is)
+
+    # Now I have gradients and other stuff
+
     return is.accum
 end
 
 function compute_local_term!(is::BatchedSampler)
     vi_vec = is.vi_vec
-    ψvals_data    = uview(is.ψvals)
+    ψvals_data    = collect(uview(is.ψvals))
     ∇vals_data    = uview(first(vec_data(is.∇vals)))
     ∇ψ_batch_data = uview(first(vec_data(is.∇ψ_batch)))
 
