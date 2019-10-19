@@ -18,14 +18,36 @@ pkg"add https://github.com/PhilipVinc/NeuralQuantum.jl"
 `QuantumLattices` is a custom package that allows defining new types of operators on a lattice.
 It's not needed natively but it is usefull to define hamiltonians on a lattice.
 
+To use this package, until juli 1.3 will be released you will need to be on `Zygote`, `IRTools` and `ZygoteRules` master branches.
+You can do that by either running the commands
+```
+using Pkg
+pkg"add IRTools#master"
+pkg"add ZygoteRules#master"
+pkg"add Zygote#master"
+```
+Alternatively you may activate the project included in the manifest that comes with NeuralQuantum.
+
+
 ## Example
+The basic idea of the package is the following: you create an hamiltonian/lindbladian with QuantumOptics or QuantumLattices (the latter allows you to go to arbitrarily big lattices, but isn't yet very documented...).
+Then, you create a `SteadyStateProblem`, which performs some transformations on those operators to put them in the shaped necessary to optimize them efficiently.
+You also will probably need to create an `ObservablesProblem`, by providing it all the observables that you wish to monitor during the optimization.
+
+By default, if you don't provide the precision `Float32` is used.
+
+Then, you will pick a network, a sampler, and create an iterative sampler to sample the network.
+You must write the training loop by yourself. Check the documentation and the examples in the folder `examples/` to better understand how to do this.
+
+*IMPORTANT:* If you want to use multithreaded samplers (identified by a `MT` at the beginning of their name), you will launch one markov chain per julia thread. As such, you will get much better performance if you set `JULIA_NUM_THREADS` environment variable to the number of physical cores in your computer before launching julia. 
+
 ```
 # Load dependencies
 using NeuralQuantum, QuantumLattices
 using Printf, ValueHistoriesLogger, Logging, ValueHistories
 
 # Select the numerical precision
-T      = Float64
+T      = Float32
 # Select how many sites you want
 Nsites = 6
 
