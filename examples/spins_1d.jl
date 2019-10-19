@@ -14,6 +14,7 @@ lattice = SquareLattice(sites, PBC=true)
 Ĥ = quantum_ising_ham(lattice, g=1.0, V=2.0)
 # Create the Problem (cost function) for the given hamiltonian
 # targeting the ground state.
+prob = GroundStateProblem(Ĥ)
 
 #-- Observables
 # Define the local observables to look at.
