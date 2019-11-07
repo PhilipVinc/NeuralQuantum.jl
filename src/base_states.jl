@@ -4,7 +4,7 @@
 add!(v::FiniteBasisState, i) = set!(v, toint(v)+i)
 zero!(v::FiniteBasisState) = set!(v, 0)
 @inline config(v) = v
-rand!(v::State) = rand!(GLOBAL_RNG, v)
+Random.rand!(v::State) = rand!(GLOBAL_RNG, v)
 flipat!(v::State, i) = flipat!(GLOBAL_RNG, v, i)
 flipat_fast!(v::State, i) = flipat_fast!(GLOBAL_RNG, v, i)
 

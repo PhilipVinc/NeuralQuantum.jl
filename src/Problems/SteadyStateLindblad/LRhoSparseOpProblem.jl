@@ -64,7 +64,7 @@ function LRhoSparseOpProblem(T::Type{<:Number}, Hilb::Basis, Ham::DataOperator, 
                     0.0)
 end
 
-basis(prob::LRhoSparseOpProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::LRhoSparseOpProblem) = prob.HilbSpace
 
 function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoSparseOpProblem, net::MatrixNet, 𝝝,
                       lnψ=net(𝝝), 𝝝p=deepcopy(𝝝))

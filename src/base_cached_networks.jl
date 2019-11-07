@@ -53,7 +53,7 @@ cached(net::CachedNet) = CachedNet(net.net, cache(net))
 Copy a cached network, building a shallow copy of the network and a deep-copy
 of the cache.
 """
-copy(cnet::CachedNet) = CachedNet(cnet.net, deepcopy(cnet.cache))
+Base.copy(cnet::CachedNet) = CachedNet(cnet.net, deepcopy(cnet.cache))
 
 """
     cache(net)

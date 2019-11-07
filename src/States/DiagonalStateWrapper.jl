@@ -13,7 +13,7 @@ index(s::DiagonalStateWrapper) = index(row(s.parent))
 index_to_int(s::DiagonalStateWrapper, id) = index_to_int(row(s.parent), id)
 flipped(a::DiagonalStateWrapper, b::DiagonalStateWrapper) =
     flipped(a.parent, b.parent)
-@inline eltype(state::DiagonalStateWrapper) = eltype(state.parent)
+@inline Base.eltype(state::DiagonalStateWrapper) = eltype(state.parent)
 @inline config(state::DiagonalStateWrapper) = config(state.parent)
 
 zero!(s::DiagonalStateWrapper) = zero!(s.parent)
@@ -45,7 +45,7 @@ function add!(s::DiagonalStateWrapper, i)
     return s
 end
 
-function rand!(rng::AbstractRNG, s::DiagonalStateWrapper)
+function Random.rand!(rng::AbstractRNG, s::DiagonalStateWrapper)
     rand!(rng, row(s.parent))
     set!(col(s.parent), toint(row(s.parent)))
     return s

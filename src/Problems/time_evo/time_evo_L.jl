@@ -19,7 +19,7 @@ time_evo_L(T::Type{<:Number}, Liouv::SparseSuperOperator) =
 time_evo_L(T::Type{<:Number}, Ham::DataOperator, cops::Vector) =
     time_evo_L(T, liouvillian(Ham, cops))
 
-basis(prob::time_evo_L) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::time_evo_L) = prob.HilbSpace
 
 function compute_Cloc(prob::time_evo_L, net::MatrixNet, σ, lnψ=net(σ), σp=deepcopy(σ))
     ℒ = prob.L

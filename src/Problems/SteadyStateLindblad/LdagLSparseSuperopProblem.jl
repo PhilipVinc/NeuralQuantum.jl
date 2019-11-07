@@ -32,7 +32,7 @@ LdagLSparseSuperopProblem(T::Type{<:Number}, Ham::DataOperator, cops::Vector) =
 LdagLSparseSuperopProblem(T::Type{<:Number}, Liouv::SparseSuperOperator) =
     LdagLSparseSuperopProblem(first(Liouv.basis_l), Liouv.data'*Liouv.data, 0.0)
 
-basis(prob::LdagLSparseSuperopProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::LdagLSparseSuperopProblem) = prob.HilbSpace
 
 function compute_Cloc(prob::LdagLSparseSuperopProblem, net::MatrixNet, σ, lnψ=net(σ), σp=deepcopy(σ))
     ℒdagℒ = prob.LdagL

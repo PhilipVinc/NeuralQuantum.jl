@@ -27,7 +27,7 @@ DoubleState{ST}(n, i_σ=0) where ST = set!(DoubleState(ST(n, 0), ST(n, 0)), i_σ
 @inline spacedimension(state::DoubleState) = state.space_dim
 @inline nsites(state::DoubleState) = 2*nsites(state.σ_row)
 @inline local_dimension(state::DoubleState{ST}) where {ST} = local_dimension(ST)
-@inline eltype(state::DoubleState) = eltype(row(state))
+@inline Base.eltype(state::DoubleState) = eltype(row(state))
 
 toint(state::DoubleState) = _toint(col(state), row(state)) #toint(state.σ_row, state.σ_col)
 index(state::DoubleState) = toint(state) + 1 # was before
@@ -92,7 +92,7 @@ function set!(v::DoubleState, i::Integer)
 end
 set!(v::DoubleState, i_row, i_col) = (set!(row(v), i_row); set!(col(v), i_col);  v)
 
-function rand!(rng::AbstractRNG, state::DoubleState)
+function Random.rand!(rng::AbstractRNG, state::DoubleState)
     rand!(rng, state.σ_row)
     rand!(rng, state.σ_col)
     state

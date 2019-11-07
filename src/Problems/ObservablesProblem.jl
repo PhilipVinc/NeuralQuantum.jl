@@ -81,7 +81,7 @@ function ObservablesProblem(T::Type{<:Number}, obs::Any...; operator=true)
 end
 
 
-basis(prob::ObservablesProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::ObservablesProblem) = prob.HilbSpace
 
 state(T::Type{<:Number}, prob::ObservablesProblem, net::MatrixNet) =
     DiagonalStateWrapper(state(T, basis(prob), net))

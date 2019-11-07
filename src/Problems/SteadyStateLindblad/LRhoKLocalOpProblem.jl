@@ -20,7 +20,7 @@ function LRhoKLocalOpProblem(T, gl::GraphLindbladian)
     return LRhoKLocalOpProblem(basis(gl), HnH, c_ops, 0.0)
 end
 
-basis(prob::LRhoKLocalOpProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::LRhoKLocalOpProblem) = prob.HilbSpace
 
 # Standard method dispatched when the state is generic (non lut).
 # will work only if 𝝝 and 𝝝p are the same type (and non lut!)

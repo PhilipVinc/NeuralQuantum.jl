@@ -16,7 +16,7 @@ end
 HamiltonianGSVarianceProblem(T::Type{<:Number}, Ham::SparseOperator) =
     HamiltonianGSVarianceProblem(Ham.basis_l, data(Ham), 0.0)
 
-basis(prob::HamiltonianGSVarianceProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::HamiltonianGSVarianceProblem) = prob.HilbSpace
 
 function compute_Cloc!(LLO_i, ∇lnψ, prob::HamiltonianGSVarianceProblem{B,SM}, net::KetNet, σ::State,
                       lnψ=net(σ), σp=deepcopy(σ)) where {B,SM<:SparseMatrixCSC}

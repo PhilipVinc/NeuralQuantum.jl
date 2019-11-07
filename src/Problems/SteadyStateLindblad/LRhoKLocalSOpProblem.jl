@@ -18,7 +18,7 @@ function LRhoKLocalSOpProblem(T, gl::GraphLindbladian)
     return LRhoKLocalSOpProblem(basis(gl), Liouv)
 end
 
-basis(prob::LRhoKLocalSOpProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::LRhoKLocalSOpProblem) = prob.HilbSpace
 
 # pretty printing
 Base.show(io::IO, p::LRhoKLocalSOpProblem) = print(io,

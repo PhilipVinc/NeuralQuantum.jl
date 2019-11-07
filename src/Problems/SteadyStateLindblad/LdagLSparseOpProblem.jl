@@ -18,7 +18,7 @@ struct LdagLSparseOpProblem{B, SM} <: HermitianMatrixProblem where {B<:Basis,
     ρss
 end
 
-basis(prob::LdagLSparseOpProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::LdagLSparseOpProblem) = prob.HilbSpace
 
 
 """

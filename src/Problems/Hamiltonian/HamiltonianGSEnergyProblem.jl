@@ -16,7 +16,7 @@ end
 HamiltonianGSEnergyProblem(T::Type{<:Number}, Ham::SparseOperator) =
     HamiltonianGSEnergyProblem(Ham.basis_l, Complex{T}.(data(Ham)), 0.0)
 
-basis(prob::HamiltonianGSEnergyProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::HamiltonianGSEnergyProblem) = prob.HilbSpace
 
 function compute_Cloc(prob::HamiltonianGSEnergyProblem{B,SM}, net::KetNet, σ::State,
                       lnψ=net(σ), σp=deepcopy(σ)) where {B,SM<:SparseMatrixCSC}

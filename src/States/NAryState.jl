@@ -31,7 +31,7 @@ export NAryState
 @inline nsites(state::NAryState) = state.n
 @inline local_dimension(state::Type{NAryState{T,N}}) where {T,N} = N
 @inline local_dimension(state::NAryState{T,N}) where {T,N} = local_dimension(typeof(state))
-@inline eltype(state::NAryState{T,N}) where {T,N} = T
+@inline Base.eltype(state::NAryState{T,N}) where {T,N} = T
 
 @inline toint(state::NAryState) = state.i_σ
 @inline index(state::NAryState) = toint(state)+1
@@ -108,7 +108,7 @@ function add!(state::NAryState, val::Integer)
     state
 end
 
-function rand!(rng::AbstractRNG, state::NAryState)
+function Random.rand!(rng::AbstractRNG, state::NAryState)
     val = rand(rng, 0:(spacedimension(state)-1))
     set!(state, val)
 end

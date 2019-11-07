@@ -1,16 +1,16 @@
 module NeuralQuantum
 
 # Using statements
-using Reexport, Requires
+using Reexport
+using Requires
 using MacroTools: @forward
 
 using QuantumOpticsBase
 using LightGraphs
-
 using Zygote
-using Random: AbstractRNG, MersenneTwister, GLOBAL_RNG
-using LinearAlgebra, SparseArrays, Strided, UnsafeArrays
 using NNlib
+using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!
+using LinearAlgebra, SparseArrays, Strided, UnsafeArrays
 
 include("IterativeSolvers/minresqlp.jl")
 using .MinresQlp
@@ -24,26 +24,17 @@ using .Optimisers
 import .Optimisers: update, update!
 export Optimisers
 
-# Imports
-import Base: length, UInt, eltype, copy, deepcopy, iterate
-import Random: rand!
-import QuantumOpticsBase: basis
-
 # Abstract Types
 abstract type NeuralNetwork end
 
 abstract type State end
 abstract type FiniteBasisState <: State end
 
-abstract type AbstractProblem end
-abstract type AbstractSteadyStateProblem <: AbstractProblem end
-abstract type HermitianMatrixProblem <: AbstractSteadyStateProblem end
-abstract type LRhoSquaredProblem <: AbstractSteadyStateProblem end
-abstract type OpenTimeEvolutionProblem <: AbstractSteadyStateProblem end
-abstract type OperatorEstimationProblem <: AbstractProblem end
-
 abstract type Sampler end
 abstract type AbstractAccumulator end
+
+abstract type AbstractProblem end
+include("Problems/base_problems.jl")
 
 # Type describing the parallel backend used by a solver.
 abstract type ParallelType end

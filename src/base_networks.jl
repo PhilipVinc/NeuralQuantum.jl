@@ -124,4 +124,4 @@ num_params(net::NeuralNetwork) = trainable_length(net)
 # TODO does this even make sense?!
 # the idea was that a shallow-copy of the weights of the net is not
 # even a copy....
-copy(net::NeuralNetwork) = net
+Base.copy(net::NeuralNetwork) = net

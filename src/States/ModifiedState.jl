@@ -51,7 +51,7 @@ raw_config(s::DoubleState{<:ModifiedState}) = (raw_config(s.σ_row), raw_config(
 @inline nsites(s::ModifiedState) = nsites(raw_state(s))
 @inline local_dimension(s::ModifiedState{S,C}) where {S,C} = local_dimension(S)
 @inline local_dimension(s::Type{ModifiedState{S,C}}) where {S,C} = local_dimension(S)
-@inline eltype(s::ModifiedState) = eltype(raw_state(s))
+@inline Base.eltype(s::ModifiedState) = eltype(raw_state(s))
 
 toint(s::ModifiedState) = toint(apply_warn_raw!(s))
 index(s::ModifiedState) = index(apply_warn_raw!(s))
@@ -111,7 +111,7 @@ end
 set_index!(s::ModifiedState, val) = (zero!(changes(s)); set_index!(raw_state(s), val))
 set!(s::ModifiedState, val) = (zero!(changes(s)); set!(raw_state(s), val); return s)
 add!(s::ModifiedState, val) = add!(apply_warn_raw!(state), val)
-rand!(rng, s::ModifiedState) = (zero!(changes(s));
+Random.rand!(rng, s::ModifiedState) = (zero!(changes(s));
     rand!(rng, raw_state(s)))
 
 Base.show(io::IO, ::MIME"text/plain", s::ModifiedState) =
