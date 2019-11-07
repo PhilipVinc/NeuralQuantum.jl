@@ -48,9 +48,11 @@ Base.imag(s::WirtingerDerivative) = s.c_derivatives
 end
 
 function WirtingerDerivative(net::NeuralNetwork)
-    vec         = similar(trainable_first(net), out_type(net), trainable_length(net)*2)
-    i, fields_r = weight_tuple(net, fieldnames(typeof(net)), vec)
-    i, fields_c = weight_tuple(net, fieldnames(typeof(net)), vec, i+1)
+    pars = trainable(net)
+
+    vec         = similar(trainable_first(net), out_type(net), _tlen(pars)*2)
+    i, fields_r = weight_tuple(net, vec)
+    i, fields_c = weight_tuple(net, vec, i+1)
     return WirtingerDerivative(fields_r, fields_c, [vec])
 end
 

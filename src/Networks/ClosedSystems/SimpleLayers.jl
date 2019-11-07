@@ -22,13 +22,22 @@ struct DenseCache{Ta,Tb,Tc,Td}
     valid::Bool
 end
 
-cache(l::Dense{Ta,Tb}) where {Ta,Tb} =
-    DenseCache(similar(l.W, size(l.W,2)),
+function cache(l::Dense{Ta,Tb}, in_T ,in_sz) where {Ta,Tb}
+    c = DenseCache(similar(l.W, size(l.W,2)),
                similar(l.b),
                similar(l.W, size(l.W,1)),
                similar(l.b),
                similar(l.b),
                false)
+    return c
+end
+
+function layer_out_type_size(l::Dense, in_T ,in_sz)
+    T1     = promote_type(in_T, eltype(l.W))
+    out_T  = promote_type(T1, eltype(l.b))
+    out_sz = size(l.b)
+    return out_T, out_sz
+end
 
 function (l::Dense)(c::DenseCache, x)
     # The preallocated caches
@@ -81,11 +90,17 @@ mutable struct WSumCache{Ta,Tb,Tc}
     valid::Bool
 end
 
-cache(l::WSum)  =
+cache(l::WSum, in_T, in_sz)  =
     WSumCache(similar(l.c, Complex{real(eltype(l.c))}),
               zero(Complex{real(eltype(l.c))}),
               similar(l.c, Complex{real(eltype(l.c))}, 1, length(l.c)),
               false)
+
+function layer_out_type_size(l::WSum, in_T ,in_sz)
+    out_T     = Complex{real(eltype(l.c))}
+    return out_T, (1,)
+end
+
 
 function (l::WSum)(c::WSumCache, x)
     σ = copyto!(c.σᵢₙ, x)

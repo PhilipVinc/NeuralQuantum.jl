@@ -32,9 +32,9 @@ inita=(dims...)->rescaled_normal(T, 0.005, dims...))
 
 Refs:
 """
-NDMComplex(args...) = NDMComplex(Complex{STD_REAL_PREC}, args...)
-NDMComplex(::Real, ::Int) = throw("NDMComplex needs complex type")
-NDMComplex(T::Type{<:Complex}, in, αh, αa,
+NDMComplex(args...) = NDMComplex(STD_REAL_PREC, args...)
+NDMComplex(T::Type{<:Real}, args...) = _NDMComplex(Complex{T}, args...)
+_NDMComplex(T::Type{<:Complex}, in, αh, αa,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
     initb=(dims...)->rescaled_normal(T, 0.005, dims...),
     inita=(dims...)->rescaled_normal(T, 0.005, dims...)) =
