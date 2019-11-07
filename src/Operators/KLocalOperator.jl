@@ -120,6 +120,8 @@ hilb_dims(op::KLocalOperator) = op.hilb_dims
 
 operators(op::KLocalOperator) = (op,)
 
+densemat(op::KLocalOperator) = op.mat
+
 conn_type(top::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {SV, M, Vel, Vti, Vtc, Vtv, OC} =
     OpConnection{Vel, eltype(Vtc), eltype(Vtv)}
 conn_type(op::KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}) where {SV, M, Vel, Vti, Vtc, Vtv, OC} =
@@ -318,3 +320,22 @@ end
 Base.eltype(::T) where {T<:KLocalOperator} = eltype(T)
 Base.eltype(T::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {SV,M,Vel,Vti,Vtc,Vtv,OC} =
     eltype(eltype(Vel))
+
+Base.show(io::IO, op::KLocalOperator) = begin
+    T    = eltype(op)
+    s    = sites(op)
+    dims = hilb_dims(op)
+    mat  = densemat(op)
+
+    print(io, "KLocalOperatorRowa($T, $s, $dims, $mat)")
+end
+
+Base.show(io::IO, m::MIME"text/plain", op::KLocalOperator) = begin
+    T    = eltype(op)
+    s    = sites(op)
+    dims = hilb_dims(op)
+    mat  = densemat(op)
+
+    print(io, "KLocalOperator($T)\n  sites: $s\n  Hilb:  $dims\n")
+    Base.print_array(io, mat)
+end
