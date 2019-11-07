@@ -11,7 +11,6 @@ N = 4
 
 @testset "Test Properties $name" for name=keys(machines)
     for T=num_types
-        T = Complex{T}
         net = machines[name](T,N)
         cnet = cached(net)
 
@@ -23,7 +22,7 @@ end
 
 @testset "Test Cached Value $name" for name=keys(machines)
     for T=num_types
-        net = machines[name](Complex{T},N)
+        net = machines[name](T,N)
         cnet = cached(net)
 
         v = state(real(T), SpinBasis(1//2)^N, net)
