@@ -2,6 +2,20 @@
 using Test
 
 @testset "NeuralQuantum" begin
+    
+    println("Testing States...")
+    @testset "States" begin
+        include("States/states.jl")
+        include("States/modified_states.jl")
+    end
+
+    println("Testing Operators...")
+    @testset "Operators" begin
+        include("Operators/operators.jl")
+        include("Operators/ising.jl")
+    end
+
+
     println("Testing machines...")
     @testset "Machines" begin
         include("Machines/test_cached.jl")
@@ -22,16 +36,4 @@ using Test
         include("Problems/observables.jl")
         include("Problems/hamiltonian.jl")
     end
-
-    println("Testing States...")
-    @testset "States" begin
-        include("States/states.jl")
-        include("States/modified_states.jl")
-    end
-
-    println("Testing Operators...")
-    @testset "Operators" begin
-        include("operators.jl")
-    end
-
 end

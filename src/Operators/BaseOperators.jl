@@ -18,3 +18,7 @@ function row_valdiff! end
 
 row_valdiff_index(op::AbsLinearOperator, v::State) = row_valdiff_index!(OpConnectionIndex(op), op, v)
 function row_valdiff_index! end
+
+# standard functions
+Base.:*(op::AbsLinearOperator, α::Number) = α*op
+Base.:/(op::AbsLinearOperator, α::Number) = inv(α)*op

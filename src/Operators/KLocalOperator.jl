@@ -7,7 +7,9 @@ basis as `mat`. For every row of `mat` there are several non-zero values contain
 in `mel`, and to each of those, `to_change` contains the sites that must change the basis
 new value, contained in `new_value`
 """
-struct KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOperator
+struct KLocalOperator{H<:AbstractBasis,SV,M,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOperator
+    hilb::H
+
     # list of sites on which this operator acts
     sites::SV
 
@@ -40,10 +42,16 @@ end
 Creates a KLocalOperator where connections are stored by row for the operator
     `operator` acting on `sites` each with `hilb_dims` local dimension.
 """
-KLocalOperatorRow(sites::AbstractVector, hilb_dims::AbstractVector, operator) =
-    KLocalOperatorRow(eltype(operator), sites, hilb_dims, operator)
+#KLocalOperatorRow(sites::AbstractVector, hilb_dims::AbstractVector, operator) = begin
+#    hilb = DiscreteHilbert(hilb_dims)
+#    KLocalOperatorRow(hilb, eltype(operator), sites, hilb_dims, operator)
+#end
 
-function KLocalOperatorRow(T::Type{<:Number}, sites::AbstractVector, hilb_dims::AbstractVector, operator)
+KLocalOperatorRow(hilb::AbstractBasis, sites::AbstractVector, operator) =
+    KLocalOperatorRow(eltype(operator), hilb, sites, shape(hilb)[sites], operator)
+
+
+function KLocalOperatorRow(T::Type{<:Number}, hilb::AbstractBasis, sites::AbstractVector, hilb_dims::AbstractVector, operator)
     # TODO Generalize to arbistrary spaces and not only uniform
     st  = NAryState(real(T), first(hilb_dims), length(sites))
     st1 = NAryState(real(T), first(hilb_dims), length(sites))
@@ -99,13 +107,12 @@ function KLocalOperatorRow(T::Type{<:Number}, sites::AbstractVector, hilb_dims::
         push!(new_values, new_values_els)
         push!(op_conns, conns_els)
     end
-    KLocalOperator(sites, hilb_dims, convert(Matrix{T}, operator |> collect),
+    KLocalOperator(hilb, sites, hilb_dims, convert(Matrix{T}, operator |> collect),
                         mel, to_change, new_values, op_conns, new_indices)
 end
 
 KLocalOperator(op::KLocalOperator, mat::AbstractMatrix) =
-    KLocalOperatorRow(copy(sites(op)),  copy(hilb_dims(op)), mat)
-
+    KLocalOperatorRow(basis(op), copy(sites(op)), mat)
 
 ## Accessors
 """
@@ -118,18 +125,20 @@ sites(op::KLocalOperator) = op.sites
 
 hilb_dims(op::KLocalOperator) = op.hilb_dims
 
+QuantumOpticsBase.basis(op::KLocalOperator) = op.hilb
+
 operators(op::KLocalOperator) = (op,)
 
 densemat(op::KLocalOperator) = op.mat
 
-conn_type(top::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {SV, M, Vel, Vti, Vtc, Vtv, OC} =
+conn_type(top::Type{KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {H, SV, M, Vel, Vti, Vtc, Vtv, OC} =
     OpConnection{Vel, eltype(Vtc), eltype(Vtv)}
-conn_type(op::KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}) where {SV, M, Vel, Vti, Vtc, Vtv, OC} =
+conn_type(op::KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}) where {H, SV, M, Vel, Vti, Vtc, Vtv, OC} =
     OpConnection{Vel, eltype(Vtc), eltype(Vtv)}
 
 # Copy
 function duplicate(op::KLocalOperator)
-    KLocalOperator(deepcopy(op.sites), deepcopy(op.hilb_dims), deepcopy(op.mat),
+    KLocalOperator(basis(op), deepcopy(op.sites), deepcopy(op.hilb_dims), deepcopy(op.mat),
                     deepcopy(op.mel), deepcopy(op.to_change),
                     deepcopy(op.new_values), deepcopy(op.op_conns),
                     deepcopy(op.new_indices))
@@ -152,6 +161,14 @@ function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperator, v::Stat
     ids = op.new_indices[r]
 
     append!(conn, (mel, ids))
+end
+
+function map_connections(fun::Function, op::KLocalOperator, v::State)
+    r = local_index(v, sites(op))
+    for (mel, changes) = op.op_conns[r]
+        fun(mel, changes, v)
+    end
+    return nothing
 end
 
 function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperator, v::State)
@@ -227,14 +244,14 @@ end
 Base.conj(op::KLocalOperator) = conj!(duplicate(op))
 Base.adjoint(op::KLocalOperator) = conj(transpose(op))
 
-*(a::Number, b::KLocalOperator) =
-    _op_alpha_prod(b,a)
-*(b::KLocalOperator, a::Number) =
+Base.:*(a::Number, b::KLocalOperator) =
     _op_alpha_prod(b,a)
 _op_alpha_prod(op::KLocalOperator, a::Number) =
     KLocalOperator(op, a*op.mat)
 
-function *(opl::KLocalOperator, opr::KLocalOperator)
+function Base.:*(opl::KLocalOperator, opr::KLocalOperator)
+    @assert shape(basis(opl)) == shape(basis(opr))
+
     if sites(opl) == sites(opr)
         return KLocalOperator(opl, opl.mat * opr.mat)
     else
@@ -265,17 +282,15 @@ function _kop_kop_disjoint_prod(opl::KLocalOperator, opr::KLocalOperator)
         sl = first(sites(opl))
         sr = first(sites(opr))
 
-        hilb_dim_l = first(hilb_dims(opl))
-        hilb_dim_r = first(hilb_dims(opr))
-
         # inverted also in QuantumOptics... who knows why
         mat = kron(opr.mat, opl.mat)
-        return KLocalOperatorRow([sl, sr], [hilb_dim_l, hilb_dim_r], mat)
+        return KLocalOperatorRow(basis(opl), [sl, sr], mat)
     else
         sites_new = sort(vcat(sites(opl), sites(opr)))
         ids_l = [findfirst(i .==sites_new) for i=sites(opl)]
         ids_r = [findfirst(i .==sites_new) for i=sites(opr)]
-        throw("to implement error $(sites(opl)) and $(sites(opr))")
+        throw("Tensor product between two operators on disjoint support but on
+        more than 1 site each must still be implemneted. Sites in question are $(sites(opl)) and $(sites(opr)).")
     end
 end
 
@@ -296,7 +311,9 @@ function _kop_kop_joint_prod(opl::KLocalOperator, opr::KLocalOperator)
 
         matrices = [Matrix(I, d, d) for d=hilb_dims(opl)]
         matrices[r_index] = opr.mat
-        mat_r = kron(matrices...)
+
+        # inverted also in QuantumOptics... who knows why
+        mat_r = kron(reverse(matrices)...)
         prod_mat = reversed ? mat_r*opl.mat : opl.mat*mat_r
 
         return KLocalOperator(opl, prod_mat)
@@ -304,7 +321,8 @@ function _kop_kop_joint_prod(opl::KLocalOperator, opr::KLocalOperator)
         sites_new = sort(vcat(sites(opl), sites(opr)))
         ids_l = [findfirst(i .==sites_new) for i=sites(opl)]
         ids_r = [findfirst(i .==sites_new) for i=sites(opr)]
-        throw("to implement error")
+        throw("Tensor product between two operators on overlapping support but
+        both on more than 1 site must still be implemneted.")
     end
 end
 
@@ -318,24 +336,26 @@ function permutesystems(a::AbstractMatrix, h_dims::Vector, perm::Vector{Int})
 end
 
 Base.eltype(::T) where {T<:KLocalOperator} = eltype(T)
-Base.eltype(T::Type{KLocalOperator{SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {SV,M,Vel,Vti,Vtc,Vtv,OC} =
+Base.eltype(T::Type{KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {H,SV,M,Vel,Vti,Vtc,Vtv,OC} =
     eltype(eltype(Vel))
 
 Base.show(io::IO, op::KLocalOperator) = begin
     T    = eltype(op)
     s    = sites(op)
+    h    = basis(op)
     dims = hilb_dims(op)
     mat  = densemat(op)
 
-    print(io, "KLocalOperatorRowa($T, $s, $dims, $mat)")
+    print(io, "KLocalOperatorRow($T, $h, $s, $dims, $mat)")
 end
 
 Base.show(io::IO, m::MIME"text/plain", op::KLocalOperator) = begin
     T    = eltype(op)
     s    = sites(op)
+    h    = basis(op)
     dims = hilb_dims(op)
     mat  = densemat(op)
 
-    print(io, "KLocalOperator($T)\n  sites: $s\n  Hilb:  $dims\n")
+    print(io, "KLocalOperator($T)\n  Hilb: $h\n  sites: $s  (size: $dims)\n")
     Base.print_array(io, mat)
 end

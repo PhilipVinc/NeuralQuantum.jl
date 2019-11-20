@@ -11,8 +11,10 @@ flipat_fast!(v::State, i) = flipat_fast!(GLOBAL_RNG, v, i)
 export NAryState, DoubleState, BinaryState
 export local_dimension, spacedimension
 export nsites, toint, index, index_to_int, flipped, row, col, config
-export add!, zero!, apply!
+export add!, zero!, apply!, apply
 export setat!, set!, set_index!, rand!
+
+apply(σ::State, cngs) = apply!(deepcopy(σ), cngs)
 
 """
     apply!(state::State, changes)

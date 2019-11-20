@@ -3,6 +3,8 @@ using LinearAlgebra, SparseArrays
 using Test
 
 @testset "KLocalOperator" begin
+hilb = HomogeneousSpin(2)
+
 mat1 = [0.0 0.0; 0.1 0.0]
 mat2 = [0.5 0.1; 0.1 0.0]
 matsum = mat1 + mat2
@@ -10,8 +12,8 @@ matsum = mat1 + mat2
 sts = [1]
 hilb_dims = [2]
 
-op = KLocalOperatorRow(sts, hilb_dims, mat1)
-op2 = KLocalOperatorRow(sts, hilb_dims, mat2)
+op  = KLocalOperatorRow(hilb, sts, mat1)
+op2 = KLocalOperatorRow(hilb, sts, mat2)
 
 ops = KLocalOperatorSum(op)
 ops2 = ops + op2
@@ -65,7 +67,7 @@ end
 @test check == ms
 
 mat12 = kron(mat1, mat2)
-op12 = KLocalOperatorRow([1,2], [2,2], mat12)
+op12 = KLocalOperatorRow(hilb, [1,2], mat12)
 check = sparse(zeros(size(mat12)))
 v = NAryState(Float64, 2, 2)
 for i=1:spacedimension(v)
@@ -81,7 +83,7 @@ for i=1:spacedimension(v)
 end
 @test check == mat12
 
-op3 = KLocalOperatorRow([2], hilb_dims, mat2)
+op3 = KLocalOperatorRow(hilb, [2], mat2)
 m3 = kron(mat2, Matrix(I, 2, 2))
 ms = kron(Matrix(I, 2, 2), matsum)
 

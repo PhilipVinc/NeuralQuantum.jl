@@ -15,11 +15,18 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector, T::Union{Nothing,
 
     ham_locs = ham.LocalOperators
 
+    hilb_shape = basis(ham).shape
+    if all(first(hilb_shape) .== hilb_shape)
+        hilb = HomogeneousHilbert(length(hilb_shape), first(hilb_shape))
+    else
+        hilb = DiscreteHilbert(hilb_shape)
+    end
+
     # default type
     T = isnothing(T) ?  eltype(first(ham_locs).data) : T
     T = T<:Real ? Complex{T} : T
 
-    op_loc = KLocalOperatorRow(T, [1], [length(basis(first(ham_locs)))],
+    op_loc = KLocalOperatorRow(T, hilb, [1], [length(basis(first(ham_locs)))],
                                first(ham_locs).data)
 
     H = KLocalOperatorSum(op_loc)
@@ -29,7 +36,7 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector, T::Union{Nothing,
         i == 1 && continue
 
         dim = length(basis(h_loc))
-        sum!(H, KLocalOperatorRow(T, [i], [dim], h_loc.data))
+        sum!(H, KLocalOperatorRow(T, hilb, [i], [dim], h_loc.data))
     end
 
     # Hoppings
@@ -41,7 +48,7 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector, T::Union{Nothing,
 
             dim_l = length(basis(hl))
             dim_r = length(basis(hr))
-            sum!(H, KLocalOperatorRow(T, [edge.src, edge.dst],
+            sum!(H, KLocalOperatorRow(T, hilb, [edge.src, edge.dst],
                                       [dim_l, dim_r],
                                       coeff*((hl⊗hr).data)))
         end
@@ -68,9 +75,9 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector, T::Union{Nothing,
 
         L_nz      = tensor(L.LocalOperators[nz_sites]...)
 
-        op        = KLocalOperatorRow(T, nz_sites, hilb_dims, L_nz.data)
+        op        = KLocalOperatorRow(T, hilb, nz_sites, hilb_dims, L_nz.data)
 
-        op_hnh    = KLocalOperatorRow(T, nz_sites, hilb_dims,
+        op_hnh    = KLocalOperatorRow(T, hilb, nz_sites, hilb_dims,
                                       -im/2*(L_nz'*L_nz).data)
 
         sum!(H, op_hnh)
@@ -103,7 +110,14 @@ function to_linear_operator(op::GraphOperator, T::Union{Nothing, Type{<:Number}}
     T = isnothing(T) ?  eltype(first(op_locs).data) : T
     T = T<:Real ? Complex{T} : T
 
-    op_loc = KLocalOperatorRow(T, [1], [length(basis(first(op_locs)))],
+    hilb_shape = basis(op).shape
+    if all(first(hilb_shape) .== hilb_shape)
+        hilb = HomogeneousHilbert(length(hilb_shape), first(hilb_shape))
+    else
+        hilb = DiscreteHilbert(hilb_shape)
+    end
+
+    op_loc = KLocalOperatorRow(T, hilb, [1], [length(basis(first(op_locs)))],
                         first(op_locs).data)
 
     res_op = KLocalOperatorSum(op_loc)
@@ -113,7 +127,7 @@ function to_linear_operator(op::GraphOperator, T::Union{Nothing, Type{<:Number}}
         i == 1 && continue # the first one was already added by the constructor.
 
         dim = length(basis(op_loc))
-        sum!(res_op, KLocalOperatorRow(T, [i], [dim], op_loc.data))
+        sum!(res_op, KLocalOperatorRow(T, hilb, [i], [dim], op_loc.data))
     end
 
     # Hoppings
@@ -127,7 +141,7 @@ function to_linear_operator(op::GraphOperator, T::Union{Nothing, Type{<:Number}}
 
             dim_l = length(basis(hl))
             dim_r = length(basis(hr))
-            sum!(res_op, KLocalOperatorRow(T, [edge.src, edge.dst],
+            sum!(res_op, KLocalOperatorRow(T, hilb, [edge.src, edge.dst],
                                            [dim_l, dim_r],
                                            coeff*((hl⊗hr).data)))
         end

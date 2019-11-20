@@ -4,22 +4,32 @@
 A KLocalOperator representing the sum of several KLocalOperator-s. Internally,
 the sum is stored as a vector of local operators acting on some sites.
 """
-struct KLocalOperatorTensor{T,O1,O2} <: AbsLinearOperator
+struct KLocalOperatorTensor{H,T,O1,O2} <: AbsLinearOperator
+    hilb::H
     sites::T
+
     # list of sites in this sum
     op_l::O1
     op_r::O2
 end
 
+"""
+    Builds the tensor product of two operators
+"""
 function KLocalOperatorTensor(op_l, op_r)
     if isnothing(op_l)
         st = (Int[],       sites(op_r))
+        hilb = basis(op_r)
     elseif isnothing(op_r)
         st = (sites(op_l), Int[])
+        hilb = basis(op_l)
     else
+        @assert basis(op_l) == basis(op_r)
+        hilb = basis(op_l)
         st = (sites(op_l), sites(op_r))
     end
-    KLocalOperatorTensor(st, op_l, op_r)
+
+    KLocalOperatorTensor(SuperOpSpace(hilb), st, op_l, op_r)
 end
 
 function KLocalOperatorTensor(op_l::KLocalOperatorSum, op_r::Nothing)
@@ -32,18 +42,25 @@ function KLocalOperatorTensor(op_l::Nothing, op_r::KLocalOperatorSum)
     return sum(ops)
 end
 
-KLocalOperatorSum(op::KLocalOperatorTensor) = KLocalOperatorSum([sites(op)], [op])
+KLocalOperatorSum(op::KLocalOperatorTensor) = KLocalOperatorSum(basis(op), [sites(op)], [op])
 
 function KLocalOperatorTensor(op_l::KLocalOperatorSum, op_r::KLocalOperatorSum)
     throw("error not impl")
 end
 
+QuantumOpticsBase.basis(op::KLocalOperatorTensor) = op.hilb
 sites(op::KLocalOperatorTensor) = op.sites
 
 
 ## Accessors
 operators(op::KLocalOperatorTensor) = (op,)
-conn_type(op::KLocalOperatorTensor) = conn_type(op.op_l)
+conn_type(op::KLocalOperatorTensor{H,T,O1,O2}) where {H,T,O1,O2} = conn_type(op.op_l)
+conn_type(op::KLocalOperatorTensor{H,T,Nothing,O2}) where {H,T,O2} =
+  conn_type(op.op_r)
+conn_type(::Type{KLocalOperatorTensor{H,T,O1,O2}}) where {H,T,O1,O2} =
+  conn_type(O1)
+conn_type(::Type{KLocalOperatorTensor{H,T,Nothing,O2}}) where{H,T,O2} =
+  conn_type(O2)
 
 duplicate(::Nothing) = nothing
 
@@ -52,12 +69,14 @@ function duplicate(op::KLocalOperatorTensor)
 end
 
 function row_valdiff!(conn::OpConnection, op::KLocalOperatorTensor, v::DoubleState)
+    op_r = op.op_r
+    op_l = op.op_l
     if op_r === nothing
         r_r = local_index(row(v), sites(op_l))
-        append!(conn, op.op_conns[r])
+        append!(conn, op_l.op_conns[r_r])
     elseif op_l === nothing
         r_c = local_index(col(v), sites(op_r))
-        append!(conn, op.op_conns[r])
+        append!(conn, op_r.op_conns[r_c])
     else
         r_r = local_index(row(v), sites(op_l))
         r_c = local_index(col(v), sites(op_r))
@@ -69,6 +88,8 @@ end
 
 
 function map_connections(fun::Function, op::KLocalOperatorTensor, v::DoubleState)
+    op_r = op.op_r
+    op_l = op.op_l
     if op_r === nothing
         r = local_index(row(v), sites(op_l))
 
@@ -155,14 +176,12 @@ Base.conj(op::KLocalOperatorTensor) = conj!(duplicate(op))
 Base.adjoint(op::KLocalOperatorTensor) = conj(transpose(op))
 
 
-+(op_l::KLocalOperatorTensor, op_r::KLocalOperatorTensor) = begin
+Base.:+(op_l::KLocalOperatorTensor, op_r::KLocalOperatorTensor) = begin
     sites(op_l) == sites(op_r) && return _sum_samesite(op_l, op_r)
     return KLocalOperatorSum(op_l) + op_r
 end
 
-*(a::Number, b::KLocalOperatorTensor) =
-    _op_alpha_prod(b,a)
-*(b::KLocalOperatorTensor, a::Number) =
+Base.:*(a::Number, b::KLocalOperatorTensor) =
     _op_alpha_prod(b,a)
 
 function _op_alpha_prod(op::KLocalOperatorTensor, a::Number)

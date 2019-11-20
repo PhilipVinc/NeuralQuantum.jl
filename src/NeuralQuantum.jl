@@ -9,6 +9,7 @@ using QuantumOpticsBase
 using LightGraphs
 using Zygote
 using NNlib
+using LinearMaps
 using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!
 using LinearAlgebra, SparseArrays, Strided, UnsafeArrays
 
@@ -26,6 +27,8 @@ export Optimisers
 
 # Abstract Types
 abstract type NeuralNetwork end
+
+abstract type AbstractBasis end
 
 abstract type State end
 abstract type FiniteBasisState <: State end
@@ -46,6 +49,7 @@ export NotParallel, ParallelThreaded
 const STD_REAL_PREC =  Float32
 
 # Base elements
+include("Hilbert/base_basis.jl")
 include("base_states.jl")
 include("base_derivatives.jl")
 include("base_networks.jl")
@@ -65,6 +69,10 @@ include("States/DiagonalStateWrapper.jl")
 include("States/ModifiedState.jl")
 export ModifiedState, local_index
 
+include("Hilbert/DiscreteHilbert.jl")
+include("Hilbert/HomogeneousHilbert.jl")
+include("Hilbert/SuperHilbert.jl")
+
 include("base_batched_networks.jl")
 
 # Linear Operators
@@ -75,7 +83,11 @@ include("Operators/OpConnectionIndex.jl")
 include("Operators/KLocalOperator.jl")
 include("Operators/KLocalOperatorSum.jl")
 include("Operators/KLocalOperatorTensor.jl")
+include("Operators/KLocalZero.jl")
 include("Operators/KLocalLiouvillian.jl")
+
+include("Operators/SimpleOperators.jl")
+include("Operators/OpConversion.jl")
 
 include("Operators/GraphConversion.jl")
 export OpConnection

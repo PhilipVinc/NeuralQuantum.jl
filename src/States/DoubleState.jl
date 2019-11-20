@@ -80,6 +80,8 @@ function apply!(state::DoubleState, changes_r, changes_c)
     apply!(col(state), changes_c)
     return state
 end
+@inline apply!(state::DoubleState, (changes_r, changes_c)::Tuple) =
+    apply!(state, changes_r, changes_c)
 
 set_index!(v::DoubleState, i::Integer) = set!(v, index_to_int(v, i))
 function set!(v::DoubleState, i::Integer)
