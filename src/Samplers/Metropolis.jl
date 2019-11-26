@@ -77,6 +77,7 @@ function init_sampler!(s::MetropolisSampler, net, σ,
     c.steps_done = - s.burn_length
     c.steps_accepted = 0
     rand!(c.rng, σ, c.hilb)
+    init_sampler_rule_cache!(rule_cache(c), s, net, σ, c)
 
     while c.steps_done < 0
         samplenext!(σ, σ, s, net, c)
@@ -86,7 +87,7 @@ function init_sampler!(s::MetropolisSampler, net, σ,
     return c
 end
 
-init_sampler_rule_cache!(rc, s::MetropolisSampler, net, σ, c::MetropolisSamplerCache) =
+init_sampler_rule_cache!(rc, s, net, σ, c) =
     nothing
 
 chain_length(s::MetropolisSampler, c::MetropolisSamplerCache) = s.chain_length
@@ -113,7 +114,7 @@ function samplenext!(σ_out::T, σ_in::T, s::MetropolisSampler,
 
     for i=1:s.passes
         # Apply the transition rule
-        propose_step!(σ_out, s, net, c)
+        propose_step!(σ_out, s, net, c, rule_cache(c))
 
         ψtmp     = logψ!(c.ψtmp, net, σ_out)
         logψ_σp .= 2 .*real.(ψtmp)

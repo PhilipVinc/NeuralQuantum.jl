@@ -5,6 +5,7 @@ using Reexport
 using Requires
 using MacroTools: @forward
 
+using GPUArrays
 using CuArrays
 const use_cuda = Ref(false)
 
@@ -204,6 +205,10 @@ include("IterativeInterface/build_Batched.jl")
 export sample!, add_observable, compute_observables
 
 include("utils/num_grad.jl")
+
+# gpu stuff
+include("GPU/gpustates.jl")
+include("GPU/LocalRuleGPU.jl")
 
 function __init__()
 

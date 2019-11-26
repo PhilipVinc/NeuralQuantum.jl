@@ -74,7 +74,8 @@ end
 
 @inline flipat!(σ, hilb::AbstractHilbert, i::Int) = flipat!(GLOBAL_RNG, σ, hilb, i)
 
-@inline Random.rand!(σ, h::AbstractHilbert) = rand!(GLOBAL_RNG, σ, h)
+@inline Random.rand!(σ::AbstractArray, h::AbstractHilbert) = rand!(GLOBAL_RNG, σ, h)
+@inline Random.rand!(σ::NTuple{2,<:AbstractArray}, h::AbstractHilbert) = rand!(GLOBAL_RNG, σ, h)
 @inline Random.rand(h::AbstractHilbert) = rand!(GLOBAL_RNG, state(h), h)
 
 """

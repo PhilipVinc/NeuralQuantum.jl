@@ -72,7 +72,7 @@ add!(σ::AState, h::HomogeneousHilbert, val::Integer) =
 
 function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::HomogeneousHilbert{N}) where N
     T = eltype(σ)
-    rand!(σ, 0:(N-1))
+    rand!(rng, σ, 0:(N-1))
 end
 
 function toint(σ::AState, h::HomogeneousHilbert{N}) where N

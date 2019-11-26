@@ -11,10 +11,10 @@ function _sr_direct_cache(algo::SR, prob, net)
     gv = vec_data(g)
 
     S  = [similar(gv, T, length(gv), length(gv)) for gv=vec_data(g)]
-    if T isa Complex
-        Sc = S
+    if T <: Real
+        Sc = [similar(gv, Complex{T}, length(gv), length(gv)) for gv=vec_data(g)]
     else # is real
-        Sc  = [similar(gv, Complex{T}, length(gv), length(gv)) for gv=vec_data(g)]
+        Sc = S
     end
 
     return SRDirectCache(Sc, S, g, grad_cache(T, net))
