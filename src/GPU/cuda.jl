@@ -27,16 +27,24 @@ end
     n_batches = length(under_indices[2])
     batch_size = size(under.parent, 1)
 
-    Ri  = CuArray{eltype(R),2}(under.parent.buf, dims_all[1:2], own=false)
-    vbi = CuArray{eltype(vb),1}(vb.buf, (size(vb, 1),), own=false)
-    wbi = CuArray{eltype(wb),1}(wb.buf, (size(wb, 1),), own=false)
+    #Ri  = CuArray{eltype(R),2}(under.parent.buf, dims_all[1:2], own=false)
+    #vbi = CuArray{eltype(vb),1}(vb.buf, (size(vb, 1),), own=false)
+    #wbi = CuArray{eltype(wb),1}(wb.buf, (size(wb, 1),), own=false)
+    Ri = view(R, :, :, 1)
+    vbi = view(vb, :, 1)
+    wbi = view(wb, :, 1)
 
     for i=1:size(R, 3)
-        Ri.offset = (i-1)*Base.elsize(Ri)*batch_size
-        vbi.offset = (i-1)*Base.elsize(vbi)*length(vbi)
-        wbi.offset = (i-1)*Base.elsize(wbi)*length(wbi)
+        #Ri.offset = (i-1)*Base.elsize(Ri)*batch_size
+        #vbi.offset = (i-1)*Base.elsize(vbi)*length(vbi)
+        #wbi.offset = (i-1)*Base.elsize(wbi)*length(wbi)
+
         fill!(Ri, 0)
         CUBLAS.ger!(one(T), vbi, wbi, Ri)
+
+        Ri.ptr += Base.elsize(Ri)*batch_size
+        vbi.ptr += Base.elsize(vbi)*length(vbi)
+        wbi.ptr += Base.elsize(wbi)*length(wbi)
     end
     return R
 end
@@ -51,16 +59,24 @@ end
     n_batches = length(under_indices[2])
     batch_size = size(under.parent, 1)
 
-    Ri  = CuArray{eltype(R),2}( under.parent.buf, dims_all[1:2], own=false)
-    vbi = CuArray{eltype(vb),1}(vb.buf, (size(vb, 1),), own=false)
-    wbi = CuArray{eltype(wb),1}(wb.buf, (size(wb, 1),), own=false)
+    #Ri  = CuArray{eltype(R),2}( under.parent.buf, dims_all[1:2], own=false)
+    #vbi = CuArray{eltype(vb),1}(vb.buf, (size(vb, 1),), own=false)
+    #wbi = CuArray{eltype(wb),1}(wb.buf, (size(wb, 1),), own=false)
+
+    Ri = view(R, :, :, 1)
+    vbi = view(vb, :, 1)
+    wbi = view(wb, :, 1)
 
     for i=1:size(R, 3)
-        Ri.offset = (i-1)*Base.elsize(Ri)*batch_size
-        vbi.offset = (i-1)*Base.elsize(vbi)*length(vbi)
-        wbi.offset = (i-1)*Base.elsize(wbi)*length(wbi)
+        #Ri.offset = (i-1)*Base.elsize(Ri)*batch_size
+        #vbi.offset = (i-1)*Base.elsize(vbi)*length(vbi)
+        #wbi.offset = (i-1)*Base.elsize(wbi)*length(wbi)
         fill!(Ri, 0)
         CUBLAS.ger!(T(α), vbi, wbi, Ri)
+
+        Ri.ptr += Base.elsize(Ri)*batch_size
+        vbi.ptr += Base.elsize(vbi)*length(vbi)
+        wbi.ptr += Base.elsize(wbi)*length(wbi)
     end
     return R
 end
