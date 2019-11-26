@@ -78,16 +78,18 @@ function sample!(is::BatchedValSampler)
     # If we have gpu, this thing is indexed by value so better
     # to copy it to the cpu first in one go...
     if is.ψvals <: GPUArray
-        ψvals = collect(is.ψvals)
+        ψvals   = collect(is.ψvals)
+        samples = collect(is.samples)
     else
-        ψvals = is.ψvals
+        ψvals   = is.ψvals
+        samples = is.samples
     end
 
     # Compute LdagL
     Ĉ = operator(is.problem)
     for i=1:ch_len
         for j = 1:batch_sz
-            σv = unsafe_get_el(is.samples, j, i)
+            σv = unsafe_get_el(samples, j, i)
             init!(is.accum, σv, ψvals[1,j,i])
             accumulate_connections!(is.accum, Ĉ, σv)
             L_loc = NeuralQuantum.finalize!(is.accum)

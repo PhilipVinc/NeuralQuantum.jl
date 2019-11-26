@@ -1,13 +1,13 @@
-mutable struct BatchedObsKetSampler
+mutable struct BatchedObsKetSampler{S,V,O,A,R}
     observables::Dict
 
-    samples
-    logψ_vals
-    Oloc_vals
+    samples::S
+    logψ_vals::V
+    Oloc_vals::O
 
-    accum
+    accum::A
 
-    results
+    results::R
 end
 
 function BatchedObsKetSampler(samples, ψvals, accum)

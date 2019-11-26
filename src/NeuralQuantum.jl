@@ -211,8 +211,9 @@ include("utils/num_grad.jl")
 # gpu stuff
 include("GPU/gpustates.jl")
 include("GPU/LocalRuleGPU.jl")
+include("GPU/AccumulatorLogPsi.jl")
 
-include(joinpath(@__DIR__, "GPU/gpuarrays.jl"))
+include("GPU/gpuarrays.jl")
 
 function __init__()
 

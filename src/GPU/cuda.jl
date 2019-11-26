@@ -27,19 +27,15 @@ end
     n_batches = length(under_indices[2])
     batch_size = size(under.parent, 1)
 
-    #Ri  = CuArray{eltype(R),2}(under.parent.buf, dims_all[1:2], own=false)
-    #vbi = CuArray{eltype(vb),1}(vb.buf, (size(vb, 1),), own=false)
-    #wbi = CuArray{eltype(wb),1}(wb.buf, (size(wb, 1),), own=false)
+    # Absolutely unsafe code, but avoids allocating a lot of views and pressuring
+    # the GC (probably since v2.0 of CUDAnative it's useless)
+    # does pointer aritmetic by hand
     Ri = view(R.parent.parent, :,:)
     Ri.dims = (size(R,1), size(R,2))
     vbi = view(vb, :, 1)
     wbi = view(wb, :, 1)
 
     for i=1:size(R, 3)
-        #Ri.offset = (i-1)*Base.elsize(Ri)*batch_size
-        #vbi.offset = (i-1)*Base.elsize(vbi)*length(vbi)
-        #wbi.offset = (i-1)*Base.elsize(wbi)*length(wbi)
-
         fill!(Ri, 0)
         CUBLAS.ger!(one(T), vbi, wbi, Ri)
 
@@ -51,7 +47,7 @@ end
 end
 
 @inline function NeuralQuantum._batched_outer_prod!(R::ReshapedArray, α,
-    vb::GPUArray, wb::GPUArray)
+    vb::CuArray, wb::CuArray)
     T=eltype(vb)
     dims_all = R.dims
     under    = R.parent
@@ -69,9 +65,6 @@ end
     wbi = view(wb, :, 1)
 
     for i=1:size(R, 3)
-        #Ri.offset = (i-1)*Base.elsize(Ri)*batch_size
-        #vbi.offset = (i-1)*Base.elsize(vbi)*length(vbi)
-        #wbi.offset = (i-1)*Base.elsize(wbi)*length(wbi)
         fill!(Ri, 0)
         CUBLAS.ger!(T(α), vbi, wbi, Ri)
 
@@ -83,7 +76,7 @@ end
 end
 
 @inline function NeuralQuantum._batched_outer_prod_∑!(R::ReshapedArray, α,
-    vb::GPUArray, wb::GPUArray, vb2::GPUArray, wb2::GPUArray)
+    vb::CuArray, wb::CuArray, vb2::CuArray, wb2::CuArray)
     T=eltype(vb)
     dims_all = R.dims
     under    = R.parent
@@ -92,28 +85,32 @@ end
     n_batches = length(under_indices[2])
     batch_size = size(under.parent, 1)
 
-    Ri   = CuArray{eltype(R),2}( under.parent.buf, dims_all[1:2], own=false)
-    vbi  = CuArray{eltype(vb),1}(vb.buf, (size(vb, 1),), own=false)
-    wbi  = CuArray{eltype(wb),1}(wb.buf, (size(wb, 1),), own=false)
-
-    vb2i = CuArray{eltype(R),1}(vb2.buf, (size(vb2, 1),), own=false)
-    wb2i = CuArray{eltype(R),1}(wb2.buf, (size(wb2, 1),), own=false)
+    # Absolutely unsafe code, but avoids allocating a lot of views and pressuring
+    # the GC (probably since v2.0 of CUDAnative it's useless)
+    # does pointer aritmetic by hand
+    Ri = view(R.parent.parent, :,:)
+    Ri.dims = (size(R,1), size(R,2))
+    vbi = view(vb, :, 1)
+    wbi = view(wb, :, 1)
+    vb2i = view(vb2, :, 1)
+    wb2i = view(wb2, :, 1)
 
     for i=1:size(R, 3)
-        Ri.offset = (i-1)*Base.elsize(Ri)*batch_size
-        vbi.offset = (i-1)*Base.elsize(vbi)*length(vbi)
-        wbi.offset = (i-1)*Base.elsize(wbi)*length(wbi)
-        vb2i.offset = (i-1)*Base.elsize(vb2i)*length(vb2i)
-        wb2i.offset = (i-1)*Base.elsize(wb2i)*length(wb2i)
         fill!(Ri, 0)
         CUBLAS.ger!(T(α), vbi, wbi, Ri)
         CUBLAS.ger!(T(α), vb2i, wb2i, Ri)
+
+        Ri.ptr += Base.elsize(Ri)*batch_size
+        vbi.ptr += Base.elsize(vbi)*length(vbi)
+        wbi.ptr += Base.elsize(wbi)*length(wbi)
+        vbi.ptr += Base.elsize(vb2i)*length(vb2i)
+        wbi.ptr += Base.elsize(wb2i)*length(wb2i)
     end
     return R
 end
 
 @inline function NeuralQuantum._batched_outer_prod_Δ!(R::ReshapedArray, α,
-    vb::GPUArray, wb::GPUArray, vb2::GPUArray, wb2::GPUArray)
+    vb::CuArray, wb::CuArray, vb2::CuArray, wb2::CuArray)
     T=eltype(vb)
     dims_all = R.dims
     under    = R.parent
@@ -122,22 +119,26 @@ end
     n_batches = length(under_indices[2])
     batch_size = size(under.parent, 1)
 
-    Ri   = CuArray{eltype(R),2}( under.parent.buf, dims_all[1:2], own=false)
-    vbi  = CuArray{eltype(vb),1}(vb.buf, (size(vb, 1),), own=false)
-    wbi  = CuArray{eltype(wb),1}(wb.buf, (size(wb, 1),), own=false)
-
-    vb2i = CuArray{eltype(vb2),1}(vb2.buf, (size(vb2, 1),), own=false)
-    wb2i = CuArray{eltype(wb2),1}(wb2.buf, (size(wb2, 1),), own=false)
+    # Absolutely unsafe code, but avoids allocating a lot of views and pressuring
+    # the GC (probably since v2.0 of CUDAnative it's useless)
+    # does pointer aritmetic by hand
+    Ri = view(R.parent.parent, :,:)
+    Ri.dims = (size(R,1), size(R,2))
+    vbi = view(vb, :, 1)
+    wbi = view(wb, :, 1)
+    vb2i = view(vb2, :, 1)
+    wb2i = view(wb2, :, 1)
 
     for i=1:size(R, 3)
-        Ri.offset = (i-1)*Base.elsize(Ri)*batch_size
-        vbi.offset = (i-1)*Base.elsize(vbi)*length(vbi)
-        wbi.offset = (i-1)*Base.elsize(wbi)*length(wbi)
-        vb2i.offset = (i-1)*Base.elsize(vb2i)*length(vb2i)
-        wb2i.offset = (i-1)*Base.elsize(wb2i)*length(wb2i)
         fill!(Ri, 0)
         CUBLAS.ger!(T(α), vbi, wbi, Ri)
         CUBLAS.ger!(-T(α), vb2i, wb2i, Ri)
+
+        Ri.ptr += Base.elsize(Ri)*batch_size
+        vbi.ptr += Base.elsize(vbi)*length(vbi)
+        wbi.ptr += Base.elsize(wbi)*length(wbi)
+        vbi.ptr += Base.elsize(vb2i)*length(vb2i)
+        wbi.ptr += Base.elsize(wb2i)*length(wb2i)
     end
     return R
 end
