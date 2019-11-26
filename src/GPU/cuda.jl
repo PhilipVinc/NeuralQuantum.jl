@@ -7,10 +7,10 @@ using Base: ReshapedArray
 @cufunc NeuralQuantum.∂logℒ(x) = one(x)/(one(x)+exp(-x))
 
 #_gpu_logℒ(x) = log1p(exp(x))
-@cufunc _gpu_logℒ(x::Real) = log1p(exp(x))
-@cufunc _gpu_logℒ(x::Complex) = log(one(x) + exp(x))
+#@cufunc _gpu_logℒ(x::Real) = log1p(exp(x))
+#@cufunc _gpu_logℒ(x::Complex) = log(one(x) + exp(x))
 
-@cufunc NeuralQuantum.logℒ(x) = _gpu_logℒ(x)
+@cufunc NeuralQuantum.logℒ(x) = log(one(x) + exp(x)) #_gpu_logℒ(x)
 
 
 @inline function NeuralQuantum._batched_outer_prod!(R::ReshapedArray,
