@@ -12,6 +12,10 @@ using Base: ReshapedArray
 
 @cufunc NeuralQuantum.logℒ(x) = log(one(x) + exp(x)) #_gpu_logℒ(x)
 
+function build_rng_generator_T(arrT::CuArray, seed)
+    return CuArrays.CURAND.generator()
+end
+
 
 @inline function NeuralQuantum._batched_outer_prod!(R::ReshapedArray,
     vb::CuArray, wb::CuArray)

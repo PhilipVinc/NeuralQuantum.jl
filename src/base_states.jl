@@ -92,9 +92,10 @@ Given a vector of batches of states with size `size(state) = [:, batches, els]`,
 take the batch group `el`, and if specified also selects one single batch.
 """
 @inline unsafe_get_el(σ::AStateBatchVec, i) = uview(σ, :, :, i)
-@inline unsafe_get_el(σ::ADoubleStateBatchVec, i) = (uview(first(σ), :, :, i), uview(last(σ), :, :, i))
 @inline unsafe_get_el(σ::AStateBatchVec, batch, el) = uview(σ, :, batch, el)
-@inline unsafe_get_el(σ::ADoubleStateBatchVec, batch, el) = (uview(first(σ), :, batch, el), uview(last(σ), :, batch, el))
+
+@inline unsafe_get_el(σ::ADoubleStateBatchVec, i) = (unsafe_get_el(row(σ), i), unsafe_get_el(col(σ), i))
+@inline unsafe_get_el(σ::ADoubleStateBatchVec, batch, el) = (unsafe_get_el(row(σ), batch, el), unsafe_get_el(col(σ), batch, el))
 
 batch_size(σ::Union{AStateBatch,AStateBatchVec}) = size(σ, 2)
 batch_size(σ::Union{ADoubleStateBatch,ADoubleStateBatchVec}) = batch_size(row(σ))

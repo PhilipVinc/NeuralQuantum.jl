@@ -62,12 +62,14 @@ function sample!(is::BatchedValSampler)
     batch_sz       = size(is.local_vals, 1)
 
     # Sample phase
-    init_sampler!(is.sampler, is.bnet, unsafe_get_el(is.samples, 1),
-                    is.sampler_cache)
+    σ_old = unsafe_get_el(is.samples, 1)
 
+    init_sampler!(is.sampler, is.bnet, σ_old, is.sampler_cache)
     for i=1:ch_len-1
-        !samplenext!(unsafe_get_el(is.samples, i+1), unsafe_get_el(is.samples, i),
+        σ_next = unsafe_get_el(is.samples, i+1)
+        !samplenext!(σ_next, σ_old,
                         is.sampler, is.bnet, is.sampler_cache) && break
+        σ_old = σ_next
     end
 
     # Compute logψ and ∇logψ

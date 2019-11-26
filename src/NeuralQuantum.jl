@@ -54,6 +54,8 @@ export NotParallel, ParallelThreaded
 # Universal defines
 const STD_REAL_PREC =  Float32
 
+include("utils/rng.jl")
+
 # Basic states for uniform systems
 include("base_states.jl")
 include("States/StateChanges.jl")
@@ -209,6 +211,8 @@ include("utils/num_grad.jl")
 # gpu stuff
 include("GPU/gpustates.jl")
 include("GPU/LocalRuleGPU.jl")
+
+include(joinpath(@__DIR__, "GPU/gpuarrays.jl"))
 
 function __init__()
 

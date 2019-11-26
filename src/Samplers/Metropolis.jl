@@ -53,13 +53,14 @@ mutable struct MetropolisSamplerCache{A<:AbstractRNG,RC,H,S,RV,V,M} <: SamplerCa
 end
 
 function _sampler_cache(s::MetropolisSampler, v, hilb, net, part)
-    rng = MersenneTwister(s.seed)
-
     logψ_σ  = real(out_similar(net))
     logψ_σp = real(out_similar(net))
     out     = out_similar(net)
     prob    = logψ_σp - logψ_σ
     mask    = similar(logψ_σ, Bool)
+
+    rng     = build_rng_generator_T(prob, s.seed)
+
     MetropolisSamplerCache(rng, 0, 0,
                       RuleSamplerCache(s.rule, s, v, net, part),
                       hilb, deepcopy(v),
