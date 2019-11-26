@@ -5,6 +5,9 @@ using Reexport
 using Requires
 using MacroTools: @forward
 
+using CuArrays
+const use_cuda = Ref(false)
+
 using QuantumOpticsBase
 using LightGraphs
 using Zygote
@@ -215,6 +218,28 @@ function __init__()
     end
 
     @require QuantumOptics="6e0679c1-51ea-5a7c-ac74-d61b76210b0c" begin
+
+    # cuda stuff
+    precompiling = ccall(:jl_generating_output, Cint, ()) != 0
+
+    # we don't want to include the CUDA module when precompiling,
+    # or we could end up replacing it at run time (triggering a warning)
+    precompiling && return
+
+    if !CuArrays.functional()
+      # nothing to do here, and either CuArrays or one of its dependencies will have warned
+    else
+      use_cuda[] = true
+      include(joinpath(@__DIR__, "GPU/cuda.jl"))
+
+      # FIXME: this functionality should be conditional at run time by checking `use_cuda`
+      #        (or even better, get moved to CuArrays.jl as much as possible)
+      if CuArrays.has_cudnn()
+        #include(joinpath(@__DIR__, "cuda/cuda.jl"))
+      else
+        @warn "CuArrays.jl did not find libcudnn. Some functionality will not be available."
+      end
+    end
 
     end
 end
