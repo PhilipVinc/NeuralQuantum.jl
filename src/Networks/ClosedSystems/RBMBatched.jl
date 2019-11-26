@@ -76,6 +76,7 @@ function logψ_and_∇logψ!(∇logψ, out, net::RBM, c::RBMBatchedCache, σ_r)
     #res = σ'*net.a + sum(logℒθ, dims=1)
     mul!(res, net.a', σ)
     conj!(res)
+    #sum!(logℒθ, res)
     Base.mapreducedim!(identity, +, res, logℒθ)
 
     ∇logψ.a   .= σ

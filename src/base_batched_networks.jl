@@ -3,17 +3,10 @@ export logψ!
 # Definitions for batched evaluation of networks
 # When the networrks are not cached and therefore allocate
 # the result structure
-@inline logψ!(out::AbstractArray, net::NeuralNetwork, σ::State) where N =
-    out .= logψ(net, config(σ))
-@inline logψ!(out::AbstractArray, net::NeuralNetwork, σ::NTuple{N,<:AbstractArray}) where N =
-    out .= logψ(net, σ)
-@inline logψ!(out::AbstractArray, net::NeuralNetwork, σ::AbstractArray) =
-    out .= logψ(net, σ)
-#@inline function logψ_and_∇logψ!(der, out, n::NeuralNetwork, σ...)
-#    lnψ, der = logψ_and_∇logψ!(der, n, σ...)
-#    out .= lnψ
-#¶    return (out, der)
-#end
+#@inline logψ!(out::AbstractArray, net::NeuralNetwork, σ::NTuple{N,<:AbstractArray}) where N =
+#    out .= logψ(net, σ)
+#@inline logψ!(out::AbstractArray, net::NeuralNetwork, σ::AbstractArray) =
+#    out .= logψ(net, σ)
 
 """
     NNCache{N}
@@ -29,15 +22,20 @@ cached(net::NeuralNetwork, batch_sz::Int) =
 cached(net::CachedNet, batch_sz::Int) =
     CachedNet(net.net, cache(net.net, batch_sz))
 
+batch_size(net::CachedNet) = batch_size(net.cache)
 batch_size(cache::NNBatchedCache) = throw("Not Implemented")
 
+out_similar(net::CachedNet{N,C}) where{N,C<:NNBatchedCache} =
+    similar(trainable_first(net), out_type(net), 1, batch_size(net))
+
+
 # Definition for inplace evaluation of batched cached networks
-@inline logψ!(out::AbstractArray, net::CachedNet, σ::NTuple{N,<:AbstractArray}) where N =
+@inline logψ!(out::AbstractMatrix, net::CachedNet, σ::Vararg{T,N}) where {N,T<:AbstractVecOrMat} =
     logψ!(out, net.net, net.cache, σ...)
-@inline logψ!(out::AbstractArray, cnet::CachedNet, σ::AbstractArray) =
+@inline logψ!(out::AbstractMatrix, net::CachedNet, σ::ADoubleStateBatch) where N =
+    logψ!(out, net.net, net.cache, σ...)
+@inline logψ!(out::AbstractMatrix, cnet::CachedNet, σ::AStateBatch) =
     logψ!(out, cnet.net, cnet.cache, σ)
-@inline logψ!(out::AbstractArray, cnet::CachedNet, σ::State) =
-    logψ!(out, cnet, config(σ))
 
 # Definition for allocating evaluation of batched cached networks
 # Shadowing things at ~80 of base_cached_networks.jl
@@ -46,12 +44,12 @@ batch_size(cache::NNBatchedCache) = throw("Not Implemented")
     out = similar(trainable_first(net), out_type(net), 1, b_sz)
     logψ!(out, net.net, net.cache, σ...)
 end
-@inline logψ(net::CachedNet{NN,NC}, σ::Vararg{N,T}) where {N,T,NN,NC<:NNBatchedCache} = begin
+@inline logψ(net::CachedNet{NN,NC}, σ::ADoubleStateBatch) where {N,T,NN,NC<:NNBatchedCache} = begin
     b_sz = last(size(first(σ)))
     out = similar(trainable_first(net), out_type(net), 1, b_sz)
     logψ!(out, net.net, net.cache, σ...)
 end
-@inline logψ(cnet::CachedNet{NN,NC}, σ::AbstractArray) where {NN,NC<:NNBatchedCache} = begin
+@inline logψ(cnet::CachedNet{NN,NC}, σ::AStateBatch) where {NN,NC<:NNBatchedCache} = begin
     b_sz = last(size(σ))
     out = similar(trainable_first(cnet), out_type(cnet), 1, b_sz)
     logψ!(out, cnet.net, cnet.cache, σ)
@@ -79,17 +77,15 @@ end
     return out, der
 end
 
-@inline logψ_and_∇logψ!(der, out, n::CachedNet, σ::State) =
-    logψ_and_∇logψ!(der, out, n, config(σ))
-@inline function logψ_and_∇logψ!(der, out, n::CachedNet, σ::NTuple{N,<:AbstractArray}) where N
+@inline function logψ_and_∇logψ!(der::AbstractDerivative, out, n::CachedNet, σ::NTuple{N,<:AbstractArray}) where N
     logψ_and_∇logψ!(der, out, n.net, n.cache, σ...)
     return (out, der)
 end
-@inline function logψ_and_∇logψ!(der, out, n::CachedNet, σ::Vararg{<:AbstractArray,N}) where N
+@inline function logψ_and_∇logψ!(der::AbstractDerivative, out, n::CachedNet, σ::Vararg{<:AbstractArray,N}) where N
     logψ_and_∇logψ!(der, out, n.net, n.cache, σ...)
     return (out, der)
 end
-@inline function logψ_and_∇logψ!(der, out, n::CachedNet, σ::AbstractArray) where N
+@inline function logψ_and_∇logψ!(der::AbstractDerivative, out, n::CachedNet, σ::AbstractArray) where N
     logψ_and_∇logψ!(der, out, n.net, n.cache, σ);
     return (out, der)
 end
@@ -98,7 +94,7 @@ end
 #
 grad_cache(net::NeuralNetwork, batch_sz) =
     grad_cache(out_type(net), net, batch_sz)
-grad_cache(T::Type{<:Number}, net::NeuralNetwork, batch_sz) = begin
+function grad_cache(T::Type{<:Number}, net::NeuralNetwork, batch_sz)
     is_analytic(net) && return RealDerivative(T, net, batch_sz)
     return WirtingerDerivative(T, net, batch_sz)
 end
@@ -111,33 +107,64 @@ function RealDerivative(T::Type{<:Number}, net::NeuralNetwork, batch_sz::Int)
     return RealDerivative(fields, [vec])
 end
 
+#
+"""
+    grad_cache_vec(net, batch_sz, vec_len)
+
+Builds a vector of `grad_cache` batching `batch_sz` evaluations.
+All share the same underlying vector.
+"""
+grad_cache(net::NeuralNetwork, batch_sz::Integer, vec_len::Integer) =
+    grad_cache(out_type(net), net, batch_sz, vec_len)
+
+function grad_cache(T::Type{<:Number}, net::NeuralNetwork, batch_sz, vec_len)
+    pars = trainable(net)
+
+    if is_analytic(net)
+        vec       = similar(trainable_first(pars), T, _tlen(pars), batch_sz, vec_len)
+        # compute type
+        j, fields = batched_weight_tuple(net, view(vec, :, :, 1))
+        der       = RealDerivative(fields, [view(vec, :, :, 1)])
+        ders      = Vector{typeof(der)}()
+        for i=1:vec_len
+            vec_rsp   = view(vec, :, :, i)
+            j, fields = batched_weight_tuple(net, vec_rsp)
+            der       = RealDerivative(fields, [vec_rsp])
+            push!(ders, der)
+        end
+    else
+        throw("To implement")
+    end
+    return (ders, vec)
+end
+
 
 ## Things for batched states
 preallocate_state_batch(arrT::Array,
                         T::Type{<:Real},
-                        v::NAryState,
+                        v::AState,
                         batch_sz) =
     _std_state_batch(arrT, T, v, batch_sz)
 
 preallocate_state_batch(arrT::Array,
                         T::Type{<:Real},
-                        v::DoubleState,
+                        v::ADoubleState,
                         batch_sz) =
     _std_state_batch(arrT, T, v, batch_sz)
 
 
 _std_state_batch(arrT::AbstractArray,
                  T::Type{<:Number},
-                 v::NAryState,
+                 v::AState,
                  batch_sz) =
-    similar(arrT, T, nsites(v), batch_sz)
+    similar(arrT, T, length(v), batch_sz)
 
 _std_state_batch(arrT::AbstractArray,
                  T::Type{<:Number},
-                 v::DoubleState,
+                 v::ADoubleState,
                  batch_sz) = begin
-    vl = similar(arrT, T, nsites(row(v)), batch_sz)
-    vr = similar(arrT, T, nsites(col(v)), batch_sz)
+    vl = similar(arrT, T, length(row(v)), batch_sz)
+    vr = similar(arrT, T, length(col(v)), batch_sz)
     return (vl, vr)
 end
 
@@ -161,3 +188,75 @@ end
     #end
     return cache
 end
+
+@inline @inbounds unsafe_get_batch(σ::AStateBatch, i::Integer) = uview(σ, :, i)
+@inline @inbounds unsafe_get_batch(σ::ADoubleStateBatch, i::Integer) = (uview(row(σ), :, i), uview(col(σ), :, i))
+@inline num_batches(σ::AStateBatch) = size(σ, 2)
+@inline num_batches(σ::ADoubleStateBatch) = size(row(σ), 2)
+
+# Automatic evaluation of batches
+logψ!(out::AbstractArray{T,3}, cnet::CachedNet, σ::NTuple{2,AbstractArray{T2,3}}) where{T,T2} =
+    logψ!(out, cnet, first(σ), last(σ))
+function logψ!(out::AbstractArray{T,3}, cnet::Union{NeuralNetwork, CachedNet}, σr::AT, σc::AT) where {T, T2, AT<:AbstractArray{T2, 3}}
+    n_batches = size(σr, 3)
+    for i=1:n_batches
+        σr_i  = unsafe_get_el(σr,  i)
+        σc_i  = unsafe_get_el(σc,  i)
+        out_i = unsafe_get_el(out, i)
+        logψ!(out_i, cnet, σr_i, σc_i)
+    end
+    return out
+end
+
+function logψ!(out::AbstractArray{T,3}, cnet::NeuralNetwork, σ::AT) where {T, T2, AT<:AbstractArray{T2, 3}}
+    n_batches = size(σ, 3)
+    for i=1:n_batches
+        σ_i   = unsafe_get_el(σ,  i)
+        out_i = unsafe_get_el(out, i)
+        logψ!(out_i, cnet, σ_i)
+    end
+    return out
+end
+
+
+# Compute batches of those things
+function logψ_and_∇logψ!(der::Vector{<:AbstractDerivative}, out::AbstractArray{T,3},
+                         net::Union{NeuralNetwork, CachedNet},
+                         σ::Union{AStateBatchVec, ADoubleStateBatchVec}) where {T}
+    n_batches  = length(der)
+    for i=1:n_batches
+        σ_i   = unsafe_get_el(σ,  i)
+        out_i = unsafe_get_el(out, i)
+        logψ_and_∇logψ!(der[i], out_i, net, σ_i)
+    end
+    return out
+end
+
+function logψ!(out::AbstractArray{T,3}, net::Union{NeuralNetwork, CachedNet},
+               σ::Union{AStateBatchVec, ADoubleStateBatchVec}) where {T}
+    n_batches  = length(der)
+    for i=1:n_batches
+        σ_i   = unsafe_get_el(σ,  i)
+        out_i = unsafe_get_el(out, i)
+        logψ!(out_i, net, σ_i)
+    end
+    return out
+end
+
+function logψ_and_∇logψ(net::Union{NeuralNetwork, CachedNet},
+                        σ::Union{AStateBatchVec, ADoubleStateBatchVec}) where {T}
+    ∇vals, ∇vec    = grad_cache(bnet, 1, batch_size(σ), chain_length(σ))
+    out = similar(out_similar(net), batch_size(σ), chain_length(σ))
+    logψ_and_∇logψ!(∇vals, out, net, σ)
+    return ∇vals, out
+end
+
+function logψ(net::Union{NeuralNetwork, CachedNet},
+               σ::Union{AStateBatchVec, ADoubleStateBatchVec}) where {T}
+    out = similar(out_similar(net), 1, batch_size(σ), chain_length(σ))
+    logψ!(out, net, σ)
+end
+
+# diagonal
+logψ!(out::AbstractArray, net::MatrixNeuralNetwork, cache::NNCache, σ::AStateBatch) =
+    logψ!(out, net, cache, σ, σ)

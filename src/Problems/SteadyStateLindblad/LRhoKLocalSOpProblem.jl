@@ -6,8 +6,7 @@ Problem or finding the steady state of a ℒdagℒ matrix by computing
 
 DO NOT USE WITH COMPLEX-WEIGHT NETWORKS, AS IT DOES NOT WORK
 """
-struct LRhoKLocalSOpProblem{B, LL} <: LRhoSquaredProblem where {B<:Basis}
-    HilbSpace::B            # 0
+struct LRhoKLocalSOpProblem{LL} <: LRhoSquaredProblem
     L::LL
 end
 
@@ -15,10 +14,11 @@ LRhoKLocalSOpProblem(gl::GraphLindbladian) = LRhoKLocalSOpProblem(STD_REAL_PREC,
 function LRhoKLocalSOpProblem(T, gl::GraphLindbladian)
     HnH, c_ops, c_ops_t = to_linear_operator(gl, Complex{real(T)})
     Liouv = KLocalLiouvillian(HnH, c_ops)
-    return LRhoKLocalSOpProblem(basis(gl), Liouv)
+    return LRhoKLocalSOpProblem(Liouv)
 end
 
-QuantumOpticsBase.basis(prob::LRhoKLocalSOpProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::LRhoKLocalSOpProblem) = basis(prob.L)
+operator(prob::LRhoKLocalSOpProblem) = prob.L
 
 # pretty printing
 Base.show(io::IO, p::LRhoKLocalSOpProblem) = print(io,

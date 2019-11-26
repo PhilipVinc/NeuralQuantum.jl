@@ -12,14 +12,14 @@ mutable struct LocalKetAccumulator{a,B,C,S,Ac} <: AbstractAccumulator
     σ::S            # just a temporary state to perform operation, cached
 end
 
-function LocalKetAccumulator(net, σ, batch_sz)
+function LocalKetAccumulator(net, σ, n_tot, batch_sz)
     IT        = input_type(net)
     OT        = out_type(net)
     f         = trainable_first(net)
 
     cur_ψval  = zero(OT)
-    ψ_counter = zeros(Int, 1)
-    Oloc      = similar(f, OT, batch_sz)
+    ψ_counter = zeros(Int, n_tot)
+    Oloc      = similar(f, OT, n_tot)
 
     _σ        = deepcopy(σ)
     accum     = ScalarBatchAccumulator(net, σ, batch_sz)
@@ -31,16 +31,28 @@ end
 
 batch_size(a::LocalKetAccumulator) = length(a.acc)
 
-function init!(c::LocalKetAccumulator, chain_len::Int)
+function Base.resize!(c::LocalKetAccumulator, n_tot)
+    resize!(c.Oloc, n_tot)
+
+    resize!(c.ψ_counter, n_tot)
+
+    init!(c)
+    return c
+end
+
+function init!(c::LocalKetAccumulator)
     c.cur_ψ  = 0
-    resize!(c.Oloc, chain_len)
+    c.n_tot  = 0
+
     c.Oloc  .= 0.0
-    resize!(c.ψ_counter, chain_len)
     c.ψ_counter  .= 0
 
     init!(c.acc)
     return c
 end
+
+@inline Base.push!(c::LocalKetAccumulator, ψval::Number, 𝛁val) =
+    push!(c, ψval)
 
 function Base.push!(c::LocalKetAccumulator, ψval::Number)
     c.cur_ψ             += 1

@@ -7,7 +7,7 @@ basis as `mat`. For every row of `mat` there are several non-zero values contain
 in `mel`, and to each of those, `to_change` contains the sites that must change the basis
 new value, contained in `new_value`
 """
-struct KLocalOperator{H<:AbstractBasis,SV,M,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOperator
+struct KLocalOperator{H<:AbstractHilbert,SV,M,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOperator
     hilb::H
 
     # list of sites on which this operator acts
@@ -47,14 +47,14 @@ Creates a KLocalOperator where connections are stored by row for the operator
 #    KLocalOperatorRow(hilb, eltype(operator), sites, hilb_dims, operator)
 #end
 
-KLocalOperatorRow(hilb::AbstractBasis, sites::AbstractVector, operator) =
+KLocalOperatorRow(hilb::AbstractHilbert, sites::AbstractVector, operator) =
     KLocalOperatorRow(eltype(operator), hilb, sites, shape(hilb)[sites], operator)
 
 
-function KLocalOperatorRow(T::Type{<:Number}, hilb::AbstractBasis, sites::AbstractVector, hilb_dims::AbstractVector, operator)
+function KLocalOperatorRow(T::Type{<:Number}, hilb::AbstractHilbert, sites::AbstractVector, hilb_dims::AbstractVector, operator)
     # TODO Generalize to arbistrary spaces and not only uniform
-    st  = NAryState(real(T), first(hilb_dims), length(sites))
-    st1 = NAryState(real(T), first(hilb_dims), length(sites))
+    st  = state(T, hilb)
+    st1 = state(T, hilb)
 
     mel         = Vector{Vector{T}}()
     new_indices = Vector{Vector{Int}}()
@@ -80,15 +80,15 @@ function KLocalOperatorRow(T::Type{<:Number}, hilb::AbstractBasis, sites::Abstra
             push!(conns_els, (row[r], Int[], eltype(st)[]))
         end
 
-        set_index!(st, r)
+        set!(st, hilb, r)
         for (c, val) = enumerate(row)
             r == c && continue
             abs(val) < 10e-6 && continue
 
-            set_index!(st1, c)
+            set!(st1, hilb, c)
             cngd = Int[]
             nwvls = eltype(st)[]
-            for (i, (v, vn)) = enumerate(zip(config(st), config(st1)))
+            for (i, (v, vn)) = enumerate(zip(st, st1))
                 if v != vn
                     push!(cngd, sites[i])
                     push!(nwvls, vn)
@@ -145,16 +145,16 @@ function duplicate(op::KLocalOperator)
 end
 
 ##
-function row_valdiff!(conn::OpConnection, op::KLocalOperator, v::State)
+function row_valdiff!(conn::OpConnection, op::KLocalOperator, v::AState)
     # Find row index
-    r = local_index(v, sites(op))
+    r = local_index(v, basis(op), sites(op))
 
     append!(conn, op.op_conns[r])
 end
 
-function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperator, v::State)
+function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperator, v::AState)
     # Find row index
-    r = local_index(v, sites(op))
+    r = local_index(v, basis(op), sites(op))
 
     # Return values
     mel = op.mel[r]
@@ -163,21 +163,21 @@ function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperator, v::Stat
     append!(conn, (mel, ids))
 end
 
-function map_connections(fun::Function, op::KLocalOperator, v::State)
-    r = local_index(v, sites(op))
+function map_connections(fun::Function, op::KLocalOperator, v::AState)
+    r = local_index(v, basis(op), sites(op))
     for (mel, changes) = op.op_conns[r]
         fun(mel, changes, v)
     end
     return nothing
 end
 
-function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperator, v::State)
+function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperator, v::AState)
     # If it is a doublestate, we are probably computing Operator x densitymatrix,
     # so we only iterate along the column of v
-    if v isa DoubleState
-        r = local_index(col(v), sites(op))
+    if v isa ADoubleState
+        r = local_index(col(v), basis(op), sites(op))
     else
-        r = local_index(v, sites(op))
+        r = local_index(v, basis(op), sites(op))
     end
 
     for (mel,changes)=op.op_conns[r]

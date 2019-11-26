@@ -1,25 +1,24 @@
 export HomogeneousHilbert, HomogeneousSpin
 
-mutable struct HomogeneousHilbert <: AbstractBasis
+mutable struct HomogeneousHilbert{D} <: AbstractHilbert
     n_sites::Int
-    hilb_dim::Int
     shape::Vector{Int}
 end
 
 HomogeneousHilbert(n_sites, hilb_dim) =
-    HomogeneousHilbert(n_sites, hilb_dim, fill(hilb_dim, n_sites))
+    HomogeneousHilbert{hilb_dim}(n_sites, fill(hilb_dim, n_sites))
 HomogeneousSpin(n_sites) = HomogeneousHilbert(n_sites, 2)
 
 @inline nsites(h::HomogeneousHilbert) = h.n_sites
-@inline local_dim(h::HomogeneousHilbert) = h.hilb_dim
+@inline local_dim(h::HomogeneousHilbert{D}) where D = D
+@inline local_dim(h::HomogeneousHilbert{D}, i) where D = D
+@inline shape(h::HomogeneousHilbert) = h.shape
 
 @inline spacedimension(h::HomogeneousHilbert) = local_dim(h)^nsites(h)
 @inline indexable(h::HomogeneousHilbert) = spacedimension(h) != 0
+@inline is_homogeneous(h::HomogeneousHilbert) = true
 
-state(h::HomogeneousHilbert) = NAryState(local_dim(h), nsites(h))
-state!(s::NAryState, h::HomogeneousHilbert, i::Int) = set_index!(s, i)
-
-index(h::HomogeneousHilbert, s::NAryState) = index(s)
+state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousHilbert) = similar(arrT, T, nsites(h)) .= 0.0
 
 Base.show(io::IO, ::MIME"text/plain", h::HomogeneousHilbert) =
     print(io, "Hilbert Space with $(nsites(h)) identical sites of dimension $(local_dim(h))")
@@ -29,3 +28,67 @@ Base.show(io::IO, h::HomogeneousHilbert) =
 
 
 ## Operations
+
+function flipat!(rng::AbstractRNG, σ::AState, h::HomogeneousHilbert{N}, i) where N
+    T = eltype(σ)
+
+    old_val = σ[i]
+    new_val = T(rand(rng, 0:(N-2)))
+    σ[i]    = new_val + (new_val >= old_val)
+    return old_val, new_val
+end
+
+# special case N== 2 to be faster
+function flipat!(rng::AbstractRNG, σ::AState, h::HomogeneousHilbert{2}, i)
+    T = eltype(σ)
+
+    old_val = σ[i]
+    new_val = old_val == 0.0 ? 1.0 : 0.0
+    σ[i]    = new_val
+
+    return old_val, new_val
+end
+
+function setat!(σ::AState, h::HomogeneousHilbert, i::Int, val)
+    old_val = σ[i]
+    σ[i] = val
+
+    return old_val
+end
+
+set_index!(σ::AState, h::HomogeneousHilbert, i) = set!(σ, h, i)
+function set!(σ::AState, h::HomogeneousHilbert{N}, val::Integer) where N
+    @assert val > 0 && val <= spacedimension(h)
+    val -= 1
+
+    for i=1:nsites(h)
+        val, σ[i] = divrem(val, N)
+    end
+    return σ
+end
+
+add!(σ::AState, h::HomogeneousHilbert, val::Integer) =
+    set!(σ, h, val+toint(σ, h))
+
+function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::HomogeneousHilbert{N}) where N
+    T = eltype(σ)
+    rand!(σ, 0:(N-1))
+end
+
+function toint(σ::AState, h::HomogeneousHilbert{N}) where N
+    tot = 0
+    for (i,v)=enumerate(σ)
+        tot += Int(v)*N^(i-1)
+    end
+    return tot + 1
+end
+
+local_index(σ::AState, h::HomogeneousHilbert, site)= Int(σ[site])+1
+
+function local_index(σ::AState, h::HomogeneousHilbert{M}, sites::AbstractVector) where M
+    idx = 1
+    for (i,j)=enumerate(sites)
+        idx += Int(σ[j]) * M^(i-1)
+    end
+    return idx
+end

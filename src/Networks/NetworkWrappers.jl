@@ -9,7 +9,7 @@ function PureStateAnsatz(ansatz, in_size)
     # input type
     in_t = real(eltype(trainable_first(ansatz)))
     # output_type
-    out_t = Complex{eltype(trainable_first(ansatz))}
+    out_t = Complex{real(eltype(trainable_first(ansatz)))}
     # is_analytic
     anal = true
     ansatz = (ansatz,)
@@ -31,8 +31,8 @@ cache(psa::PureStateAnsatz, batch_sz::Int) =
     cache(psa.__m_ansatz, input_type(psa), input_size(psa), batch_sz)
 
 
-(c::PureStateAnsatz)(x::Vararg{N,V}) where {N,V} = ansatz(c)(config.(x)...)
-(c::PureStateAnsatz)(cache::NNCache, σ) = ansatz(c)(cache, config(σ))
+(c::PureStateAnsatz)(x::Vararg{N,V}) where {N,V} = ansatz(c)(x...)
+(c::PureStateAnsatz)(cache::NNCache, σ) = ansatz(c)(cache, σ)
 
 logψ_and_∇logψ!(∇logψ, net::PureStateAnsatz, c::NNCache, σ) =
     logψ_and_∇logψ!(∇logψ[1], ansatz(net), c, σ)

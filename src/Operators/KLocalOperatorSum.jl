@@ -4,7 +4,7 @@
 A KLocalOperator representing the sum of several KLocalOperator-s. Internally,
 the sum is stored as a vector of local operators acting on some sites.
 """
-struct KLocalOperatorSum{H<:AbstractBasis, VS<:AbstractVector,VOp} <: AbsLinearOperator
+struct KLocalOperatorSum{H<:AbstractHilbert, VS<:AbstractVector,VOp} <: AbsLinearOperator
     hilb::H
 
     # list of sites in this sum
@@ -36,28 +36,28 @@ function duplicate(op::KLocalOperatorSum)
 end
 
 #
-function row_valdiff!(conn::OpConnection, op::KLocalOperatorSum, v::State)
+function row_valdiff!(conn::OpConnection, op::KLocalOperatorSum, v)
     for _op=operators(op)
         row_valdiff!(conn, _op, v)
     end
     return conn
 end
 
-function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperatorSum, v::State)
+function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperatorSum, v)
     for _op=operators(op)
         row_valdiff_index!(conn, _op, v)
     end
     return conn
 end
 
-function map_connections(fun::Function, ∑Ô::KLocalOperatorSum, v::State)
+function map_connections(fun::Function, ∑Ô::KLocalOperatorSum, v)
     for Ô=operators(∑Ô)
         map_connections(fun, Ô, v)
     end
     return nothing
 end
 
-function accumulate_connections!(acc::AbstractAccumulator, ∑Ô::KLocalOperatorSum, v::State)
+function accumulate_connections!(acc::AbstractAccumulator, ∑Ô::KLocalOperatorSum, v)
     for Ô=operators(∑Ô)
         accumulate_connections!(acc, Ô, v)
     end

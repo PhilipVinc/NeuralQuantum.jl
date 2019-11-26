@@ -12,6 +12,8 @@ using NNlib
 using LinearMaps
 using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!
 using LinearAlgebra, SparseArrays, Strided, UnsafeArrays
+using Statistics
+using Printf
 
 include("IterativeSolvers/minresqlp.jl")
 using .MinresQlp
@@ -28,7 +30,7 @@ export Optimisers
 # Abstract Types
 abstract type NeuralNetwork end
 
-abstract type AbstractBasis end
+abstract type AbstractHilbert end
 
 abstract type State end
 abstract type FiniteBasisState <: State end
@@ -48,9 +50,12 @@ export NotParallel, ParallelThreaded
 # Universal defines
 const STD_REAL_PREC =  Float32
 
+# Basic states for uniform systems
+include("base_states.jl")
+include("States/StateChanges.jl")
+
 # Base elements
 include("Hilbert/base_basis.jl")
-include("base_states.jl")
 include("base_derivatives.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
@@ -59,19 +64,21 @@ include("tuple_logic.jl")
 
 # Useful
 include("utils/math.jl")
+include("utils/stats.jl")
 
-# Basic states for uniform systems
-include("States/StateChanges.jl")
+#=
 include("States/NAryState.jl")
 include("States/DoubleState.jl")
 include("States/PurifiedState.jl")
 include("States/DiagonalStateWrapper.jl")
 include("States/ModifiedState.jl")
 export ModifiedState, local_index
+=#
 
 include("Hilbert/DiscreteHilbert.jl")
 include("Hilbert/HomogeneousHilbert.jl")
 include("Hilbert/SuperHilbert.jl")
+include("Hilbert/basis_convert.jl")
 
 include("base_batched_networks.jl")
 
@@ -114,22 +121,14 @@ include("Networks/ClosedSystems/RBMBatched.jl")
 # FFNN
 include("Networks/ClosedSystems/Chain.jl")
 include("Networks/ClosedSystems/SimpleLayers.jl")
+include("Networks/ClosedSystems/conv.jl")
+include("Networks/ClosedSystems/NQConv.jl")
 
 # Wrappers
 include("Networks/NetworkWrappers.jl")
 
-
 # Problems
-export LdagLSparseOpProblem, LRhoSparseSuperopProblem, LdagLProblem, LdagLFullProblem, LdagLSparseSuperopProblem, LdagLSparseSuperopProblemlem, LRhoSparseOpProblem
-include("Problems/SteadyStateLindblad/LdagLSparseOpProblem.jl")
-include("Problems/SteadyStateLindblad/LdagLSparseSuperopProblem.jl")
-include("Problems/SteadyStateLindblad/LRhoKLocalOpProblem.jl")
 include("Problems/SteadyStateLindblad/LRhoKLocalSOpProblem.jl")
-include("Problems/SteadyStateLindblad/LRhoSparseOpProblem.jl")
-include("Problems/SteadyStateLindblad/LRhoSparseSuperopProblem.jl")
-const LdagLFullProblem = LRhoSparseSuperopProblem
-const LdagLProblem = LdagLSparseOpProblem
-const LdagLSparseSuperopProblemlem = LRhoSparseOpProblem
 
 include("Problems/SteadyStateLindblad/build_SteadyStateProblem.jl")
 
@@ -155,19 +154,14 @@ export EvaluatedNetwork, evaluation_post_sampling!, precondition!, SamplingCache
 
 # SR
 include("Algorithms/SR/SR.jl")
-include("Algorithms/SR/SampledSRCache.jl")
-include("Algorithms/SR/SampledSRCache_L.jl")
-include("Algorithms/SR/SR_eval.jl")
 # Gradient
 include("Algorithms/Gradient/Gradient.jl")
-include("Algorithms/Gradient/SampledGradientCache.jl")
-include("Algorithms/Gradient/SampledGradientCache_L.jl")
-include("Algorithms/Gradient/Gradient_eval.jl")
 # Observables
 include("Algorithms/Observables/Obs.jl")
-include("Algorithms/Observables/Obs_eval.jl")
-include("Algorithms/Observables/Obs_ket_eval.jl")
 
+include("Algorithms/batched_algorithms.jl")
+include("Algorithms/SR/SR_batched.jl")
+include("Algorithms/Gradient/Gradient_batched.jl")
 
 # Sampling
 include("Samplers/base_samplers.jl")
@@ -176,9 +170,8 @@ export cache, init_sampler!, done, samplenext!
 export get_sampler, sampler_list, multithread
 
 include("Samplers/Exact.jl")
-include("Samplers/FullSum.jl")
-include("Samplers/MCMCSampler.jl")
-include("Samplers/MCMCRules/Metropolis.jl")
+include("Samplers/Metropolis.jl")
+include("Samplers/MCMCRules/LocalRule.jl")
 include("Samplers/MCMCRules/Nagy.jl")
 
 # other
@@ -193,15 +186,21 @@ include("IterativeInterface/BaseIterativeSampler.jl")
 include("IterativeInterface/IterativeSampler.jl")
 include("IterativeInterface/MTIterativeSampler.jl")
 
-include("IterativeInterface/Batched/BatchedSampler.jl")
-include("IterativeInterface/Batched/ScalarBatchAccumulator.jl")
-include("IterativeInterface/Batched/GradientBatchAccumulator.jl")
-include("IterativeInterface/Batched/LocalKetAccumulator.jl")
-include("IterativeInterface/Batched/LocalGradAccumulator.jl")
-include("IterativeInterface/Batched/Accumulator.jl")
+include("IterativeInterface/Batched/base_accumulators.jl")
+include("IterativeInterface/Batched/AccumulatorLogPsi.jl")
+include("IterativeInterface/Batched/AccumulatorLogGradPsi.jl")
+include("IterativeInterface/Batched/AccumulatorObsScalar.jl")
+include("IterativeInterface/Batched/AccumulatorObsGrad.jl")
 
-export sample!
+include("IterativeInterface/BatchedGradSampler.jl")
+include("IterativeInterface/BatchedValSampler.jl")
+include("IterativeInterface/BatchedObsDMSampler.jl")
+include("IterativeInterface/BatchedObsKetSampler.jl")
+include("IterativeInterface/build_Batched.jl")
 
+export sample!, add_observable, compute_observables
+
+include("utils/num_grad.jl")
 
 function __init__()
     @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" begin

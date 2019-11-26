@@ -30,6 +30,8 @@ cache(net::RBMSplit, batch_sz) = begin
                   false)
 end
 
+batch_size(c::RBMSplitBatchedCache) = size(c.σr, 2)
+
 function logψ!(out::AbstractArray, net::RBMSplit, c::RBMSplitBatchedCache, σr_r, σc_r)
     θ = c.θ
     θ_tmp = c.θ_tmp

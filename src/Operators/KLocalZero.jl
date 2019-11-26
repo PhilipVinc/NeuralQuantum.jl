@@ -4,7 +4,7 @@
 A simple KLocalOperator representing zero, but holding informations
 about the hilbert basis.
 """
-struct KLocalOperatorZero{H<:AbstractBasis} <: AbsLinearOperator
+struct KLocalOperatorZero{H<:AbstractHilbert} <: AbsLinearOperator
     hilb::H
 end
 
@@ -19,9 +19,9 @@ QuantumOpticsBase.basis(op::KLocalOperatorZero) = op.hilb
 duplicate(op::KLocalOperatorZero) = KLocalOperatorZero(basis(op))
 
 ##
-function row_valdiff!(conn::OpConnection, op::KLocalOperatorZero, v::State) end
-function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperatorZero, v::State) end
-function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperatorZero, v::State) end
+function row_valdiff!(conn::OpConnection, op::KLocalOperatorZero, v) end
+function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperatorZero, v) end
+function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperatorZero, v) end
 function map_connections(fun::Function , op::KLocalOperatorZero, v) end
 
 Base.:+(op_l::KLocalOperatorZero, op_r::KLocalOperator) = duplicate(op_r)

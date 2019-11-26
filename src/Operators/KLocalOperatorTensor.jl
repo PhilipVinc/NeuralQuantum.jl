@@ -68,18 +68,18 @@ function duplicate(op::KLocalOperatorTensor)
     KLocalOperatorTensor(duplicate(op.op_l), duplicate(op.op_r))
 end
 
-function row_valdiff!(conn::OpConnection, op::KLocalOperatorTensor, v::DoubleState)
+function row_valdiff!(conn::OpConnection, op::KLocalOperatorTensor, v::ADoubleState)
     op_r = op.op_r
     op_l = op.op_l
     if op_r === nothing
-        r_r = local_index(row(v), sites(op_l))
+        r_r = local_index(row(v), basis(op_l), sites(op_l))
         append!(conn, op_l.op_conns[r_r])
     elseif op_l === nothing
-        r_c = local_index(col(v), sites(op_r))
+        r_c = local_index(col(v), basis(op_r), sites(op_r))
         append!(conn, op_r.op_conns[r_c])
     else
-        r_r = local_index(row(v), sites(op_l))
-        r_c = local_index(col(v), sites(op_r))
+        r_r = local_index(row(v), basis(op_l), sites(op_l))
+        r_c = local_index(col(v), basis(op_r), sites(op_r))
         #append!(conn, op.op_conns[r])
         throw("Not implemented")
     end
@@ -87,26 +87,27 @@ function row_valdiff!(conn::OpConnection, op::KLocalOperatorTensor, v::DoubleSta
 end
 
 
-function map_connections(fun::Function, op::KLocalOperatorTensor, v::DoubleState)
+function map_connections(fun::Function, op::KLocalOperatorTensor, v::ADoubleState)
     op_r = op.op_r
     op_l = op.op_l
+    hilb_ph = physical(basis(op))
     if op_r === nothing
-        r = local_index(row(v), sites(op_l))
+        r = local_index(row(v), hilb_ph, sites(op_l))
 
         for (mel,changes)=op_l.op_conns[r]
             #fun(mel, 1.0, changes, nothing, v)
             fun(mel, (changes, nothing), v)
         end
     elseif op_l === nothing
-        r = local_index(col(v), sites(op_r))
+        r = local_index(col(v), hilb_ph, sites(op_r))
 
         for (mel,changes)=op_r.op_conns[r]
             #fun(1.0, mel, nothing, changes, v)
             fun(mel, (nothing, changes), v)
         end
     else
-        r_r = local_index(row(v), sites(op_l))
-        r_c = local_index(col(v), sites(op_r))
+        r_r = local_index(row(v), hilb_ph, sites(op_l))
+        r_c = local_index(col(v), hilb_ph, sites(op_r))
 
         for (mel_r, changes_r)=op_l.op_conns[r_r]
             for (mel_c, changes_c)=op_r.op_conns[r_c]
@@ -118,26 +119,26 @@ function map_connections(fun::Function, op::KLocalOperatorTensor, v::DoubleState
     return nothing
 end
 
-function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperatorTensor, v::DoubleState)
+function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperatorTensor, v::ADoubleState)
     op_l = op.op_l; op_r = op.op_r
 
     if op_r === nothing
-        r = local_index(row(v), sites(op_l))
+        r = local_index(row(v), basis(op_l), sites(op_l))
 
         for (mel,changes)=op_l.op_conns[r]
             #fun(mel, 1.0, changes, nothing, v)
             acc(mel, changes, nothing, v)
         end
     elseif op_l === nothing
-        r = local_index(col(v), sites(op_r))
+        r = local_index(col(v), basis(op_r), sites(op_r))
 
         for (mel,changes)=op_r.op_conns[r]
             #fun(1.0, mel, nothing, changes, v)
             acc(mel, nothing, changes, v)
         end
     else
-        r_r = local_index(row(v), sites(op_l))
-        r_c = local_index(col(v), sites(op_r))
+        r_r = local_index(row(v), basis(op_l), sites(op_l))
+        r_c = local_index(col(v), basis(op_r), sites(op_r))
 
         for (mel_r, changes_r)=op_l.op_conns[r_r]
             for (mel_c, changes_c)=op_r.op_conns[r_c]

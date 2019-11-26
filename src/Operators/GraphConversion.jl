@@ -15,12 +15,7 @@ function to_linear_operator(ham::GraphOperator, c_ops::Vector, T::Union{Nothing,
 
     ham_locs = ham.LocalOperators
 
-    hilb_shape = basis(ham).shape
-    if all(first(hilb_shape) .== hilb_shape)
-        hilb = HomogeneousHilbert(length(hilb_shape), first(hilb_shape))
-    else
-        hilb = DiscreteHilbert(hilb_shape)
-    end
+    hilb = qo_to_nq_basis(basis(ham))
 
     # default type
     T = isnothing(T) ?  eltype(first(ham_locs).data) : T
@@ -110,12 +105,7 @@ function to_linear_operator(op::GraphOperator, T::Union{Nothing, Type{<:Number}}
     T = isnothing(T) ?  eltype(first(op_locs).data) : T
     T = T<:Real ? Complex{T} : T
 
-    hilb_shape = basis(op).shape
-    if all(first(hilb_shape) .== hilb_shape)
-        hilb = HomogeneousHilbert(length(hilb_shape), first(hilb_shape))
-    else
-        hilb = DiscreteHilbert(hilb_shape)
-    end
+    hilb = qo_to_nq_basis(basis(op))
 
     op_loc = KLocalOperatorRow(T, hilb, [1], [length(basis(first(op_locs)))],
                         first(op_locs).data)

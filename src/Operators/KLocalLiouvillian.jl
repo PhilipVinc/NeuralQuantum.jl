@@ -37,7 +37,7 @@ conn_type(op::KLocalLiouvillian) = conn_type(op.HnH_l)
 
 accumulate_connections!(a, b::Vector, c) = nothing
 
-function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian, v::DoubleState)
+function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian, v::ADoubleState)
     accumulate_connections!(acc, op.HnH_l, v)
     accumulate_connections!(acc, op.HnH_r, v)
     accumulate_connections!(acc, op.LLdag, v)
@@ -45,14 +45,14 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian
     return acc
 end
 
-function row_valdiff!(conn::OpConnection, op::KLocalLiouvillian, v::State)
+function row_valdiff!(conn::OpConnection, op::KLocalLiouvillian, v::ADoubleState)
     row_valdiff!(conn, op.HnH_l, v)
     row_valdiff!(conn, op.HnH_r, v)
     row_valdiff!(conn, op.LLdag, v)
     return conn
 end
 
-function map_connections(fun::Function, op::KLocalLiouvillian, v::State)
+function map_connections(fun::Function, op::KLocalLiouvillian, v::ADoubleState)
     map_connections(fun, op.HnH_l, v)
     map_connections(fun, op.HnH_r, v)
     map_connections(fun, op.LLdag, v)

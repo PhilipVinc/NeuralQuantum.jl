@@ -75,12 +75,11 @@ weights(net) = trainable(net)
 
 @inline (cnet::CachedNet)(σ...) = logψ(cnet, σ...)
 # When you call logψ on a cached net use the cache to compute the net
-@inline logψ(cnet::CachedNet, σ::State) =logψ(cnet, config(σ))
 @inline logψ(cnet::CachedNet, σ::NTuple{N,<:AbstractArray}) where N =
     cnet.net(cnet.cache, σ...)
-@inline logψ(cnet::CachedNet, σ::Vararg{N,V}) where {N,V} =
+@inline logψ(cnet::CachedNet, σ::ADoubleState) where {N,V} =
     cnet.net(cnet.cache, σ...)
-@inline logψ(cnet::CachedNet, σ::AbstractArray) where N =
+@inline logψ(cnet::CachedNet, σ::AState) where N =
     cnet.net(cnet.cache, σ)
 
 function logψ_and_∇logψ(n::CachedNet, σ::Vararg{N,V}) where {N,V}
@@ -93,7 +92,6 @@ end
 # Declare the two functions, even if config(blabla)=blabla, because of a shitty
 # Julia's performance bug #32761
 # see https://github.com/JuliaLang/julia/issues/32761
-@inline logψ_and_∇logψ!(der, n::CachedNet, σ::State) = logψ_and_∇logψ!(der, n, config(σ))
 @inline function logψ_and_∇logψ!(der, n::CachedNet, σ::NTuple{N,AbstractArray}) where N
     lψ = logψ_and_∇logψ!(der, n.net, n.cache, σ...)
     return (lψ, der)
@@ -155,6 +153,6 @@ const KetNet   = Union{KetNeuralNetwork, CachedNet{<:KetNeuralNetwork}}
 
 function logψ_and_∇logψ(n::CachedNet{<:KetNeuralNetwork}, σ)
     ∇lnψ = grad_cache(n)
-    lnψ = logψ_and_∇logψ!(∇lnψ, n.net, n.cache, config(σ));
+    lnψ = logψ_and_∇logψ!(∇lnψ, n.net, n.cache, σ);
     return (lnψ, ∇lnψ)
 end

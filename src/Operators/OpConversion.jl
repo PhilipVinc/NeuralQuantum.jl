@@ -23,6 +23,8 @@ function to_matrix(op::AbsLinearOperator)
     return mat
 end
 
+Base.Matrix(op::AbsLinearOperator) = to_matrix(op)
+
 """
     to_sparse(operator)
 
@@ -52,6 +54,8 @@ function to_sparse(op::AbsLinearOperator)
     N = spacedimension(hilb)
     return sparse(i_vals, j_vals, mel_vals, N, N)
 end
+
+SparseArrays.sparse(op::AbsLinearOperator) = to_sparse(op)
 
 #=
 function to_map(op::AbsLinearOperator)

@@ -6,24 +6,31 @@ export densitymatrix, ket
 Returns the Density matrix encoded by the neural network `net`, and normalizes
 it if `norm==true`.
 """
-function densitymatrix(net, prob, norm=true)
-    ρ = DenseOperator(basis(prob))
-    v = state(prob, net)
-    if v isa DiagonalStateWrapper
-        v = v.parent
-    end
-    for i=1:spacedimension(row(v))
-        set_index!(row(v), i)
-        for j=1:spacedimension(col(v))
-            set_index!(col(v),j)
-            ρ.data[i,j] = exp(net(v))
+function densitymatrix(net::NeuralNetwork, hilb::AbstractHilbert, norm=true)
+    p_hilb = physical(hilb)
+    ρ = zeros(out_type(net), spacedimension(p_hilb), spacedimension(p_hilb))
+    v = state(hilb, net)
+    #if v isa DiagonalStateWrapper
+    #    v = v.parent
+    #end
+    for i=1:spacedimension(p_hilb)
+        set_index!(row(v), p_hilb, i)
+        for j=1:spacedimension(p_hilb)
+            set_index!(col(v), p_hilb, j)
+            ρ[i,j] = exp(net(v))
         end
     end
     if norm
-        ρ.data ./= tr(ρ)
+        ρ ./= tr(ρ)
     end
     ρ
 end
+
+densitymatrix(net::NeuralNetwork, prob::AbstractProblem, args...) =
+    densitymatrix(net, basis(prob), args...)
+
+
+Base.Matrix(net::NeuralNetwork, prob) = densitymatrix(net, prob)
 
 QuantumOpticsBase.dm(net::NeuralNetwork, prob::AbstractProblem, norm=false) =
     densitymatrix(net, prob, norm)
@@ -34,15 +41,21 @@ QuantumOpticsBase.dm(net::NeuralNetwork, prob::AbstractProblem, norm=false) =
 Returns the state (ket) encoded by the neural network `net`, and normalizes
 it if `norm==true`.
 """
-function ket(net, prob, norm=true)
-    psi = Ket(basis(prob))
-    v = state(prob, net)
-    for i=1:spacedimension(v)
-        set_index!(v, i)
-        psi.data[i] = exp(net(v))
+function ket(net, hilb::AbstractHilbert, norm=true)
+    psi = zeros(out_type(net), spacedimension(hilb))
+
+    v = state(hilb, net)
+    for i=1:spacedimension(hilb)
+        set_index!(v, hilb, i)
+        psi[i] = exp(net(v))
     end
     if norm
         normalize!(psi)
     end
     return psi
 end
+
+ket(net, prob::AbstractProblem, args...) =
+    ket(net, basis(prob), args...)
+
+Base.Vector(net::NeuralNetwork, hilb) = ket(net, hilb)
