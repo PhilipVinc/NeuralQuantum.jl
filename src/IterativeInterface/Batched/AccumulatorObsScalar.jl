@@ -25,7 +25,7 @@ mutable struct AccumulatorObsScalar{A,B,C,D} <: AbstractObservableAccumulator
     logψ_acc::D
 end
 
-function AccumulatorObsScalar(net::NeuralNetwork, hilb, batch_sz)
+function AccumulatorObsScalar(net::NeuralNetwork, hilb, v, batch_sz)
     bnet      = cached(net, batch_sz)
     CT        = Complex{real(out_type(net))}
     v         = state(hilb, bnet)

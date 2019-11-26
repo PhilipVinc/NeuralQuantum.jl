@@ -212,6 +212,7 @@ include("utils/num_grad.jl")
 include("GPU/gpustates.jl")
 include("GPU/LocalRuleGPU.jl")
 include("GPU/AccumulatorLogPsi.jl")
+include("GPU/AccumulatorObsScalar.jl")
 
 include("GPU/gpuarrays.jl")
 

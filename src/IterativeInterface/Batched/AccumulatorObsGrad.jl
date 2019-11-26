@@ -9,7 +9,7 @@ mutable struct AccumulatorObsGrad{A,B,C,D,E,F} <: AbstractObservableAccumulator
     ∇logψ_acc::F
 end
 
-function AccumulatorObsGrad(net::NeuralNetwork, hilb, batch_sz)
+function AccumulatorObsGrad(net::NeuralNetwork, hilb, v, batch_sz)
     bnet      = cached(net, batch_sz)
     CT        = Complex{real(out_type(net))}
     v         = state(hilb, bnet)

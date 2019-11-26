@@ -42,7 +42,7 @@ function BatchedValSampler(net,
     ∇vals, ∇vec    = grad_cache(bnet, batch_sz, ch_len)
     ∇vec_avg       = similar(∇vec, size(∇vec, 1))
 
-    local_acc      = AccumulatorObsScalar(net, basis(prob), local_batch_sz)
+    local_acc      = AccumulatorObsScalar(net, basis(prob), v, local_batch_sz)
     Llocal_vals    = similar(ψvals, size(ψvals)[2:end]...)
 
     precond        = algorithm_cache(algo, prob, net)
@@ -77,7 +77,7 @@ function sample!(is::BatchedValSampler)
 
     # If we have gpu, this thing is indexed by value so better
     # to copy it to the cpu first in one go...
-    if is.ψvals <: GPUArray
+    if typeof(is.ψvals) <: GPUArray
         ψvals   = collect(is.ψvals)
         samples = collect(is.samples)
     else
