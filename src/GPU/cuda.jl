@@ -30,7 +30,8 @@ end
     #Ri  = CuArray{eltype(R),2}(under.parent.buf, dims_all[1:2], own=false)
     #vbi = CuArray{eltype(vb),1}(vb.buf, (size(vb, 1),), own=false)
     #wbi = CuArray{eltype(wb),1}(wb.buf, (size(wb, 1),), own=false)
-    Ri = view(R, :, :, 1)
+    Ri = view(R.parent.parent, :,:)
+    Ri.dims = (size(R,1), size(R,2))
     vbi = view(vb, :, 1)
     wbi = view(wb, :, 1)
 
@@ -59,11 +60,11 @@ end
     n_batches = length(under_indices[2])
     batch_size = size(under.parent, 1)
 
-    #Ri  = CuArray{eltype(R),2}( under.parent.buf, dims_all[1:2], own=false)
-    #vbi = CuArray{eltype(vb),1}(vb.buf, (size(vb, 1),), own=false)
-    #wbi = CuArray{eltype(wb),1}(wb.buf, (size(wb, 1),), own=false)
-
-    Ri = view(R, :, :, 1)
+    # Absolutely unsafe code, but avoids allocating a lot of views and pressuring
+    # the GC (probably since v2.0 of CUDAnative it's useless)
+    # does pointer aritmetic by hand
+    Ri = view(R.parent.parent, :,:)
+    Ri.dims = (size(R,1), size(R,2))
     vbi = view(vb, :, 1)
     wbi = view(wb, :, 1)
 

@@ -75,12 +75,20 @@ function sample!(is::BatchedValSampler)
     # Compute logψ and ∇logψ
     logψ_and_∇logψ!(is.∇vals, is.ψvals, is.bnet, is.samples)
 
+    # If we have gpu, this thing is indexed by value so better
+    # to copy it to the cpu first in one go...
+    if is.ψvals <: GPUArray
+        ψvals = collect(is.ψvals)
+    else
+        ψvals = is.ψvals
+    end
+
     # Compute LdagL
     Ĉ = operator(is.problem)
     for i=1:ch_len
         for j = 1:batch_sz
             σv = unsafe_get_el(is.samples, j, i)
-            init!(is.accum, σv, is.ψvals[1,j,i])
+            init!(is.accum, σv, ψvals[1,j,i])
             accumulate_connections!(is.accum, Ĉ, σv)
             L_loc = NeuralQuantum.finalize!(is.accum)
             is.local_vals[j, i] = L_loc
