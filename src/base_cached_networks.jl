@@ -81,6 +81,9 @@ weights(net) = trainable(net)
     cnet.net(cnet.cache, σ...)
 @inline logψ(cnet::CachedNet, σ::AState) where N =
     cnet.net(cnet.cache, σ)
+@inline logψ(cnet::CachedNet, σr::T, σc::T) where {T<:Union{AState}} =
+    cnet.net(cnet.cache, σr, σc)
+
 
 function logψ_and_∇logψ(n::CachedNet, σ::Vararg{N,V}) where {N,V}
     #@warn "Inefficient calling logψ_and_∇logψ for cachedNet"

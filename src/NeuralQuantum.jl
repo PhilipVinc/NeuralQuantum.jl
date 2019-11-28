@@ -83,6 +83,7 @@ export ModifiedState, local_index
 
 include("Hilbert/DiscreteHilbert.jl")
 include("Hilbert/HomogeneousHilbert.jl")
+include("Hilbert/HomogeneousSpin.jl")
 include("Hilbert/SuperHilbert.jl")
 include("Hilbert/basis_convert.jl")
 

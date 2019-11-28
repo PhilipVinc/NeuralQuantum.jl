@@ -44,6 +44,9 @@ out_similar(net::CachedNet{N,C}) where{N,C<:NNBatchedCache} =
     out = similar(trainable_first(net), out_type(net), 1, b_sz)
     logψ!(out, net.net, net.cache, σ...)
 end
+@inline logψ(net::CachedNet{NN,NC}, σr::AStateBatch, σc::AStateBatch) where {N,T,NN,NC<:NNBatchedCache} = begin
+    logψ(net, (σr, σc))
+end
 @inline logψ(net::CachedNet{NN,NC}, σ::ADoubleStateBatch) where {N,T,NN,NC<:NNBatchedCache} = begin
     b_sz = last(size(first(σ)))
     out = similar(trainable_first(net), out_type(net), 1, b_sz)

@@ -91,7 +91,7 @@ function process_accumulator!(c::AccumulatorObsScalarGPU)
     ψ_σp .= exp.(ψ_σp .- c.ψ_σ)
     copy!(c.Δ_σ, ψ_σp)
 
-    c.mel_buf .*= Δ_σ
+    c.mel_buf .*= c.Δ_σ
     c.res += sum(c.mel_buf)
 
     return nothing

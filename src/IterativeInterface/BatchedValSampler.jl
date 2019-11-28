@@ -43,7 +43,7 @@ function BatchedValSampler(net,
     ∇vec_avg       = similar(∇vec, size(∇vec, 1))
 
     local_acc      = AccumulatorObsScalar(net, basis(prob), v, local_batch_sz)
-    Llocal_vals    = similar(ψvals, size(ψvals)[2:end]...)
+    Llocal_vals    = collect(similar(ψvals, size(ψvals)[2:end]...)) #ensure it's on cpu
 
     precond        = algorithm_cache(algo, prob, net)
 

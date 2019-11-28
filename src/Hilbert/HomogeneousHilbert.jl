@@ -1,4 +1,4 @@
-export HomogeneousHilbert, HomogeneousSpin
+export HomogeneousHilbert
 
 mutable struct HomogeneousHilbert{D} <: AbstractHilbert
     n_sites::Int
@@ -7,7 +7,6 @@ end
 
 HomogeneousHilbert(n_sites, hilb_dim) =
     HomogeneousHilbert{hilb_dim}(n_sites, fill(hilb_dim, n_sites))
-HomogeneousSpin(n_sites) = HomogeneousHilbert(n_sites, 2)
 
 @inline nsites(h::HomogeneousHilbert) = h.n_sites
 @inline local_dim(h::HomogeneousHilbert{D}) where D = D
@@ -33,7 +32,8 @@ function flipat!(rng::AbstractRNG, σ::AState, h::HomogeneousHilbert{N}, i) wher
     T = eltype(σ)
 
     old_val = σ[i]
-    new_val = T(rand(rng, 0:(N-2)))
+    #new_val = T(rand(rng, 0:(N-2)))
+    new_val =  floor(rand(rng, T)*N)
     σ[i]    = new_val + (new_val >= old_val)
     return old_val, new_val
 end
@@ -72,7 +72,12 @@ add!(σ::AState, h::HomogeneousHilbert, val::Integer) =
 
 function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::HomogeneousHilbert{N}) where N
     T = eltype(σ)
-    rand!(rng, σ, 0:(N-1))
+
+    #rand!(rng, σ, 0:(N-1))
+    rand!(rng, σ)
+    σ .*= N
+    σ .= floor.(σ)
+    return σ
 end
 
 function toint(σ::AState, h::HomogeneousHilbert{N}) where N

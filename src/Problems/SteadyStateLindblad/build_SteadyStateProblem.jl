@@ -43,7 +43,7 @@ function SteadyStateProblem(T::Type{<:Number}, ℒ; operators=true, variance=tru
                    compatible with non-variance minimization.")
         end
 
-        return LRhoKLocalOpProblem(T, ℒ)
+        return LRhoKLocalSOpProblem(T, ℒ)
     else # not operators
         H = SparseOperator(hamiltonian(ℒ))
         J = jump_operators(ℒ)

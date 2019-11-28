@@ -58,4 +58,4 @@ end
 ket(net, prob::AbstractProblem, args...) =
     ket(net, basis(prob), args...)
 
-Base.Vector(net::NeuralNetwork, hilb) = ket(net, hilb)
+Base.Vector(net::NeuralNetwork, hilb, norm=true) = ket(net, hilb, norm)

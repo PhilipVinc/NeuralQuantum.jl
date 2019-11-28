@@ -11,7 +11,7 @@ end
 function setup_algorithm!(g::GradientData, data)
     for field=vec_data(g.G)
         T = eltype(field)
-        if T isa Real
+        if T<: Real
             field .= real.(data)
         else
             field .= data

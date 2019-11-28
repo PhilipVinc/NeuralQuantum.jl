@@ -10,7 +10,7 @@ rescaled_normal(T::Type, scale::Real, dims::Integer...) = randn(T, dims...) .* T
 
 # Utils
 
-@inline ℒ2(x) = 2one(x)*cosh(x)
+@inline ℒ2(x::T) where T = T(2)*cosh(x)
 @inline ∂logℒ2(x) = tanh(x)
 @inline logℒ2(x::T) where T<:Real =
     log(2one(x))+ (abs(x)<= T(12.0) ? log(cosh(x)) : abs(x) - log(2one(X)))

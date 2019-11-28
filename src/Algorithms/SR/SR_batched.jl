@@ -65,7 +65,7 @@ function precondition!(data::SRDirectCache, params::SR, iter_n)
             Sinv = pinv(Sprecond)
             mul!(Δw, Sinv, F)
         elseif params.algorithm == sr_cholesky
-            C = cholesky!(Hermitian(S))
+            C = cholesky!(Hermitian(S), check=true)
             copyto!(Δw, F)
             ldiv!(C, Δw)
         elseif params.algorithm == sr_div

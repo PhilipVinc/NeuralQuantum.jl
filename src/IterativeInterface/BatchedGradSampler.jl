@@ -43,7 +43,7 @@ function BatchedGradSampler(net,
     ∇vals, ∇vec    = grad_cache(bnet, batch_sz, ch_len)
     ∇vec_avg       = similar(∇vec, size(∇vec, 1))
 
-    local_acc      = AccumulatorObsGrad(net, basis(prob), local_batch_sz)
+    local_acc      = AccumulatorObsGrad(net, basis(prob), v, local_batch_sz)
     Llocal_vals    = similar(ψvals, size(ψvals)[2:end]...)
     ∇Llocal_vals   = similar(ψvals, size(∇vec, 1), size(ψvals)[2:end]...)
 
@@ -109,6 +109,7 @@ function sample!(is::BatchedGradSampler)
 
     # Compute the gradient
     ∇C  = Ĉr*∇Ĉr'
+    #∇C  = Ĉr*∇Ĉr' - Ĉ2r*∇vr'
     ∇C ./= (ch_len*batch_sz)
 
     setup_algorithm!(is.precond_cache, reshape(∇C,:), ∇vr)

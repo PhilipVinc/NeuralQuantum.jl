@@ -38,7 +38,7 @@ function BatchedObsDMSampler(bnet,
     ψvals          = similar(trainable_first(bnet), out_type(bnet), 1, batch_sz, ch_len)
     ∇vals, ∇vec    = grad_cache(bnet, batch_sz, ch_len)
 
-    local_acc      = AccumulatorObsScalar(bnet, hilb_doubled, local_batch_sz)
+    local_acc      = AccumulatorObsScalar(bnet, hilb_doubled, v, local_batch_sz)
     Llocal_vals    = similar(ψvals, size(ψvals)[2:end]...)
 
     nq = BatchedObsDMSampler(Dict(), bnet, hilb_doubled,
