@@ -95,12 +95,17 @@ function setat!(state::NAryState{T, N}, i::Int, val::T) where {T, N}
 end
 
 function setat!(state::NAryState{T1, N}, i::Int, val::T2) where {T1,T2, N}
-    throw("""
+    #=throw("""
     Error: cannot use setat! on a state with precision $T1 with
     a value with precision $T2.
     This error often occurs when you initialize your problem with a
     different precision than your network or state.
-           """)
+           """)=#
+    old_val = state.σ[i]
+
+    state.i_σ += (Int(val)-Int(old_val))*N^(i-1)
+    state.σ[i] = val
+    return old_val
 end
 
 set_index!(state::NAryState, val::Integer) = set!(state, index_to_int(state, val))

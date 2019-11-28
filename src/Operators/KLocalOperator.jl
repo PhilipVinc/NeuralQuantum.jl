@@ -154,6 +154,15 @@ function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperator, v::Stat
     append!(conn, (mel, ids))
 end
 
+function map_connections(fun::Function, op::KLocalOperator, v::State)
+    r = local_index(v, sites(op))
+
+    for (mel, changes) = op.op_conns[r]
+        fun(mel, changes, v)
+    end
+    return nothing
+end
+
 function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperator, v::State)
     # If it is a doublestate, we are probably computing Operator x densitymatrix,
     # so we only iterate along the column of v

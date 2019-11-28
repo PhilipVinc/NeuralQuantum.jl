@@ -135,3 +135,26 @@ function to_linear_operator(op::GraphOperator, T::Union{Nothing, Type{<:Number}}
 
     return res_op
 end
+
+"""
+    to_matrix(operator)
+Converts to a dense matrix the KLocal Operator
+"""
+function to_matrix(op::AbsLinearOperator, σ)
+    N = spacedimension(σ)
+    mat = zeros(ComplexF64, N, N)
+
+    for i = 1:N
+        set_index!(σ, i)
+        fun = (mel, cngs, σ) -> begin
+            σp = apply(σ, cngs)
+            j = index(σp)
+            mat[i, j] += mel
+        end
+
+        map_connections(fun, op, σ)
+    end
+    return mat
+end
+
+Base.Matrix(op::AbsLinearOperator, σ) = to_matrix(op, σ)

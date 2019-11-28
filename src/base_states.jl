@@ -27,3 +27,14 @@ be a tuple with changes of row and columns.
 If changes is nothing, does nothing.
 """
 apply!(σ::State, cngs::Nothing) = σ
+
+"""
+    apply(state::State, cngs)
+
+Applies the changes `cngs` to the state `σ`, by allocating a
+copy.
+
+See also @ref(apply!)
+"""
+apply(σ::State, cngs) = apply!(deepcopy(σ), cngs)
+

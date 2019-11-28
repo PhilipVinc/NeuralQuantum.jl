@@ -43,7 +43,14 @@ sites(op::KLocalOperatorTensor) = op.sites
 
 ## Accessors
 operators(op::KLocalOperatorTensor) = (op,)
-conn_type(op::KLocalOperatorTensor) = conn_type(op.op_l)
+conn_type(op::KLocalOperatorTensor{T,O1,O2}) where {T,O1,O2} = conn_type(op.op_l)
+conn_type(op::KLocalOperatorTensor{T,Nothing,O2}) where {T,O2} =
+  conn_type(op.op_r)
+conn_type(::Type{KLocalOperatorTensor{T,O1,O2}}) where {T,O1,O2} =
+  conn_type(O1)
+conn_type(::Type{KLocalOperatorTensor{T,Nothing,O2}}) where{T,O2} =
+  conn_type(O2)
+
 
 duplicate(::Nothing) = nothing
 
@@ -52,6 +59,9 @@ function duplicate(op::KLocalOperatorTensor)
 end
 
 function row_valdiff!(conn::OpConnection, op::KLocalOperatorTensor, v::DoubleState)
+    op_r = op.op_r
+    op_l = op.op_l
+    
     if op_r === nothing
         r_r = local_index(row(v), sites(op_l))
         append!(conn, op.op_conns[r])
@@ -69,6 +79,9 @@ end
 
 
 function map_connections(fun::Function, op::KLocalOperatorTensor, v::DoubleState)
+    op_r = op.op_r
+    op_l = op.op_l
+
     if op_r === nothing
         r = local_index(row(v), sites(op_l))
 
@@ -98,7 +111,8 @@ function map_connections(fun::Function, op::KLocalOperatorTensor, v::DoubleState
 end
 
 function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperatorTensor, v::DoubleState)
-    op_l = op.op_l; op_r = op.op_r
+    op_l = op.op_l
+    op_r = op.op_r
 
     if op_r === nothing
         r = local_index(row(v), sites(op_l))
@@ -145,24 +159,22 @@ function Base.conj!(op::KLocalOperatorTensor)
     return op
 end
 
-function Base.transpose(op::KLocalOperatorTensor)
+Base.transpose(op::KLocalOperatorTensor) = 
     KLocalOperatorTensor(op.op_r, op.op_l)
-
-end
 
 Base.conj(op::KLocalOperatorTensor) = conj!(duplicate(op))
 
 Base.adjoint(op::KLocalOperatorTensor) = conj(transpose(op))
 
 
-+(op_l::KLocalOperatorTensor, op_r::KLocalOperatorTensor) = begin
+Base.:+(op_l::KLocalOperatorTensor, op_r::KLocalOperatorTensor) = begin
     sites(op_l) == sites(op_r) && return _sum_samesite(op_l, op_r)
     return KLocalOperatorSum(op_l) + op_r
 end
 
-*(a::Number, b::KLocalOperatorTensor) =
+Base.:*(a::Number, b::KLocalOperatorTensor) =
     _op_alpha_prod(b,a)
-*(b::KLocalOperatorTensor, a::Number) =
+Base.:*(b::KLocalOperatorTensor, a::Number) =
     _op_alpha_prod(b,a)
 
 function _op_alpha_prod(op::KLocalOperatorTensor, a::Number)

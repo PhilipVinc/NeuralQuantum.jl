@@ -18,6 +18,8 @@ end
 
 sites(op::KLocalLiouvillian) = op.sites
 
+conn_type(op::KLocalLiouvillian) = conn_type(op.HnH_l)
+
 accumulate_connections!(a, b::Vector, c) = nothing
 
 function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian, v::DoubleState)
@@ -26,4 +28,17 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian
     accumulate_connections!(acc, op.LLdag, v)
 
     return acc
+end
+
+function map_connections(fun::Function, op::KLocalLiouvillian, v::DoubleState)
+    map_connections(fun, op.HnH_l, v)
+    map_connections(fun, op.HnH_r, v)
+    map_connections(fun, op.LLdag, v)
+    return nothing
+end
+
+Base.show(io::IO, m::MIME"text/plain", op::KLocalLiouvillian) = begin
+    T    = eltype(op.HnH_l)
+
+    print(io, "KLocalLiouvillian($T)")
 end
