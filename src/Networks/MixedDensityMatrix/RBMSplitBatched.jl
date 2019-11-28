@@ -30,17 +30,17 @@ cache(net::RBMSplit, batch_sz) = begin
                   false)
 end
 
-function (net::RBMSplit)(c::RBMSplitBatchedCache, σr_r, σc_r)
+function logψ!(out::AbstractArray, net::RBMSplit, c::RBMSplitBatchedCache, σr_r, σc_r)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
-    res = c.res
+    res = out
     res_tmp = c.res_tmp
     T = eltype(θ)
 
     # copy the states to complex valued states for the computations.
-    σr = c.σr; copyto!(σr, σr_r)
-    σc = c.σc; copyto!(σc, σc_r)
+    σr = c.σr; σr .= σr_r #copyto!(σr, σr_r)
+    σc = c.σc; σc .= σc_r #copyto!(σc, σc_r)
 
     mul!(θ, net.Wr, σr)
     mul!(θ_tmp, net.Wc, σc)
@@ -48,26 +48,29 @@ function (net::RBMSplit)(c::RBMSplitBatchedCache, σr_r, σc_r)
     logℒθ .= NeuralQuantum.logℒ.(θ)
 
     #res = σr'*net.ar + σc'*net.ac # + sum(logℒθ, dims=1)
-    mul!(res_tmp, net.ar', σr)
-    mul!(res, net.ac', σc)
+    mul!(res_tmp, transpose(net.ar), σr)
+    mul!(res, transpose(net.ac), σc)
     res .+= res_tmp
     Base.mapreducedim!(identity, +, res, logℒθ)
 
-    return res
+    # TODO make this better
+    #copyto!(out, 1, res, 1, length(out))
+
+    return out
 end
 
-function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitBatchedCache, σr_r, σc_r)
+function logψ_and_∇logψ!(∇logψ, out, net::RBMSplit, c::RBMSplitBatchedCache, σr_r, σc_r)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
     ∂logℒθ = c.∂logℒθ
-    res = c.res
+    res = out
     res_tmp = c.res_tmp
     T = eltype(θ)
 
     # copy the states to complex valued states for the computations.
-    σr = c.σr; copyto!(σr, σr_r)
-    σc = c.σc; copyto!(σc, σc_r)
+    σr = c.σr; σr .= σr_r #copyto!(σr, σr_r)
+    σc = c.σc; σc .= σc_r #copyto!(σc, σc_r)
 
     mul!(θ, net.Wr, σr)
     mul!(θ_tmp, net.Wc, σc)
@@ -85,11 +88,12 @@ function logψ_and_∇logψ!(∇logψ, net::RBMSplit, c::RBMSplitBatchedCache, �
     ∇logψ.ar .= σr
     ∇logψ.ac .= σc
     ∇logψ.b  .= ∂logℒθ
-    #∇logψ.Wr .= ∂logℒθ .* transpose(σr)
-    #∇logψ.Wc .= ∂logℒθ .* transpose(σc)
 
     _batched_outer_prod!(∇logψ.Wr, ∂logℒθ, σr)
     _batched_outer_prod!(∇logψ.Wc, ∂logℒθ, σc)
 
-    return res
+    # TODO make this better
+    #copyto!(out, 1, res, 1, length(out))
+
+    return out
 end

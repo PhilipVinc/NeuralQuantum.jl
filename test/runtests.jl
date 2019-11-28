@@ -4,7 +4,9 @@ using Test
 @testset "NeuralQuantum" begin
     println("Testing machines...")
     @testset "Machines" begin
+        include("Machines/test_cached.jl")
         include("Machines/test_grad.jl")
+        include("Machines/test_batched.jl")
         include("Machines/test_ndmcomplex.jl")
     end
 

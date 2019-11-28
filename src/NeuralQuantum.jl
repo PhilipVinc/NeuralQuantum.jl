@@ -1,16 +1,16 @@
 module NeuralQuantum
 
 # Using statements
-using Reexport, Requires
+using Reexport
+using Requires
 using MacroTools: @forward
 
 using QuantumOpticsBase
 using LightGraphs
-
 using Zygote
-using Random: AbstractRNG, MersenneTwister, GLOBAL_RNG
-using LinearAlgebra, SparseArrays, Strided
 using NNlib
+using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!
+using LinearAlgebra, SparseArrays, Strided, UnsafeArrays
 
 include("IterativeSolvers/minresqlp.jl")
 using .MinresQlp
@@ -24,26 +24,17 @@ using .Optimisers
 import .Optimisers: update, update!
 export Optimisers
 
-# Imports
-import Base: length, UInt, eltype, copy, deepcopy, iterate
-import Random: rand!
-import QuantumOpticsBase: basis
-
 # Abstract Types
 abstract type NeuralNetwork end
 
 abstract type State end
 abstract type FiniteBasisState <: State end
 
-abstract type AbstractProblem end
-abstract type AbstractSteadyStateProblem <: AbstractProblem end
-abstract type HermitianMatrixProblem <: AbstractSteadyStateProblem end
-abstract type LRhoSquaredProblem <: AbstractSteadyStateProblem end
-abstract type OpenTimeEvolutionProblem <: AbstractSteadyStateProblem end
-abstract type OperatorEstimationProblem <: AbstractProblem end
-
 abstract type Sampler end
 abstract type AbstractAccumulator end
+
+abstract type AbstractProblem end
+include("Problems/base_problems.jl")
 
 # Type describing the parallel backend used by a solver.
 abstract type ParallelType end
@@ -59,7 +50,6 @@ include("base_states.jl")
 include("base_derivatives.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
-include("base_batched_networks.jl")
 include("treelike.jl") # from flux
 include("tuple_logic.jl")
 
@@ -72,20 +62,24 @@ include("States/NAryState.jl")
 include("States/DoubleState.jl")
 include("States/PurifiedState.jl")
 include("States/DiagonalStateWrapper.jl")
-export local_index
 include("States/ModifiedState.jl")
-export ModifiedState
+export ModifiedState, local_index
+
+include("base_batched_networks.jl")
 
 # Linear Operators
-import Base: +
+import Base: +, *
 include("Operators/BaseOperators.jl")
 include("Operators/OpConnection.jl")
 include("Operators/OpConnectionIndex.jl")
 include("Operators/KLocalOperator.jl")
 include("Operators/KLocalOperatorSum.jl")
+include("Operators/KLocalOperatorTensor.jl")
+include("Operators/KLocalLiouvillian.jl")
+
 include("Operators/GraphConversion.jl")
 export OpConnection
-export KLocalOperator, KLocalOperatorSum, KLocalOperatorRow, operators
+export KLocalOperator, KLocalOperatorTensor, KLocalOperatorSum, KLocalOperatorRow, operators
 export row_valdiff, row_valdiff_index, col_valdiff, sites, conn_type
 export duplicate
 
@@ -95,6 +89,7 @@ include("Networks/utils.jl")
 
 # Mixed Density Matrices
 include("Networks/MixedDensityMatrix/NDM.jl")
+include("Networks/MixedDensityMatrix/NDMBatched.jl")
 include("Networks/MixedDensityMatrix/NDMComplex.jl")
 include("Networks/MixedDensityMatrix/NDMSymm.jl")
 include("Networks/MixedDensityMatrix/RBMSplit.jl")
@@ -117,6 +112,7 @@ export LdagLSparseOpProblem, LRhoSparseSuperopProblem, LdagLProblem, LdagLFullPr
 include("Problems/SteadyStateLindblad/LdagLSparseOpProblem.jl")
 include("Problems/SteadyStateLindblad/LdagLSparseSuperopProblem.jl")
 include("Problems/SteadyStateLindblad/LRhoKLocalOpProblem.jl")
+include("Problems/SteadyStateLindblad/LRhoKLocalSOpProblem.jl")
 include("Problems/SteadyStateLindblad/LRhoSparseOpProblem.jl")
 include("Problems/SteadyStateLindblad/LRhoSparseSuperopProblem.jl")
 const LdagLFullProblem = LRhoSparseSuperopProblem
@@ -127,6 +123,7 @@ include("Problems/SteadyStateLindblad/build_SteadyStateProblem.jl")
 
 # Hamiltonian problems
 include("Problems/Hamiltonian/HamiltonianGSEnergyProblem.jl")
+include("Problems/Hamiltonian/HamiltonianGSVarianceProblem.jl")
 include("Problems/Hamiltonian/build_GroundStateProblem.jl")
 
 # Observables problem
@@ -184,20 +181,26 @@ include("IterativeInterface/BaseIterativeSampler.jl")
 include("IterativeInterface/IterativeSampler.jl")
 include("IterativeInterface/MTIterativeSampler.jl")
 
+include("IterativeInterface/Batched/BatchedSampler.jl")
+include("IterativeInterface/Batched/ScalarBatchAccumulator.jl")
+include("IterativeInterface/Batched/GradientBatchAccumulator.jl")
 include("IterativeInterface/Batched/LocalKetAccumulator.jl")
+include("IterativeInterface/Batched/LocalGradAccumulator.jl")
+include("IterativeInterface/Batched/Accumulator.jl")
+
 export sample!
 
 
 function __init__()
     @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" begin
-        using .CuArrays
+        import .CuArrays: CuArrays, @cufunc
 
-        CuArrays.@cufunc ℒ(x) = one(x) + exp(x)
+    #=    @cufunc NeuralQuantum.ℒ(x) = one(x) + exp(x)
 
-        CuArrays.@cufunc ∂logℒ(x) = one(x)/(one(x)+exp(-x))
+        @cufunc NeuralQuantum.∂logℒ(x) = one(x)/(one(x)+exp(-x))
 
-        CuArrays.@cufunc logℒ(x::Real) = log1p(exp(x))
-        CuArrays.@cufunc logℒ(x::Complex) = log(one(x) + exp(x))
+        @cufunc NeuralQuantum.logℒ(x::Real) = log1p(exp(x))
+        @cufunc NeuralQuantum.logℒ(x::Complex) = log(one(x) + exp(x))=#
     end
 
     @require QuantumOptics="6e0679c1-51ea-5a7c-ac74-d61b76210b0c" begin

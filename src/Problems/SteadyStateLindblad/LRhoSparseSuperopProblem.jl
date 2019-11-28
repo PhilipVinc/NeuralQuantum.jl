@@ -33,7 +33,7 @@ LRhoSparseSuperopProblem(T::Type{<:Number}, Liouv::SparseSuperOperator) =
 LRhoSparseSuperopProblem(T::Type{<:Number}, Ham::DataOperator, cops::Vector) =
     LRhoSparseSuperopProblem(T, liouvillian(Ham, cops))
 
-basis(prob::LRhoSparseSuperopProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::LRhoSparseSuperopProblem) = prob.HilbSpace
 
 function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoSparseSuperopProblem, net::MatrixNet,
                        σ, lnψ=net(σ), σp=deepcopy(σ))

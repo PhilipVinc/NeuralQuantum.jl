@@ -28,6 +28,7 @@ If `net isa CachedNet` then the computation will be performed efficiently
 with minimal allocations.
 """
 @inline logψ(net::NeuralNetwork, σ) = net(σ)
+@inline logψ(net::NeuralNetwork, σ::NTuple{N,<:AbstractArray}) where N = net(σ...)
 @inline log_prob_ψ(net, σ...)       = 2.0*real(net(σ...))
 @inline ∇logψ(args...)              = logψ_and_∇logψ(args...)[2]
 @inline ∇logψ!(args...)             = logψ_and_∇logψ!(args...)[2]
@@ -123,4 +124,4 @@ num_params(net::NeuralNetwork) = trainable_length(net)
 # TODO does this even make sense?!
 # the idea was that a shallow-copy of the weights of the net is not
 # even a copy....
-copy(net::NeuralNetwork) = net
+Base.copy(net::NeuralNetwork) = net

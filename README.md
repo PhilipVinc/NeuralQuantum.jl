@@ -18,14 +18,28 @@ pkg"add https://github.com/PhilipVinc/NeuralQuantum.jl"
 `QuantumLattices` is a custom package that allows defining new types of operators on a lattice.
 It's not needed natively but it is usefull to define hamiltonians on a lattice.
 
+Alternatively you may activate the project included in the manifest that comes with NeuralQuantum.
+
+
 ## Example
+The basic idea of the package is the following: you create an hamiltonian/lindbladian with QuantumOptics or QuantumLattices (the latter allows you to go to arbitrarily big lattices, but isn't yet very documented...).
+Then, you create a `SteadyStateProblem`, which performs some transformations on those operators to put them in the shaped necessary to optimize them efficiently.
+You also will probably need to create an `ObservablesProblem`, by providing it all the observables that you wish to monitor during the optimization.
+
+By default, if you don't provide the precision `Float32` is used.
+
+Then, you will pick a network, a sampler, and create an iterative sampler to sample the network.
+You must write the training loop by yourself. Check the documentation and the examples in the folder `examples/` to better understand how to do this.
+
+*IMPORTANT:* If you want to use multithreaded samplers (identified by a `MT` at the beginning of their name), you will launch one markov chain per julia thread. As such, you will get much better performance if you set `JULIA_NUM_THREADS` environment variable to the number of physical cores in your computer before launching julia. 
+
 ```
 # Load dependencies
 using NeuralQuantum, QuantumLattices
-using Printf, ValueHistoriesLogger, Logging, ValueHistories
+using Printf, Logging, ValueHistories
 
 # Select the numerical precision
-T      = Float64
+T      = Float32
 # Select how many sites you want
 Nsites = 6
 

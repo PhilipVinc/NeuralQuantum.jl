@@ -1,6 +1,5 @@
-mutable struct LocalKetAccumulator{a,A,B,C,D,E,F,N} <: AbstractAccumulator
+mutable struct LocalKetAccumulator{a,B,C,S,Ac} <: AbstractAccumulator
     cur_ψval::a     # The last value seen of <σ|ψ>
-    ψ_vals::A       # Stores all the values <σ|ψ> computed for this chain
     ψ_counter::B    # Stores a counter, referring to how many non zero
                     # elements referring to σ we have found
     cur_ψ::Int      # Stores a counter, referring to which i-th element
@@ -9,14 +8,8 @@ mutable struct LocalKetAccumulator{a,A,B,C,D,E,F,N} <: AbstractAccumulator
     Oloc::C         # ⟨σ|Ô|ψ⟩ computed
     n_tot::Int      # total number of σ' matrix element computed
 
-    mel_buf::D      # ⟨σ|Ô|σ'⟩ in the buffer
-    ψ0_buf::A       # Buffers alls the <σ|ψ> of the denominator
-    v_buf::F        # the matrix of Nsites x batchsz used as state
-    buf_n::Int      # Counter for elements in buffer
-
-    σ::E            # just a temporary state to perform operation, cached
-    batch_sz::Int
-    bnet::N
+    acc::Ac         # The accumulator
+    σ::S            # just a temporary state to perform operation, cached
 end
 
 function LocalKetAccumulator(net, σ, batch_sz)
@@ -25,28 +18,27 @@ function LocalKetAccumulator(net, σ, batch_sz)
     f         = trainable_first(net)
 
     cur_ψval  = zero(OT)
-    ψ_vals    = similar(f, OT, 1, 2)
-    ψ0_buf    = similar(f, OT, 1, batch_sz)
-    ψ_counter = zeros(Int, batch_sz)
+    ψ_counter = zeros(Int, 1)
     Oloc      = similar(f, OT, batch_sz)
 
-    mel_buf   = zeros(OT, batch_sz)
     _σ        = deepcopy(σ)
-    v         = similar(f, IT, length(config(σ)), batch_sz)
+    accum     = ScalarBatchAccumulator(net, σ, batch_sz)
 
-    return LocalKetAccumulator(cur_ψval, ψ_vals, ψ_counter, 0,
+    return LocalKetAccumulator(cur_ψval, ψ_counter, 0,
                                Oloc, 0,
-                               mel_buf, ψ0_buf, v, 0,
-                               _σ, batch_sz, cached(net, batch_sz))
+                               accum, _σ)
 end
 
-function init!(c::LocalKetAccumulator, ψ_vals)
-    c.ψ_vals = ψ_vals
+batch_size(a::LocalKetAccumulator) = length(a.acc)
+
+function init!(c::LocalKetAccumulator, chain_len::Int)
     c.cur_ψ  = 0
-    c.buf_n  = 0
-    c.Oloc   = similar(ψ_vals, length(ψ_vals))
+    resize!(c.Oloc, chain_len)
     c.Oloc  .= 0.0
-    c.ψ_counter = zeros(Int, length(ψ_vals))
+    resize!(c.ψ_counter, chain_len)
+    c.ψ_counter  .= 0
+
+    init!(c.acc)
     return c
 end
 
@@ -57,47 +49,64 @@ function Base.push!(c::LocalKetAccumulator, ψval::Number)
     return c
 end
 
-function (c::LocalKetAccumulator)(mel, cngs, v)
-    i = c.cur_ψ
+# I don't really need two versions of this command,
+# but Julia is stupid so I need.
+function (c::LocalKetAccumulator)(mel::Number, cngs_l, cngs_r, v::State)
+    n_cngs_l = isnothing(cngs_l) ? 0 : length(cngs_l)
+    n_cngs_r = isnothing(cngs_r) ? 0 : length(cngs_r)
+
+    mel == 0.0 && return c
+
+    # If we have no changes, simply add the element to ⟨σ|Ô|ψ⟩ because
+    # exp(logψ(σ)-logψ(σ)) = exp(0) = 1
+    if n_cngs_l == 0 && n_cngs_r == 0
+        c.Oloc[c.cur_ψ] += mel
+        c.n_tot   +=  1
+    else
+        σ = set_index!(c.σ, index(v))
+        apply!(σ, cngs_l, cngs_r)
+        _send_to_accumulator(c, mel, σ)
+    end
+    return c
+end
+
+function (c::LocalKetAccumulator)(mel::Number, cngs::StateChanges, v::State)
+    mel == 0.0 && return c
 
     # If we have no changes, simply add the element to ⟨σ|Ô|ψ⟩ because
     # exp(logψ(σ)-logψ(σ)) = exp(0) = 1
     if length(cngs) == 0
-        c.Oloc[i] += mel
+        c.Oloc[c.cur_ψ] += mel
         c.n_tot   +=  1
     else
-        # Increase the step in our internal buffer
-        # this is guaranteed to always be < max_capacity
-        c.buf_n = c.buf_n + 1
-
-        c.ψ_counter[i] += 1
-        c.ψ0_buf[c.buf_n] = c.cur_ψ #c.ψ_vals[i]
-
         σ = set_index!(c.σ, index(v))
         apply!(σ, cngs)
-        c.mel_buf[c.buf_n] = mel
-        c.v_buf[:,c.buf_n] .= config(v)
-        c.buf_n == c.batch_sz && process_buffer!(c)
+        _send_to_accumulator(c, mel, σ)
     end
-
     return c
 end
 
+function _send_to_accumulator(c::LocalKetAccumulator, mel, σ)
+    c.ψ_counter[c.cur_ψ] += 1
+
+    cσ = config(σ)
+    c.acc(mel, config(σ), c.cur_ψval)
+    isfull(c.acc) && process_buffer!(c)
+    return c
+end
+
+
 finalize!(c::LocalKetAccumulator) =
-    process_buffer!(c, c.buf_n)
+    process_buffer!(c, c.acc.buf_n)
 
-function process_buffer!(c::LocalKetAccumulator, k=c.batch_sz)
-    net = c.bnet
-
-    out = net(c.v_buf)
-    out .-= c.ψ0_buf
-    out .= exp.(out)
+function process_buffer!(c::LocalKetAccumulator, k=length(c.acc))
+    out = process_accumulator!(c.acc)
     #collect ? if using the gpu... need to think about this
 
     i = c.cur_ψ
     while k>0
         for j=1:c.ψ_counter[i]
-            c.Oloc[i] += out[k] * c.mel_buf[k]
+            c.Oloc[i] += out[k]
             k -= 1
             c.ψ_counter[i] = c.ψ_counter[i] - 1
             c.n_tot   +=  1
@@ -105,6 +114,5 @@ function process_buffer!(c::LocalKetAccumulator, k=c.batch_sz)
         i -= 1
     end
 
-    c.buf_n = 0
     return c
 end

@@ -14,7 +14,7 @@ im_machines["RBMSplit"] = ma
 ma = (T, N) -> RBM(T, N, 2)
 im_machines["RBM"] = ma
 
-ma = (T, N) -> PureStateAnsatz(Chain(Dense(N, N*2), Dense(N*2, N*3), WSum(N*3)))
+ma = (T, N) -> PureStateAnsatz(Chain(Dense(N, N*2), Dense(N*2, N*3), WSum(N*3)), N)
 re_machines["ChainKet"] = ma
 
 

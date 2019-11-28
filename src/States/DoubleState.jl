@@ -27,7 +27,7 @@ DoubleState{ST}(n, i_σ=0) where ST = set!(DoubleState(ST(n, 0), ST(n, 0)), i_σ
 @inline spacedimension(state::DoubleState) = state.space_dim
 @inline nsites(state::DoubleState) = 2*nsites(state.σ_row)
 @inline local_dimension(state::DoubleState{ST}) where {ST} = local_dimension(ST)
-@inline eltype(state::DoubleState) = eltype(row(state))
+@inline Base.eltype(state::DoubleState) = eltype(row(state))
 
 toint(state::DoubleState) = _toint(col(state), row(state)) #toint(state.σ_row, state.σ_col)
 index(state::DoubleState) = toint(state) + 1 # was before
@@ -56,27 +56,36 @@ function setat!(v::DoubleState, i::Int, val)
     i > v.n ? setat!(v.σ_row, i-v.n, val) : setat!(v.σ_col, i, val)
 end
 
+"""
+    apply!(state::State, changes)
+
+Applies the changes `changes` to the `state`.
+If `state isa DoubleState` then single-value changes
+are applied to the columns of the state (in order to
+compute matrix-operator products). Otherwise it should
+be a tuple with changes of row and columns
+"""
 function apply!(state::DoubleState, changes::StateChanges)
-    for (site, val) = row(changes)
+    for (site, val) = changes
+        #setat!(col(state), site, val)
+        # The code below automatically applies it only
+        # to columns.
         setat!(state, site, val)
     end
 end
 
-function apply!(state::DoubleState, changes::Tuple{StateChanges})
-    changes_r, changes_c = changes
-    for (id, val) = row(changes_r)
-        setat!(row(state), id, val)
-    end
-    for (id, val) = col(changes_c)
-        setat!(col(state), id, val)
-    end
+@inline apply!(state::DoubleState, (changes_r, changes_c)::Tuple) = 
+    apply!(state, changes_r, changes_c)
+function apply!(state::DoubleState, changes_r, changes_c)
+    apply!(row(state), changes_r)
+    apply!(col(state), changes_c)
     return state
 end
 
 set_index!(v::DoubleState, i::Integer) = set!(v, index_to_int(v, i))
 function set!(v::DoubleState, i::Integer)
     row = div(i, spacedimension(v.σ_row)) #row = i>>(nsites(state.σ_row))
-    col = i - row*spacedimension(v.σ_row)#col = i - (row<< nsites(state.σ_row))
+    col = i - row*spacedimension(v.σ_row) #col = i - (row<< nsites(state.σ_row))
 
     set!(v.σ_col, row) #i
     set!(v.σ_row, col) #j
@@ -84,7 +93,7 @@ function set!(v::DoubleState, i::Integer)
 end
 set!(v::DoubleState, i_row, i_col) = (set!(row(v), i_row); set!(col(v), i_col);  v)
 
-function rand!(rng::AbstractRNG, state::DoubleState)
+function Random.rand!(rng::AbstractRNG, state::DoubleState)
     rand!(rng, state.σ_row)
     rand!(rng, state.σ_col)
     state

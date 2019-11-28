@@ -32,7 +32,7 @@ PurifiedState{ST}(n, add, i_σ=0) where ST =
 @inline index_to_int(state::PurifiedState, id, add::FiniteBasisState) =
         index_to_int(state, id, toint(add))
 @inline index_to_int(state::PurifiedState, id, add) = add*spacedimension(sys(state)) + index_to_int(sys(state), id)
-@inline eltype(state::PurifiedState) = eltype(sys(state))
+@inline Base.eltype(state::PurifiedState) = eltype(sys(state))
 
 # custom accessor
 sys(v::PurifiedState) = v.σ_sys
@@ -61,7 +61,7 @@ function set!(v::PurifiedState, i::Integer)
 end
 set!(v::PurifiedState, sys, add) = set!(sys(v), row) && set!(add(v), col) && v
 
-function rand!(rng::AbstractRNG, state::PurifiedState)
+function Random.rand!(rng::AbstractRNG, state::PurifiedState)
     rand!(rng, state.σ_sys)
     rand!(rng, state.σ_add)
 end

@@ -29,7 +29,15 @@ struct ChainCache{T<:Tuple} <: NNCache{Chain}
     valid::Bool
 end
 
-cache(l::Chain) = ChainCache(cache.(l.layers), false)
+cache(l::Chain, in_T, in_sz) = begin
+    caches = []
+    for layer = l.layers
+        c = cache(layer, in_T, in_sz)
+        in_T, in_sz = layer_out_type_size(layer, in_T, in_sz)
+        push!(caches, c)
+    end
+    ChainCache(Tuple(caches), false)
+end
 
 # Applychain with caches
 applychain(::Tuple{}, ::Tuple{}, x) = x

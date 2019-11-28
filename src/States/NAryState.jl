@@ -31,7 +31,7 @@ export NAryState
 @inline nsites(state::NAryState) = state.n
 @inline local_dimension(state::Type{NAryState{T,N}}) where {T,N} = N
 @inline local_dimension(state::NAryState{T,N}) where {T,N} = local_dimension(typeof(state))
-@inline eltype(state::NAryState{T,N}) where {T,N} = T
+@inline Base.eltype(state::NAryState{T,N}) where {T,N} = T
 
 @inline toint(state::NAryState) = state.i_σ
 @inline index(state::NAryState) = toint(state)+1
@@ -94,6 +94,20 @@ function setat!(state::NAryState{T, N}, i::Int, val::T) where {T, N}
     return old_val
 end
 
+function setat!(state::NAryState{T1, N}, i::Int, val::T2) where {T1,T2, N}
+    #=throw("""
+    Error: cannot use setat! on a state with precision $T1 with
+    a value with precision $T2.
+    This error often occurs when you initialize your problem with a
+    different precision than your network or state.
+           """)=#
+    old_val = state.σ[i]
+
+    state.i_σ += (Int(val)-Int(old_val))*N^(i-1)
+    state.σ[i] = val
+    return old_val
+end
+
 set_index!(state::NAryState, val::Integer) = set!(state, index_to_int(state, val))
 function set!(state::NAryState{T, N}, val::Integer) where {T, N}
     state.i_σ = val
@@ -108,7 +122,7 @@ function add!(state::NAryState, val::Integer)
     state
 end
 
-function rand!(rng::AbstractRNG, state::NAryState)
+function Random.rand!(rng::AbstractRNG, state::NAryState)
     val = rand(rng, 0:(spacedimension(state)-1))
     set!(state, val)
 end
@@ -161,7 +175,8 @@ function String(bv::Vector, toInt=true)
     str
 end
 
-Base.show(io::IO, ::MIME"text/plain", bs::NAryState{T,2}) where T = print(io, "NAryState(",bs.n,") : ", StringToSpin(bs.σ,false),
+Base.show(io::IO, ::MIME"text/plain", bs::NAryState{T,2}) where T = print(io,
+        "NAryState{$T}($(bs.n)) : ", StringToSpin(bs.σ,false),
                                            " = ", bs.i_σ)
 Base.show(io::IO, bs::NAryState{T,2}) where T = print(io, bs.i_σ, StringToSpin(bs.σ,false))
 function StringToSpin(bv::Vector, toInt=true)

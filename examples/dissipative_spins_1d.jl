@@ -3,7 +3,7 @@ using NeuralQuantum, QuantumLattices
 using Logging, Printf, ValueHistories
 
 # Select the numerical precision
-T      = Float64
+T      = Float32
 # Select how many sites you want
 Nsites = 7
 
@@ -22,7 +22,7 @@ Sx  = QuantumLattices.LocalObservable(lind, sigmax, Nsites)
 Sy  = QuantumLattices.LocalObservable(lind, sigmay, Nsites)
 Sz  = QuantumLattices.LocalObservable(lind, sigmaz, Nsites)
 # Create the problem object with all the observables to be computed.
-oprob = ObservablesProblem(Sx, Sy, Sz)
+oprob = ObservablesProblem(T, Sx, Sy, Sz)
 
 
 # Define the Neural Network. A NDM with N visible spins and αa=2 and αh=1
@@ -33,7 +33,7 @@ cnet = cached(net)
 # Chose a sampler. Options are FullSumSampler() which sums over the whole space
 # ExactSampler() which does exact sampling or MCMCSamler which does a markov
 # chain.
-sampl = MCMCSampler(Metropolis(Nsites), 3000, burn=50)
+sampl = MCMCSampler(Metropolis(Nsites), 1000, burn=50)
 # Chose a sampler for the observables.
 osampl = FullSumSampler()
 
@@ -68,6 +68,8 @@ for i=1:110
     !succ && break
     Optimisers.update!(optimizer, cnet, Δw)
 end
+
+using QuantumOptics, Plots
 
 # Optional: compute the exact solution
 ρ   = last(steadystate.master(lind)[2])

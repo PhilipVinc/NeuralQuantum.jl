@@ -11,8 +11,8 @@ Sx  = QuantumLattices.LocalObservable(lind, sigmax, Nsites)
 Sy  = QuantumLattices.LocalObservable(lind, sigmay, Nsites)
 Sz  = QuantumLattices.LocalObservable(lind, sigmaz, Nsites)
 H   = lind.H
-oprob    = ObservablesProblem(Sx, Sy, Sz, H, operator=false)
-oprob_op = ObservablesProblem(Sx, Sy, Sz, H, operator=true)
+oprob    = ObservablesProblem(T, Sx, Sy, Sz, H, operator=false)
+oprob_op = ObservablesProblem(T, Sx, Sy, Sz, H, operator=true)
 obs_dense = [DenseOperator(op).data for op=[Sx, Sy, Sz, H]]
 
 net  = cached(RBMSplit(T, Nsites, 2))
@@ -59,8 +59,8 @@ ham = quantum_ising_ham(lattice, g=1.0, V=2.0)
 Sx  = QuantumLattices.LocalObservable(ham, sigmax, Nsites)
 Sy  = QuantumLattices.LocalObservable(ham, sigmay, Nsites)
 Sz  = QuantumLattices.LocalObservable(ham, sigmaz, Nsites)
-oprob    = ObservablesProblem(Sx, Sy, Sz, ham, operator=false)
-oprob_op = ObservablesProblem(Sx, Sy, Sz, ham, operator=true)
+oprob    = ObservablesProblem(T, Sx, Sy, Sz, ham, operator=false)
+oprob_op = ObservablesProblem(T, Sx, Sy, Sz, ham, operator=true)
 obs_dense = [DenseOperator(op).data for op=[Sx, Sy, Sz, ham]]
 
 net  = cached(RBM(Complex{T}, Nsites, 2))

@@ -52,7 +52,7 @@ function LRhoSparseOpProblem(T::Type{<:Number}, Hilb::Basis, Ham::DataOperator, 
         c_ops[i]       = c_ops_q[i].data
         c_ops_h[i]     = c_ops[i]'
         c_ops_trans[i] = transpose(c_ops[i])
-        H_eff         -= 0.5im * (c_ops[i]'*c_ops[i])
+        H_eff         -= T(0.5im) * (c_ops[i]'*c_ops[i])
     end
 
     LRhoSparseOpProblem{typeof(Hilb), ST}(Hilb,                  # 0
@@ -64,7 +64,7 @@ function LRhoSparseOpProblem(T::Type{<:Number}, Hilb::Basis, Ham::DataOperator, 
                     0.0)
 end
 
-basis(prob::LRhoSparseOpProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::LRhoSparseOpProblem) = prob.HilbSpace
 
 function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoSparseOpProblem, net::MatrixNet, 𝝝,
                       lnψ=net(𝝝), 𝝝p=deepcopy(𝝝))
@@ -73,6 +73,9 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoSparseOpProblem, net::MatrixNet
     c_ops = prob.L_ops
     c_ops_h = prob.L_ops_h
     c_ops_trans = prob.L_ops_t
+
+    T  = real(out_type(net))
+    CT = Complex{T}
 
     σ  = row(𝝝)
     σt = col(𝝝)
@@ -95,7 +98,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoSparseOpProblem, net::MatrixNet
       i_σ_p = HnH_t.rowval[row_id]
       set_index!(𝝝p_row, i_σ_p)
       lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
-      C_loc_i  =  -1.0im * HnH_t.nzval[row_id] * exp(lnψ_i - lnψ)
+      C_loc_i  =  -T(1.0)im * HnH_t.nzval[row_id] * exp(lnψ_i - lnψ)
 
       for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
         LLOave .+= C_loc_i .* _∇lnψ
@@ -109,7 +112,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoSparseOpProblem, net::MatrixNet
       i_σ_p = HnH.rowval[row_id]
       set_index!(𝝝p_col, i_σ_p)
       lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
-      C_loc_i  =  1.0im * conj(HnH_t.nzval[row_id]) * exp(lnψ_i - lnψ)
+      C_loc_i  =  T(1.0)im * conj(HnH_t.nzval[row_id]) * exp(lnψ_i - lnψ)
 
       for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
         LLOave .+= C_loc_i .* _∇lnψ

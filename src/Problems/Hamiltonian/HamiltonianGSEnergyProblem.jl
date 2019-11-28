@@ -6,17 +6,17 @@ struct HamiltonianGSEnergyProblem{B, SM} <: HermitianMatrixProblem where {B<:Bas
 end
 
 HamiltonianGSEnergyProblem(args...) = HamiltonianGSEnergyProblem(STD_REAL_PREC, args...)
-HamiltonianGSEnergyProblem(T::Type{<:Number}, gl::GraphOperator; operators=true) = begin
+HamiltonianGSEnergyProblem(T::Type{<:Real}, gl::GraphOperator; operators=true) = begin
     if operators
-        return HamiltonianGSEnergyProblem(basis(gl), to_linear_operator(gl), 0.0)
+        return HamiltonianGSEnergyProblem(basis(gl), to_linear_operator(gl, T), 0.0)
     else
         return HamiltonianGSEnergyProblem(T, SparseOperator(gl))
     end
 end
 HamiltonianGSEnergyProblem(T::Type{<:Number}, Ham::SparseOperator) =
-    HamiltonianGSEnergyProblem(Ham.basis_l, data(Ham), 0.0)
+    HamiltonianGSEnergyProblem(Ham.basis_l, Complex{T}.(data(Ham)), 0.0)
 
-basis(prob::HamiltonianGSEnergyProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::HamiltonianGSEnergyProblem) = prob.HilbSpace
 
 function compute_Cloc(prob::HamiltonianGSEnergyProblem{B,SM}, net::KetNet, σ::State,
                       lnψ=net(σ), σp=deepcopy(σ)) where {B,SM<:SparseMatrixCSC}
@@ -53,9 +53,7 @@ function compute_Cloc(prob::HamiltonianGSEnergyProblem{B,SM}, net::KetNet, σ::S
         r = local_index(σ, sites(op))
         for (mel, changes)=op.op_conns[r]
             set_index!(σp, index(σ))
-            for (site,val)=changes
-                setat!(σp, site, val)
-            end
+            apply!(σp, changes)
 
             log_ratio = logψ(net, σp) - lnψ
             C_loc += mel * exp(log_ratio)

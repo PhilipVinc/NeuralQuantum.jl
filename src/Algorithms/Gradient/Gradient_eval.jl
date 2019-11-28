@@ -20,12 +20,13 @@ end
 ## Matrix whole space
 function sample_network!(res::MCMCGradientLEvaluationCache, prob::LRhoSquaredProblem,
                          net, σ, wholespace=false)
+  T = typeof(res.Zave)
   CLO_i = res.LLO_i
 
   lnψ, ∇lnψ = logψ_and_∇logψ!(res.∇lnψ, net, σ)
   C_loc = compute_Cloc!(CLO_i, res.∇lnψ2, prob, net, σ, lnψ, res.σ)
 
-  prob = wholespace ? exp(2*real(lnψ)) : 1.0
+  prob = wholespace ? exp(T(2)*real(lnψ)) : one(res.Zave)
   E = abs(C_loc)^2
 
   res.Zave += prob

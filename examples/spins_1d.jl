@@ -3,7 +3,7 @@ using NeuralQuantum, QuantumLattices
 using Logging, Printf, ValueHistories
 
 # Select the numerical precision
-T      = Float64
+T      = Float32
 # Select how many sites you want
 sites  = [3, 3]
 Nsites = prod(sites)
@@ -14,6 +14,7 @@ lattice = SquareLattice(sites, PBC=true)
 Ĥ = quantum_ising_ham(lattice, g=1.0, V=2.0)
 # Create the Problem (cost function) for the given hamiltonian
 # targeting the ground state.
+prob = GroundStateProblem(T, Ĥ)
 
 #-- Observables
 # Define the local observables to look at.
@@ -21,7 +22,7 @@ Sx  = QuantumLattices.LocalObservable(Ĥ, sigmax, Nsites)
 Sy  = QuantumLattices.LocalObservable(Ĥ, sigmay, Nsites)
 Sz  = QuantumLattices.LocalObservable(Ĥ, sigmaz, Nsites)
 # Create the problem object with all the observables to be computed.
-oprob = ObservablesProblem(Sx, Sy, Sz, Ĥ)
+oprob = ObservablesProblem(T, Sx, Sy, Sz, Ĥ)
 
 
 # Define the Neural Network. A RBM with N visible spins and α=2
@@ -39,7 +40,7 @@ osampl = FullSumSampler()
 # for more information on options type ?SR
 algo  = SR(ϵ=T(0.001), use_iterative=true)
 # Optimizer: how big the steps of the descent should be
-optimizer = Optimisers.Descent(0.005)
+optimizer = Optimisers.Descent(0.01)
 
 # Create a multithreaded Iterative Sampler.
 is = MTIterativeSampler(cnet, sampl, prob, algo)
@@ -69,8 +70,10 @@ for i=1:500
     Optimisers.update!(optimizer, cnet, Δw)
 end
 
+using QuantumOptics, Plots
+
 # Optional: compute the exact solution
-en, st = eigenstates(DenseOperator(ham))
+en, st = eigenstates(DenseOperator(Ĥ))
 E_gs = real(minimum(en))
 ψgs = first(st)
 ESx = real(expect(SparseOperator(Sx), ψgs))

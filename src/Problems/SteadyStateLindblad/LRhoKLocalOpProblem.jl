@@ -20,7 +20,7 @@ function LRhoKLocalOpProblem(T, gl::GraphLindbladian)
     return LRhoKLocalOpProblem(basis(gl), HnH, c_ops, 0.0)
 end
 
-basis(prob::LRhoKLocalOpProblem) = prob.HilbSpace
+QuantumOpticsBase.basis(prob::LRhoKLocalOpProblem) = prob.HilbSpace
 
 # Standard method dispatched when the state is generic (non lut).
 # will work only if 𝝝 and 𝝝p are the same type (and non lut!)
@@ -28,6 +28,8 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
                        net::MatrixNet, 𝝝::S,
                        lnψ=net(𝝝), 𝝝p::S=deepcopy(𝝝)) where {S}
     # hey
+    T  = real(out_type(net))
+    CT = Complex{T}
     HnH = prob.HnH
     L_ops = prob.L_ops
 
@@ -39,7 +41,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
       el .= 0.0
     end
 
-    C_loc = zero(Complex{real(out_type(net))})
+    C_loc = zero(CT)
 
     # ⟨σ|Hρ|σt⟩ (using hermitianity of HdH)
     # diffs_hnh = row_valdiff(HnH, row(𝝝))
@@ -51,7 +53,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
             apply!(𝝝p_row, changes)
 
             lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
-            C_loc_i  =  -1.0im * mel * exp(lnψ_i - lnψ)
+            C_loc_i  =  -T(1.0)im * mel * exp(lnψ_i - lnψ)
             for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
               LLOave .+= C_loc_i .* _∇lnψ
             end
@@ -69,7 +71,7 @@ function compute_Cloc!(LLO_i, ∇lnψ, prob::LRhoKLocalOpProblem,
             apply!(𝝝p_col, changes)
 
             lnψ_i, ∇lnψ_i = logψ_and_∇logψ!(∇lnψ, net, 𝝝p)
-            C_loc_i  =  1.0im * conj(mel) * exp(lnψ_i - lnψ)
+            C_loc_i  =  T(1.0)im * conj(mel) * exp(lnψ_i - lnψ)
             for (LLOave, _∇lnψ)= zip(LLO_i, ∇lnψ_i.tuple_all_weights)
               LLOave .+= C_loc_i .* _∇lnψ
             end
