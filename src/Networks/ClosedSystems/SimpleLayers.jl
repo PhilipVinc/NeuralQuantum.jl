@@ -1,15 +1,17 @@
 export Dense, WSum
 
-struct Dense{Ta,Tb}
+struct Dense{Ta,Tb,C}
     W::Ta
     b::Tb
+    σ::C
 end
-@functor Dense
+functor(d::Dense) = (W=d.W, b=d.b), (W,b) -> Dense(W,b,d.σ)
 (l::Dense)(x) = logℒ.(l.W*x .+ l.b)
 
-function Dense(in::Integer, out::Integer, σ = identity;
+Dense(in::Integer, args...;kwargs...)= Dense(Complex{STD_REAL_PREC}, in, args...;kwargs...)
+function Dense(T::Type, in::Integer, out::Integer, σ = identity;
                initW = glorot_uniform, initb = glorot_uniform)
-  return Dense(initW(out, in), initb(out))
+  return Dense(initW(T, out, in), initb(T, out), σ)
 end
 
 struct DenseCache{Ta,Tb,Tc,Td}

@@ -26,7 +26,7 @@ function IterativeSampler(net,
     evaluated_vals = EvaluatedNetwork(algo, net)
     itercache      = SamplingCache(algo, prob, net)
     v              = state(prob, net)
-    sampler_cache  = init_sampler!(sampl, net, v)
+    sampler_cache  = init_sampler!(sampl, net, basis(prob), v)
 
     IterativeSampler(net, prob, itercache, evaluated_vals, sampl, sampler_cache, v)
 end

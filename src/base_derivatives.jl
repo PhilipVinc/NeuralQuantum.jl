@@ -2,7 +2,7 @@ export vec_data
 
 abstract type AbstractDerivative end
 
-struct RealDerivative{NT,V} <: AbstractDerivative
+struct RealDerivative{NT,V<:AbstractVector} <: AbstractDerivative
     fields::NT
     vectorised_data::V
 end
@@ -21,10 +21,11 @@ end
 
 weights(der::RealDerivative) = der
 
-function RealDerivative(net::NeuralNetwork)
+RealDerivative(net::NeuralNetwork) = RealDerivative(out_type(net), net)
+function RealDerivative(T::Type{<:Number}, net::NeuralNetwork)
     pars = trainable(net)
 
-    vec    = similar(trainable_first(pars), out_type(net), _tlen(pars))
+    vec    = similar(trainable_first(pars), T, _tlen(pars))
     i, fields = weight_tuple(net, vec)
     return RealDerivative(fields, [vec])
 end

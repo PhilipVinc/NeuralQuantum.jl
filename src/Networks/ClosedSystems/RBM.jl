@@ -31,7 +31,7 @@ Refs:
 RBM(in, α, args...) = RBM(ComplexF32, in, α, args...)
 RBM(T::Type, in, α,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
-    initb=(dims...)->rescaled_normal(T, 0.05, dims...),
+    initb=(dims...)->rescaled_normal(T, 0.01, dims...),
     inita=(dims...)->rescaled_normal(T, 0.01, dims...)) =
     RBM(inita(in), initb(convert(Int,α*in)),
         initW(convert(Int,α*in), in))
@@ -69,7 +69,8 @@ function (net::RBM)(c::RBMCache, σ_r)
     #θ .= net.b .+ net.W * σ
     σ = copyto!(c.σ, σ_r)
     copyto!(θ, net.b)
-    BLAS.gemv!('N', T(1.0), net.W, σ, T(1.0), θ)
+    mul!(θ, net.W, σ, T(1.0), T(1.0))
+    #BLAS.gemv!('N', T(1.0), net.W, σ, T(1.0), θ)
 
     logℒθ .= logℒ.(θ)
     logψ = dot(σ,net.a) + sum(logℒθ)
@@ -84,7 +85,8 @@ function logψ_and_∇logψ!(∇logψ, net::RBM, c::RBMCache, σ_r)
     #θ .= net.b .+ net.W * σ
     σ = copyto!(c.σ, σ_r)
     copyto!(θ, net.b)
-    BLAS.gemv!('N', T(1.0), net.W, σ, T(1.0), θ)
+    mul!(θ, net.W, σ, T(1.0), T(1.0))
+    #BLAS.gemv!('N', T(1.0), net.W, σ, T(1.0), θ)
 
     logℒθ .= logℒ.(θ)
     logψ = dot(σ,net.a) + sum(logℒθ)

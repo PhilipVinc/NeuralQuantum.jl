@@ -1,5 +1,4 @@
-struct HamiltonianGSEnergyProblem{B, SM} <: HermitianMatrixProblem where {B<:Basis,
-                                                 SM}
+struct HamiltonianGSEnergyProblem{B, SM} <: HermitianMatrixProblem
     HilbSpace::B # 0
     H::SM
     ρss
@@ -8,15 +7,18 @@ end
 HamiltonianGSEnergyProblem(args...) = HamiltonianGSEnergyProblem(STD_REAL_PREC, args...)
 HamiltonianGSEnergyProblem(T::Type{<:Real}, gl::GraphOperator; operators=true) = begin
     if operators
-        return HamiltonianGSEnergyProblem(basis(gl), to_linear_operator(gl, T), 0.0)
+        return HamiltonianGSEnergyProblem(qo_to_nq_basis(basis(gl)), to_linear_operator(gl, T), 0.0)
     else
         return HamiltonianGSEnergyProblem(T, SparseOperator(gl))
     end
 end
 HamiltonianGSEnergyProblem(T::Type{<:Number}, Ham::SparseOperator) =
-    HamiltonianGSEnergyProblem(Ham.basis_l, Complex{T}.(data(Ham)), 0.0)
+    HamiltonianGSEnergyProblem(qo_to_nq_basis(Ham.basis_l), Complex{T}.(data(Ham)), 0.0)
+HamiltonianGSEnergyProblem(T::Type{<:Number}, H::AbsLinearOperator) =
+    HamiltonianGSEnergyProblem(basis(H), H, 0.0)
 
 QuantumOpticsBase.basis(prob::HamiltonianGSEnergyProblem) = prob.HilbSpace
+operator(prob::HamiltonianGSEnergyProblem) = prob.H
 
 function compute_Cloc(prob::HamiltonianGSEnergyProblem{B,SM}, net::KetNet, σ::State,
                       lnψ=net(σ), σp=deepcopy(σ)) where {B,SM<:SparseMatrixCSC}

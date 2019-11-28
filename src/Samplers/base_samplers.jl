@@ -11,16 +11,15 @@ abstract type SamplerCache{T}  end
 Creates a `SamplerCache` for this problem and sampler.
 """
 cache(s::Sampler, prob::AbstractProblem, net, par=NotParallel()) =
-    cache(s, state(prob, net), net, par)
+    cache(s, state(prob, net), basis(prob), net, par)
 
 """
     caches(sampler, v, net, [parallel_type=NotParallel()])
 
 Creates a `SamplerCache` for this sampler and state.
 """
-cache(s::Sampler, v::State, net, par=NotParallel()) =
-    _sampler_cache(s, v, net, par)
-
+cache(s::Sampler, hilb, net, par=NotParallel()) =
+    _sampler_cache(s, state(hilb, net), hilb, net, par)
 
 """
     init_sampler!(sampler, net, σ, [c=cache(sampler, σ, net)]) -> c
@@ -29,7 +28,9 @@ Initializes the sampler `sampler` and state `σ`. If no `SamplerCache` is
 provided, one will be initialized and returned. The state σ is the first in the
 list of sampled states.
 """
-init_sampler!(s::Sampler, net, σ) = init_sampler!(s, net, σ, cache(s, σ, net))
+init_sampler!(s::Sampler, net, prob::AbstractProblem, σ) = init_sampler!(s, net, σ, cache(s, basis(hilb), net))
+init_sampler!(s::Sampler, net, hilb::AbstractHilbert, σ) = init_sampler!(s, net, σ, cache(s, hilb, net))
+#init_sampler!(s::Sampler, net, σ) = init_sampler!(s, net, σ, cache(s, σ, net))
 
 """
     chain_length(sampler, sampler_cache) -> Int
@@ -37,3 +38,6 @@ init_sampler!(s::Sampler, net, σ) = init_sampler!(s, net, σ, cache(s, σ, net)
 Returns the estimated length of the chain.
 """
 function chain_length end
+
+samplenext!(σ, sampl::Sampler, net, sampler_cache) =
+    samplenext!(σ, σ, sampl, net, sampler_cache)

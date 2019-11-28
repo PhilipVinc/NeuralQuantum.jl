@@ -29,8 +29,8 @@ Returns a named tuple holding all the fields in the network, and an
 extra field named `tuple_all_weights` who has the same type
 """
 weight_tuple(cnet::CachedNet) = weight_tuple(cnet.net)
-weight_tuple(net::NeuralNetwork) = weight_tuple(net)[2]
-function weight_tuple(obj, vec=similar(trainable_first(x), 0),
+#weight_tuple(net::NeuralNetwork) = weight_tuple(net)[2]
+function weight_tuple(obj, vec=similar(trainable_first(obj), 0),
                       start=1)
     x = trainable(obj)
     i = 0
@@ -72,7 +72,7 @@ function weight_tuple(x::AbstractArray{<:Number}, vec::AbstractVector, start)
     else
         reshpd_params = reshape(data_vec, size(x))
     end
-    reshpd_params .= x
+    #reshpd_params .= x
     return length(x), reshpd_params
 end
 

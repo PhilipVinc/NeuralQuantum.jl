@@ -84,8 +84,9 @@ cache(net::NDM, batch_sz) = begin
               false)
 end
 
+batch_size(c::NDMBatchedCache) = size(c.σr, 2)
 
-function logψ!(out::AbstractArray, W::NDM, c::NDMBatchedCache, σr_r, σc_r)
+function logψ!(out::AbstractMatrix, W::NDM, c::NDMBatchedCache, σr_r::AbstractMatrix, σc_r::AbstractMatrix)
     ∑σ      = c.∑σ
     Δσ      = c.Δσ
     θλ_σ    = c.θλ_σ
@@ -167,7 +168,7 @@ function logψ!(out::AbstractArray, W::NDM, c::NDMBatchedCache, σr_r, σc_r)
     return out
 end
 
-function logψ_and_∇logψ!(∇logψ, out, W::NDM, c::NDMBatchedCache, σr_r, σc_r)
+function logψ_and_∇logψ!(∇logψ, out::AbstractMatrix, W::NDM, c::NDMBatchedCache, σr_r::AbstractMatrix, σc_r::AbstractMatrix)
     ∑σ      = c.∑σ
     Δσ      = c.Δσ
     θλ_σ    = c.θλ_σ
