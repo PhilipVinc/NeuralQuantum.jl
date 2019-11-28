@@ -1,4 +1,5 @@
-struct KLocalLiouvillian{T,A,B,C} <: AbsLinearOperator
+struct KLocalLiouvillian{H,T,A,B,C} <: AbsLinearOperator
+    hilb::H
     sites::T
     HnH_l::A
     HnH_r::B
@@ -6,23 +7,37 @@ struct KLocalLiouvillian{T,A,B,C} <: AbsLinearOperator
 end
 
 function KLocalLiouvillian(HnH, Lops)
+    hilb = basis(HnH)
     T = eltype(HnH)
     HnH_l = T(-1.0im) * KLocalOperatorTensor(HnH, nothing)
     HnH_r = T(1.0im) * KLocalOperatorTensor(nothing, HnH')
 
     LLdag_list = [KLocalOperatorTensor(L, conj(L)) for L=Lops]
-    LLdag = isempty(LLdag_list) ? [] : sum(LLdag_list)
+    LLdag = isempty(LLdag_list) ? LocalOperator(SuperOpSpace(basis(HnH))) : sum(LLdag_list)
 
-    return KLocalLiouvillian([], HnH_l, HnH_r, LLdag)
+    return KLocalLiouvillian(SuperOpSpace(basis(HnH)),[], HnH_l, HnH_r, LLdag)
 end
 
+function QuantumOpticsBase.liouvillian(H::AbsLinearOperator, Lops::AbstractVector)
+    HnH = duplicate(H)
+    for L=Lops
+        HnH += -0.5im * transpose(conj(L))*L
+    end
+    return KLocalLiouvillian(HnH, Lops)
+end
+
+function QuantumOpticsBase.liouvillian(Lops::AbstractVector)
+    hilb = basis(first(Lops))
+    liouvillian(LocalOperator(hilb), Lops)
+end
 sites(op::KLocalLiouvillian) = op.sites
+QuantumOpticsBase.basis(op::KLocalLiouvillian) = op.hilb
 
 conn_type(op::KLocalLiouvillian) = conn_type(op.HnH_l)
 
 accumulate_connections!(a, b::Vector, c) = nothing
 
-function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian, v::DoubleState)
+function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian, v::ADoubleState)
     accumulate_connections!(acc, op.HnH_l, v)
     accumulate_connections!(acc, op.HnH_r, v)
     accumulate_connections!(acc, op.LLdag, v)
@@ -30,15 +45,25 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian
     return acc
 end
 
-function map_connections(fun::Function, op::KLocalLiouvillian, v::DoubleState)
+function row_valdiff!(conn::OpConnection, op::KLocalLiouvillian, v::ADoubleState)
+    row_valdiff!(conn, op.HnH_l, v)
+    row_valdiff!(conn, op.HnH_r, v)
+    row_valdiff!(conn, op.LLdag, v)
+    return conn
+end
+
+function map_connections(fun::Function, op::KLocalLiouvillian, v::ADoubleState)
     map_connections(fun, op.HnH_l, v)
     map_connections(fun, op.HnH_r, v)
     map_connections(fun, op.LLdag, v)
     return nothing
 end
 
+
+
 Base.show(io::IO, m::MIME"text/plain", op::KLocalLiouvillian) = begin
     T    = eltype(op.HnH_l)
+    h    = basis(op)
 
-    print(io, "KLocalLiouvillian($T)")
+    print(io, "KLocalLiouvillian($T)\n  Hilb: $h")
 end

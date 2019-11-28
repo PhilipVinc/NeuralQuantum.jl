@@ -3,13 +3,15 @@
 export logψ, ∇logψ, ∇logψ!, logψ_and_∇logψ, logψ_and_∇logψ!, grad_cache
 
 """
-    grad_cache(net::N) -> tuple
+    grad_cache([T=out_type(net)], net::N) -> tuple
 
 Creates a tuple holding all derivatives of the network N.
+If the type is not specified, it defaults to the output type of the network.
 """
-grad_cache(net::NeuralNetwork) = begin
-    is_analytic(net) && return RealDerivative(net)
-    return WirtingerDerivative(net)
+grad_cache(net::NeuralNetwork) = grad_cache(out_type(net), net)
+grad_cache(T::Type{<:Number}, net::NeuralNetwork) = begin
+    is_analytic(net) && return RealDerivative(T, net)
+    return WirtingerDerivative(T, net)
 end
 
 # Define various aliases used a bit everywhere in networks and when testing
@@ -59,7 +61,6 @@ end
 # Autodiff version of the gradient: if you are hitting this, expect
 # bad performance. Maybe you should hand-code the gradient of your model?
 function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
-    σ = config(σ)
 
     # Old implementation. Probably must be resuscitated one day, but not compatible
     # with our implementation of gradient caches and trainable.
@@ -105,6 +106,14 @@ input_type(net::NeuralNetwork) = real(eltype(trainable_first(net)))
 Returns the numerical `eltype` of the output of the network.
 """
 out_type(net::NeuralNetwork) = error("Not Implemented")
+
+"""
+    out_similar(net) -> Array
+
+Returns the result of similar for the output of the network.
+This is either a scalar or a row vector.
+"""
+out_similar(net::NeuralNetwork) = zero(out_type(net))
 
 """
     is_analytic(net) -> Bool

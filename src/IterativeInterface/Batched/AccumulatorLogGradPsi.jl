@@ -16,43 +16,36 @@ will be throw otherwise)
 The configuration should be passed as a vector (if ket) or as a tuple
 of two vectors (if density matrix).
 """
-mutable struct ScalarBatchAccumulator{N,A,B,Cc,Cg,Dc,Dg}
+mutable struct AccumulatorLogGradPsi{N,A,B,C} <: AbstractMachineGradAccumulator
     bnet::N         # A batched version of the cached neural network
 
     in_buf::A       # the matrix of Nsites x batchsz used as input
     out_buf::B      # The row vector of outputs
-
-    ψ0_buf_c::Cc       # Buffers alls the <σ|ψ> of the denominator
-    ψ0_buf_g::Cg       # Buffers alls the <σ|ψ> of the denominator
-    mel_buf_c::Dc      # ⟨σ|Ô|σ'⟩ in the buffer
-    mel_buf_g::Dg      # ⟨σ|Ô|σ'⟩ in the buffer
+    ∇out_buf::C
 
     buf_n::Int      # Counter for elements in buffer
     batch_sz::Int   # batch size
 end
 
-function ScalarBatchAccumulator(net::NeuralNetwork, v::State, batch_sz)
-    bnet    = cached(net, batch_sz)
+function AccumulatorLogGradPsi(net::NeuralNetwork, v, batch_sz)
+    #bnet     = cached(net, batch_sz)
+    bnet     = net
 
-    w       = trainable_first(net)
-    RT      = real(eltype(w))
-    in_buf  = preallocate_state_batch(w, RT, v, batch_sz)
-    out_buf = similar(w, out_type(net), 1, batch_sz)
+    w        = trainable_first(net)
+    RT       = real(eltype(w))
+    in_buf   = deepcopy(v)
+    out_buf  = out_similar(net)
+    ∇out_buf = grad_cache(net, batch_sz)
 
-    ψ0_buf_c  = zeros(out_type(net), 1, batch_sz)
-    ψ0_buf_g  = similar(w, out_type(net), 1, batch_sz)
-    mel_buf_c = zeros(out_type(net), 1, batch_sz)
-    mel_buf_g = similar(w, out_type(net), 1, batch_sz)
-
-    return ScalarBatchAccumulator(
-        bnet, in_buf, out_buf,
-        ψ0_buf_c, ψ0_buf_g, mel_buf_c, mel_buf_g, 0, batch_sz)
+    return AccumulatorLogGradPsi(
+        bnet,
+        in_buf, out_buf, ∇out_buf,
+        0, batch_sz)
 end
 
-
-Base.length(a::ScalarBatchAccumulator) = a.batch_sz
-Base.count(a::ScalarBatchAccumulator)  = a.buf_n
-isfull(a::ScalarBatchAccumulator) = count(a) == length(a)
+Base.length(a::AccumulatorLogGradPsi) = a.batch_sz
+Base.count(a::AccumulatorLogGradPsi)  = a.buf_n
+isfull(a::AccumulatorLogGradPsi) = count(a) == length(a)
 
 """
     init!(c::ScalarBatchAccumulator)
@@ -60,19 +53,44 @@ isfull(a::ScalarBatchAccumulator) = count(a) == length(a)
 Resets the internal counter of the accumulator, deleting
 all previously accumulated (but not computed) values.
 """
-init!(c::ScalarBatchAccumulator) = c.buf_n = 0
+init!(c::AccumulatorLogGradPsi) = c.buf_n = 0
+function init!(c::AccumulatorLogGradPsi, σ)
+    init!(c)
 
-function (c::ScalarBatchAccumulator)(mel, v, ψ0)
+    # Reset the state so that later is faster to apply the changes
+    statecopy!(c.in_buf, σ)
+    return nothing
+end
+
+function (c::AccumulatorLogGradPsi)(v::Union{AState, ADoubleState})
     @assert !isfull(c) "Pushed data to a full accumulator."
 
     # Increase the step in our internal buffer
     # this should be guaranteed to always be < max_capacity
     c.buf_n = c.buf_n + 1
 
-    c.ψ0_buf_c[c.buf_n]   = ψ0
-    c.mel_buf_c[c.buf_n]  = mel
-    store_state!(c.in_buf, v, c.buf_n)
+    buf_i = NeuralQuantum.unsafe_get_batch(c.in_buf, c.buf_n)
+    statecopy!(buf_i, v)
+
+    return nothing
 end
+
+function (c::AccumulatorLogGradPsi)(cngs)
+    @assert !isfull(c) "Pushed data to a full accumulator."
+    c.buf_n = c.buf_n + 1
+
+    σp = unsafe_get_batch(c.in_buf, c.buf_n)
+    apply!(σp, cngs)
+end
+
+function (c::AccumulatorLogGradPsi)(cngs_l, cngs_r)
+    @assert !isfull(c) "Pushed data to a full accumulator."
+    c.buf_n = c.buf_n + 1
+
+    σp = unsafe_get_batch(c.in_buf, c.buf_n)
+    apply!(σp, cngs_l, cngs_r)
+end
+
 
 """
     process_accumulator!(c)
@@ -88,21 +106,15 @@ The output will be returned. You should not assume ownership of
 the output, as it is preallocated and will be used for further
 computations of the accumulator.
 """
-function process_accumulator!(c::ScalarBatchAccumulator)
-    out = c.out_buf
+function process_accumulator!(c::AccumulatorLogGradPsi)
+    out  = c.out_buf
+    ∇out = c.∇out_buf
 
     # Compute the batch of logψ neural networks
-    logψ!(out, c.bnet, c.in_buf)
+    logψ_and_∇logψ!(∇out, out, c.bnet, c.in_buf)
 
-    ψ0_buf  = isnothing(c.ψ0_buf_g)  ? c.ψ0_buf_c : copy!(c.ψ0_buf_g, c.ψ0_buf_c)
-    mel_buf = isnothing(c.mel_buf_g) ? c.ψ0_buf_c : copy!(c.mel_buf_g, c.mel_buf_c)
-
-    # compute the local contributions
-    out .= mel_buf .* exp.(out .- ψ0_buf)
-    #collect ? if using the gpu... need to think about this
-
-    # Reset th ecounter of the batch accumulator
+    # Reset the counter of the batch accumulator
     init!(c)
 
-    return out
+    return ∇out, out
 end

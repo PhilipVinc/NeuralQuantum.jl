@@ -4,7 +4,9 @@
 A KLocalOperator representing the sum of several KLocalOperator-s. Internally,
 the sum is stored as a vector of local operators acting on some sites.
 """
-struct KLocalOperatorSum{VS<:AbstractVector,VOp} <: AbsLinearOperator
+struct KLocalOperatorSum{H<:AbstractHilbert, VS<:AbstractVector,VOp} <: AbsLinearOperator
+    hilb::H
+
     # list of sites in this sum
     sites::VS
 
@@ -12,10 +14,12 @@ struct KLocalOperatorSum{VS<:AbstractVector,VOp} <: AbsLinearOperator
     operators::VOp
 end
 
-KLocalOperatorSum(op::KLocalOperator) = KLocalOperatorSum([sites(op)], [op])
-KLocalOperatorSum(op::AbsLinearOperator) = KLocalOperatorSum([sites(op)], [op])
+KLocalOperatorSum(op::KLocalOperator) = KLocalOperatorSum(basis(op), [sites(op)], [op])
+KLocalOperatorSum(op::AbsLinearOperator) = KLocalOperatorSum(basis(op), [sites(op)], [op])
+KLocalOperatorSum(op::KLocalOperatorSum) = duplicate(op)
 
 ## Accessors
+QuantumOpticsBase.basis(op::KLocalOperatorSum) = op.hilb
 operators(op::KLocalOperatorSum) = op.operators
 conn_type(op::KLocalOperatorSum) = conn_type(eltype(operators(op)))
 
@@ -28,32 +32,32 @@ function duplicate(op::KLocalOperatorSum)
         push!(ops, duplicate(_op))
     end
 
-    KLocalOperatorSum(new_sites, ops)
+    return KLocalOperatorSum(basis(op), new_sites, ops)
 end
 
 #
-function row_valdiff!(conn::OpConnection, op::KLocalOperatorSum, v::State)
+function row_valdiff!(conn::OpConnection, op::KLocalOperatorSum, v)
     for _op=operators(op)
         row_valdiff!(conn, _op, v)
     end
-    conn
+    return conn
 end
 
-function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperatorSum, v::State)
+function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperatorSum, v)
     for _op=operators(op)
         row_valdiff_index!(conn, _op, v)
     end
-    conn
+    return conn
 end
 
-function map_connections(fun::Function, ∑Ô::KLocalOperatorSum, v::State)
+function map_connections(fun::Function, ∑Ô::KLocalOperatorSum, v)
     for Ô=operators(∑Ô)
         map_connections(fun, Ô, v)
     end
     return nothing
 end
 
-function accumulate_connections!(acc::AbstractAccumulator, ∑Ô::KLocalOperatorSum, v::State)
+function accumulate_connections!(acc::AbstractAccumulator, ∑Ô::KLocalOperatorSum, v)
     for Ô=operators(∑Ô)
         accumulate_connections!(acc, Ô, v)
     end
@@ -80,10 +84,12 @@ function Base.sum!(op_l::KLocalOperatorSum, op_r::KLocalOperatorSum)
     op_l
 end
 
-+(op_l::KLocalOperatorSum, op::AbsLinearOperator) = sum!(duplicate(op_l), op)
-+(op::AbsLinearOperator, ops::KLocalOperatorSum) = ops + op
-+(op_l::KLocalOperatorSum, op_r::KLocalOperatorSum) = sum!(duplicate(op_l), op_r)
-+(op_l::KLocalOperator, op_r::KLocalOperator) = begin
+Base.:+(op::AbsLinearOperator, ops::KLocalOperatorSum) = ops + op
+Base.:-(op::AbsLinearOperator, ops::KLocalOperatorSum) = ops - op
+
+Base.:+(op_l::KLocalOperatorSum, op::AbsLinearOperator) = sum!(duplicate(op_l), op)
+Base.:+(op_l::KLocalOperatorSum, op_r::KLocalOperatorSum) = sum!(duplicate(op_l), op_r)
+Base.:+(op_l::KLocalOperator, op_r::KLocalOperator) = begin
     sites(op_l) == sites(op_r) && return _sum_samesite(op_l, op_r)
     return KLocalOperatorSum(op_l) + op_r
 end
@@ -96,7 +102,7 @@ function Base.transpose(ops::KLocalOperatorSum)
     for op = operators(ops)
         push!(new_ops, transpose(op))
     end
-    return KLocalOperatorSum(new_sites, new_ops)
+    return KLocalOperatorSum(basis(ops), new_sites, new_ops)
 end
 
 function Base.conj(ops::KLocalOperatorSum)
@@ -107,7 +113,7 @@ function Base.conj(ops::KLocalOperatorSum)
     for op = operators(ops)
         push!(new_ops, conj(op))
     end
-    return KLocalOperatorSum(new_sites, new_ops)
+    return KLocalOperatorSum(basis(ops), new_sites, new_ops)
 end
 
 function Base.conj!(ops::KLocalOperatorSum)
@@ -119,7 +125,7 @@ end
 
 Base.adjoint(ops::KLocalOperatorSum) = conj!(transpose(ops))
 
-function *(opl::KLocalOperatorSum, opr::KLocalOperator)
+function Base.:*(opl::KLocalOperatorSum, opr::KLocalOperator)
     ∑op =  duplicate(opl)
     for (i,op)=enumerate(operators(∑op))
         op_new = op*opr
@@ -129,7 +135,7 @@ function *(opl::KLocalOperatorSum, opr::KLocalOperator)
     return ∑op
 end
 
-function *(opl::KLocalOperator, opr::KLocalOperatorSum)
+function Base.:*(opl::KLocalOperator, opr::KLocalOperatorSum)
     ∑op =  duplicate(opr)
     for (i,op)=enumerate(operators(∑op))
         op_new = opl*op
@@ -143,12 +149,10 @@ Base.show(io::IO, ::MIME"text/plain", op::KLocalOperatorSum) = print(io,
     "KLocalOperatorSum: \n\t -sites: $(op.sites)")
 
 Base.eltype(::T) where {T<:KLocalOperatorSum} = eltype(T)
-Base.eltype(T::Type{KLocalOperatorSum{Vec,VOp}}) where {Vec,VOp} =
+Base.eltype(T::Type{KLocalOperatorSum{H,Vec,VOp}}) where {H,Vec,VOp} =
     eltype(eltype(VOp))
 
-*(a::Number, b::KLocalOperatorSum) =
-    _op_alpha_prod(b,a)
-*(b::KLocalOperatorSum, a::Number) =
+Base.:*(a::Number, b::KLocalOperatorSum) =
     _op_alpha_prod(b,a)
 
 function _op_alpha_prod(ops::KLocalOperatorSum, a::Number)

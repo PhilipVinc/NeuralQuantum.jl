@@ -41,7 +41,11 @@ function ObservablesProblem(T::Type{<:Number}, obs::Any...; operator=true)
                 op = el
             end
             push!(names, Symbol(name))
-            push!(matrices_trans, to_linear_operator(op, T))
+            if (op isa AbsLinearOperator)
+                push!(matrices_trans, op)
+            else
+                push!(matrices_trans, to_linear_operator(op, T))
+            end
             b = basis(op)
         end
 
@@ -83,8 +87,8 @@ end
 
 QuantumOpticsBase.basis(prob::ObservablesProblem) = prob.HilbSpace
 
-state(T::Type{<:Number}, prob::ObservablesProblem, net::MatrixNet) =
-    DiagonalStateWrapper(state(T, basis(prob), net))
+#state(T::Type{<:Number}, prob::ObservablesProblem, net::MatrixNet) =
+#    DiagonalStateWrapper(state(T, basis(prob), net))
 
 #state(T::Type{<:Number}, prob::ObservablesProblem{<:Any, <:AbsLinearOperator}, net) =
 #    DiagonalStateWrapper(state_lut(T, basis(prob), net))

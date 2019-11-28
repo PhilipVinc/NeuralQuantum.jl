@@ -30,6 +30,10 @@ function GroundStateProblem(T::Type{<:Number}, hamiltonian::DataOperator; operat
     return _build_groundstate_problem(T, hamiltonian, operators=operators; kwargs...)
 end
 
+function GroundStateProblem(T::Type{<:Number}, ham::AbsLinearOperator; kwargs...)
+    HamiltonianGSEnergyProblem(basis(ham), ham, 0.0)
+end
+
 
 # The actual implementation
 function _build_groundstate_problem(T::Type{<:Number}, hamiltonian; operators=true, variance=false)
@@ -44,7 +48,7 @@ function _build_groundstate_problem(T::Type{<:Number}, hamiltonian; operators=tr
     end
 
     if !variance
-        return HamiltonianGSEnergyProblem(basis(hamiltonian), ham, 0.0)
+        return HamiltonianGSEnergyProblem(qo_to_nq_basis(basis(hamiltonian)), ham, 0.0)
     else
         throw("Variance minimization problem not implemented yet")
     end

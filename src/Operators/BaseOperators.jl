@@ -6,7 +6,7 @@ abstract type AbsLinearOperator end
 Returns all non-zero elements in the row represented by the state `v` of
 operator `op`. The result is an `OpConnection` type.
 """
-row_valdiff(op::AbsLinearOperator, v::State) = row_valdiff!(OpConnection(op), op, v)
+row_valdiff(op::AbsLinearOperator, v) = row_valdiff!(OpConnection(op), op, v)
 
 """
     row_valdiff!(opconn::OpConnection, op::AbsLinearOperator, v::State)
@@ -18,3 +18,7 @@ function row_valdiff! end
 
 row_valdiff_index(op::AbsLinearOperator, v::State) = row_valdiff_index!(OpConnectionIndex(op), op, v)
 function row_valdiff_index! end
+
+# standard functions
+Base.:*(op::AbsLinearOperator, α::Number) = α*op
+Base.:/(op::AbsLinearOperator, α::Number) = inv(α)*op

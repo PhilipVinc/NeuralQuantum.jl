@@ -1,10 +1,10 @@
-## MEtropolis
+## LocalRule
 export Nagy
 struct Nagy{T<:Vector} <: MCMCRule
     adjacency_list::T
 end
 
-function markov_chain_step!(σ, s::MCMCSampler{N}, net::MatrixNet, c) where N<:Nagy
+function markov_chain_step!(σ, s::MetropolisSampler{N}, net::MatrixNet, c) where N<:Nagy
     # Check termination condition, and return if verified
     done(s, σ, c) && return false
 

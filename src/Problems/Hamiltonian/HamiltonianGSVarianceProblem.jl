@@ -8,13 +8,13 @@ end
 HamiltonianGSVarianceProblem(args...) = HamiltonianGSVarianceProblem(STD_REAL_PREC, args...)
 HamiltonianGSVarianceProblem(T::Type{<:Number}, gl::GraphOperator; operators=true) = begin
     if operators
-        return HamiltonianGSVarianceProblem(basis(gl), to_linear_operator(gl), 0.0)
+        return HamiltonianGSVarianceProblem(qo_to_nq_basis(basis(gl)), to_linear_operator(gl), 0.0)
     else
         return HamiltonianGSVarianceProblem(T, SparseOperator(gl))
     end
 end
 HamiltonianGSVarianceProblem(T::Type{<:Number}, Ham::SparseOperator) =
-    HamiltonianGSVarianceProblem(Ham.basis_l, data(Ham), 0.0)
+    HamiltonianGSVarianceProblem(qo_to_nq_basis(Ham.basis_l), data(Ham), 0.0)
 
 QuantumOpticsBase.basis(prob::HamiltonianGSVarianceProblem) = prob.HilbSpace
 
