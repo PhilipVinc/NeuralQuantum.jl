@@ -18,14 +18,6 @@ pkg"add https://github.com/PhilipVinc/NeuralQuantum.jl"
 `QuantumLattices` is a custom package that allows defining new types of operators on a lattice.
 It's not needed natively but it is usefull to define hamiltonians on a lattice.
 
-To use this package, until juli 1.3 will be released you will need to be on `Zygote`, `IRTools` and `ZygoteRules` master branches.
-You can do that by either running the commands
-```
-using Pkg
-pkg"add IRTools#master"
-pkg"add ZygoteRules#master"
-pkg"add Zygote#master"
-```
 Alternatively you may activate the project included in the manifest that comes with NeuralQuantum.
 
 
@@ -44,7 +36,7 @@ You must write the training loop by yourself. Check the documentation and the ex
 ```
 # Load dependencies
 using NeuralQuantum, QuantumLattices
-using Printf, ValueHistoriesLogger, Logging, ValueHistories
+using Printf, Logging, ValueHistories
 
 # Select the numerical precision
 T      = Float32
