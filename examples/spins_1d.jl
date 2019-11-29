@@ -11,7 +11,7 @@ Nsites = prod(sites)
 # Create the lattice as [Nx, Ny, Nz]
 lattice = SquareLattice(sites, PBC=true)
 # Create the hamiltonian for the QI model
-Ĥ = quantum_ising_ham(lattice, g=1.0, V=2.0)
+Ĥ = quantum_ising_ham(lattice, g=-2.0, V=4.0)
 # Create the Problem (cost function) for the given hamiltonian
 # targeting the ground state.
 prob = GroundStateProblem(T, Ĥ)
