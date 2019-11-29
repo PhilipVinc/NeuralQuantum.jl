@@ -29,6 +29,11 @@ cache(net::RBM, batch_sz) = begin
 end
 batch_size(c::RBMBatchedCache) = size(c.θ, 2)
 
+function Base.show(io::IO, m::RBMBatchedCache) 
+    print(io, "RBMBatchedCache with batch-size = $(batch_size(m))")
+end
+
+
 function logψ!(out::AbstractArray, net::RBM, c::RBMBatchedCache, σ_r::AbstractArray)
     θ = c.θ
     θ_tmp = c.θ_tmp
@@ -42,7 +47,7 @@ function logψ!(out::AbstractArray, net::RBM, c::RBMBatchedCache, σ_r::Abstract
     #θ .= net.b .+ net.W * σ
     mul!(θ, net.W, σ)
     θ .+= net.b
-    logℒθ .= logℒ.(θ)
+    logℒθ .= net.f.(θ)
 
     #res = σ'*net.a + sum(logℒθ, dims=1)
     mul!(res, net.a', σ)
@@ -70,8 +75,8 @@ function logψ_and_∇logψ!(∇logψ, out, net::RBM, c::RBMBatchedCache, σ_r)
     #θ .= net.b .+ net.W * σ
     mul!(θ, net.W, σ)
     θ .+= net.b
-    logℒθ  .= logℒ.(θ)
-    ∂logℒθ .= ∂logℒ.(θ)
+    logℒθ  .= net.f.(θ)
+    ∂logℒθ .= fwd_der.(net.f, θ)
 
     #res = σ'*net.a + sum(logℒθ, dims=1)
     mul!(res, net.a', σ)

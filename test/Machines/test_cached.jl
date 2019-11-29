@@ -8,7 +8,10 @@ ma = (T, N) -> RBMSplit(T, N, 2)
 machines["RBMSplit"] = ma
 
 ma = (T, N) -> RBM(T, N, 2)
-machines["RBM"] = ma
+im_machines["RBM_softplus"] = ma
+
+ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
+im_machines["RBM_cosh"] = ma
 
 N = 4
 T = Float32

@@ -263,3 +263,4 @@ end
 # diagonal
 logψ!(out::AbstractArray, net::MatrixNeuralNetwork, cache::NNCache, σ::AStateBatch) =
     logψ!(out, net, cache, σ, σ)
+    
