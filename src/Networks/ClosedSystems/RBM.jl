@@ -1,11 +1,15 @@
 export RBM
 
-struct RBM{VT,MT} <: KetNeuralNetwork
+struct RBM{F,VT,MT} <: KetNeuralNetwork
     a::VT
     b::VT
     W::MT
+
+    f::F
 end
-@functor RBM
+#@functor RBM
+
+functor(x::RBM) = (a=x.a, b=x.b, W=x.W), y -> RBM(y...)
 
 """
     RBMSplit([T=Complex{STD_REAL_PREC}], N, α, [initW, initb])
@@ -29,22 +33,22 @@ Refs:
     https://arxiv.org/abs/1606.02318
 """
 RBM(in, α, args...) = RBM(ComplexF32, in, α, args...)
-RBM(T::Type, in, α,
+RBM(T::Type, in, α, σ::Function=logℒ,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
     initb=(dims...)->rescaled_normal(T, 0.01, dims...),
     inita=(dims...)->rescaled_normal(T, 0.01, dims...)) =
     RBM(inita(in), initb(convert(Int,α*in)),
-        initW(convert(Int,α*in), in))
+        initW(convert(Int,α*in), in), σ)
 
-out_type(net::RBM{VT,MT}) where {VT,MT} = eltype(VT)
+out_type(net::RBM{F,VT,MT}) where {F,VT,MT} = eltype(VT)
 is_analytic(net::RBM) = true
 
 (net::RBM)(σ::State) = net(config(σ))
-(net::RBM)(σ::AbstractVector) = transpose(net.a)*σ .+ sum(logℒ.(net.b .+ net.W*σ))
-(net::RBM)(σ::AbstractMatrix) = transpose(net.a)*σ .+ sum(logℒ.(net.b .+ net.W*σ), dims=1)
+(net::RBM)(σ::AbstractVector) = transpose(net.a)*σ .+ sum(net.f.(net.b .+ net.W*σ))
+(net::RBM)(σ::AbstractMatrix) = transpose(net.a)*σ .+ sum(net.f.(net.b .+ net.W*σ), dims=1)
 
-function Base.show(io::IO, m::RBM{T}) where T
-    print(io, "RBM($(eltype(T)), n=$(length(m.a)), n_hid=$(length(m.b)) => α=$(length(m.b)/length(m.a)))")
+function Base.show(io::IO, m::RBM{T,VT}) where {T,VT}
+    print(io, "RBM($(eltype(VT)), n=$(length(m.a)), n_hid=$(length(m.b)) => α=$(length(m.b)/length(m.a)), f=($T))")
 end
 
 # Cached version
@@ -72,7 +76,7 @@ function (net::RBM)(c::RBMCache, σ_r)
     mul!(θ, net.W, σ, T(1.0), T(1.0))
     #BLAS.gemv!('N', T(1.0), net.W, σ, T(1.0), θ)
 
-    logℒθ .= logℒ.(θ)
+    logℒθ .= net.f.(θ)
     logψ = dot(σ,net.a) + sum(logℒθ)
     return logψ
 end
@@ -88,11 +92,11 @@ function logψ_and_∇logψ!(∇logψ, net::RBM, c::RBMCache, σ_r)
     mul!(θ, net.W, σ, T(1.0), T(1.0))
     #BLAS.gemv!('N', T(1.0), net.W, σ, T(1.0), θ)
 
-    logℒθ .= logℒ.(θ)
+    logℒθ .= net.f.(θ)
     logψ = dot(σ,net.a) + sum(logℒθ)
 
     ∇logψ.a .= σ
-    ∇logψ.b .= ∂logℒ.(θ)
+    ∇logψ.b .= fwd_der.(net.f, θ)
     ∇logψ.W .= ∇logψ.b  .* transpose(σ)
     return logψ
 end

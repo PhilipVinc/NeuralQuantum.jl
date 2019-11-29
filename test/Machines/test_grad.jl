@@ -12,7 +12,10 @@ ma = (T, N) -> RBMSplit(T, N, 2)
 im_machines["RBMSplit"] = ma
 
 ma = (T, N) -> RBM(T, N, 2)
-im_machines["RBM"] = ma
+im_machines["RBM_softplus"] = ma
+
+ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
+im_machines["RBM_cosh"] = ma
 
 ma = (T, N) -> PureStateAnsatz(Chain(Dense(N, N*2), Dense(N*2, N*3), WSum(N*3)), N)
 re_machines["ChainKet"] = ma

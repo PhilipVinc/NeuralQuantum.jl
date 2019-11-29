@@ -11,7 +11,10 @@ ma = (T, N) -> NDM(T, N, 2, 3)
 machines["NDM"] = ma
 
 ma = (T, N) -> RBM(T, N, 2)
-machines["RBM"] = ma
+im_machines["RBM_softplus"] = ma
+
+ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
+im_machines["RBM_cosh"] = ma
 
 N = 4
 T = Float32
@@ -24,11 +27,8 @@ b_sz = 3
     v = state(T, SpinBasis(1//2)^N, net)
     vb = preallocate_state_batch(trainable_first(net), T,
                              v, b_sz)
-    if vb isa Tuple
-        rand!.(vb)
-    else
-        rand!(vb)
-    end
+
+    rand!(vb, hilb)
 
     @test net(vb) ≈ cnet(vb)
     if (vb isa Tuple)
