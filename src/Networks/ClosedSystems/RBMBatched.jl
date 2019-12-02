@@ -29,7 +29,7 @@ cache(net::RBM, batch_sz) = begin
 end
 batch_size(c::RBMBatchedCache) = size(c.θ, 2)
 
-function Base.show(io::IO, m::RBMBatchedCache) 
+function Base.show(io::IO, m::RBMBatchedCache)
     print(io, "RBMBatchedCache with batch-size = $(batch_size(m))")
 end
 
@@ -38,7 +38,6 @@ function logψ!(out::AbstractArray, net::RBM, c::RBMBatchedCache, σ_r::Abstract
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
-    res = out#c.res
     T = eltype(θ)
 
     # copy the states to complex valued states for the computations.
@@ -49,13 +48,9 @@ function logψ!(out::AbstractArray, net::RBM, c::RBMBatchedCache, σ_r::Abstract
     θ .+= net.b
     logℒθ .= net.f.(θ)
 
-    #res = σ'*net.a + sum(logℒθ, dims=1)
-    mul!(res, net.a', σ)
-    conj!(res)
-    Base.mapreducedim!(identity, +, res, logℒθ)
-
-    # TODO make this better
-    #copyto!(out, 1, res, 1, length(out))
+    #res = σᵗ*net.a + sum(logℒθ, dims=1)
+    mul!(out, transpose(net.a), σ)
+    Base.mapreducedim!(identity, +, out, logℒθ)
 
     return out
 end
@@ -79,9 +74,8 @@ function logψ_and_∇logψ!(∇logψ, out, net::RBM, c::RBMBatchedCache, σ_r)
     ∂logℒθ .= fwd_der.(net.f, θ)
 
     #res = σ'*net.a + sum(logℒθ, dims=1)
-    mul!(res, net.a', σ)
-    conj!(res)
-    #sum!(logℒθ, res)
+    mul!(out, transpose(net.a), σ)
+    #sum!(logℒθ, res, init=false)
     Base.mapreducedim!(identity, +, res, logℒθ)
 
     ∇logψ.a   .= σ

@@ -1,8 +1,8 @@
 export SR, sr_none, sr_multiplicative, sr_shift
-export sr_diag, sr_cholesky, sr_div, sr_minres, sr_lsq
+export sr_diag, sr_cholesky, sr_div, sr_minres, sr_lsq, sr_cg
 
 @enum SRPreconditionType sr_none=1 sr_shift=2 sr_multiplicative=3
-@enum SRAlgorithm sr_diag=1 sr_cholesky=2 sr_pivcholesky=3 sr_div=4 sr_minres=11 sr_lsq=12
+@enum SRAlgorithm sr_diag=1 sr_cholesky=2 sr_pivcholesky=3 sr_div=4 sr_minres=11 sr_lsq=12 sr_cg=13
 is_iterative(alg::SRAlgorithm) = Int(alg) >=10
 
 ################################################################################
@@ -38,7 +38,7 @@ struct SR{T1,T2,T3,TP} <: Algorithm
     λmin::TP
 end
 
-SR(T::Type=STD_REAL_PREC; ϵ=0.001, use_iterative=true, precision=10e-5,
+SR(T::Type=STD_REAL_PREC; ϵ=0.001, precision=10e-5,
    precondition_type=sr_shift, full_matrix=true, algorithm=sr_cholesky,
    λ0=100.0, b=0.95, λmin=1e-4) = SR(T(ϵ), T(1.0), T(precision),
                                           precondition_type, algorithm, full_matrix,

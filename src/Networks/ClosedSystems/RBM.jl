@@ -48,7 +48,7 @@ is_analytic(net::RBM) = true
 (net::RBM)(σ::AbstractMatrix) = transpose(net.a)*σ .+ sum(net.f.(net.b .+ net.W*σ), dims=1)
 
 function Base.show(io::IO, m::RBM{T,VT,F}) where {T,VT,F}
-    print(io, "RBM($(eltype(VT)), n=$(length(m.a)), n_hid=$(length(m.b)) => α=$(length(m.b)/length(m.a)), f=($F))")
+    print(io, "RBM($(eltype(VT)), n=$(length(m.a)), α=$(length(m.b)/length(m.a)), f=$F)")
 end
 
 # Cached version
