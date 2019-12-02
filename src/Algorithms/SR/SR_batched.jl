@@ -101,7 +101,6 @@ end
 
 function precondition!(data::SRIterativeCache, params::SR, iter_n)
     ϵ = params.sr_diag_shift
-
     success = true
 
     for (Δw, S, F) = zip(vec_data(data.∇out), data.S, vec_data(data.F))
@@ -128,7 +127,13 @@ function precondition!(data::SRIterativeCache, params::SR, iter_n)
                 success = false
             end
         else
-            x, hist = minresqlp(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
+            if params.algorithm == sr_minres
+                x, hist = minresqlp(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
+            elseif params.algorithm == sr_lsq
+                x, hist = lsqr(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
+            elseif params.algorithm == sr_cg
+                x, hist = cg(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
+            end
             #x, hist = cg(S.+ ϵ*I, F, maxiter=size(S,2)*10, log=true, verbose=true, tol=10e-10)
             if eltype(Δw) <: Real
                 Δw .= real.(x)

@@ -3,10 +3,10 @@ export logψ!
 # Definitions for batched evaluation of networks
 # When the networrks are not cached and therefore allocate
 # the result structure
-#@inline logψ!(out::AbstractArray, net::NeuralNetwork, σ::NTuple{N,<:AbstractArray}) where N =
-#    out .= logψ(net, σ)
-#@inline logψ!(out::AbstractArray, net::NeuralNetwork, σ::AbstractArray) =
-#    out .= logψ(net, σ)
+@inline logψ!(out::AbstractMatrix, net::NeuralNetwork, σ::ADoubleStateBatch) where N =
+    out .= net(σ...)
+@inline logψ!(out::AbstractMatrix, net::NeuralNetwork, σ::AStateBatch) =
+    out .= net(σ)
 
 """
     NNCache{N}
@@ -263,4 +263,3 @@ end
 # diagonal
 logψ!(out::AbstractArray, net::MatrixNeuralNetwork, cache::NNCache, σ::AStateBatch) =
     logψ!(out, net, cache, σ, σ)
-    
