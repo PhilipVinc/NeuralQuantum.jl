@@ -5,14 +5,20 @@ num_types = [Float32, Float64]
 re_machines = Dict()
 im_machines = Dict()
 
-ma = (T, N) -> NDM(T, N, 2, 3)
-re_machines["NDM"] = ma
-
 ma = (T, N) -> RBMSplit(T, N, 2)
 im_machines["RBMSplit"] = max
 
-ma = (T, N) -> RBM(T, N, 2)
-im_machines["RBM"] = ma
+ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ)
+im_machines["RBM_softplus"] = ma
+
+ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
+im_machines["RBM_cosh"] = ma
+
+ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ)
+re_machines["NDM_softplus"] = ma
+
+ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ2)
+re_machines["NDM_cosh"] = ma
 
 ma = (T, N) -> PureStateAnsatz(Chain(Dense(N, N*2), Dense(N*2, N*3), WSum(N*3)), N)
 re_machines["ChainKet"] = ma

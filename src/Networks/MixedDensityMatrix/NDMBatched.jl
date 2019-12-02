@@ -86,6 +86,11 @@ end
 
 batch_size(c::NDMBatchedCache) = size(c.σr, 2)
 
+function Base.show(io::IO, m::NDMBatchedCache)
+    print(io, "NDMBatchedCache with batch-size = $(batch_size(m))")
+end
+
+
 function logψ!(out::AbstractMatrix, W::NDM, c::NDMBatchedCache, σr_r::AbstractMatrix, σc_r::AbstractMatrix)
     ∑σ      = c.∑σ
     Δσ      = c.Δσ
@@ -113,16 +118,16 @@ function logψ!(out::AbstractMatrix, W::NDM, c::NDMBatchedCache, σr_r::Abstract
         mul!(θμ_σ, W.w_μ, σr)
         θμ_σ .+= W.h_μ
 
-        c.θλ_σ_tmp .= logℒ.(θλ_σ)
+        c.θλ_σ_tmp .= W.f.(θλ_σ)
         c.∑logℒ_λ_σ .= 0.0
         Base.mapreducedim!(identity, +, c.∑logℒ_λ_σ, c.θλ_σ_tmp)
 
-        c.θμ_σ_tmp .= logℒ.(θμ_σ)
+        c.θμ_σ_tmp .= W.f.(θμ_σ)
         c.∑logℒ_μ_σ .= 0.0
         Base.mapreducedim!(identity, +, c.∑logℒ_μ_σ, c.θμ_σ_tmp)
 
-        c.∂logℒ_λ_σ .= ∂logℒ.(θλ_σ)
-        c.∂logℒ_μ_σ .= ∂logℒ.(θμ_σ)
+        c.∂logℒ_λ_σ .= fwd_der.(W.f, θλ_σ)
+        c.∂logℒ_μ_σ .= fwd_der.(W.f, θμ_σ)
     end
 
     ∑logℒ_λ_σ = c.∑logℒ_λ_σ
@@ -140,11 +145,11 @@ function logψ!(out::AbstractMatrix, W::NDM, c::NDMBatchedCache, σr_r::Abstract
     mul!(θμ_σp, W.w_μ, σc)
     θμ_σp .+= W.h_μ
 
-    c.θλ_σp_tmp .= logℒ.(θλ_σp)
+    c.θλ_σp_tmp .= W.f.(θλ_σp)
     c.∑logℒ_λ_σp .= 0.0
     Base.mapreducedim!(identity, +, c.∑logℒ_λ_σp, c.θλ_σp_tmp)
 
-    c.θμ_σp_tmp .= logℒ.(θμ_σp)
+    c.θμ_σp_tmp .= W.f.(θμ_σp)
     c.∑logℒ_μ_σp .= 0.0
     Base.mapreducedim!(identity, +, c.∑logℒ_μ_σp, c.θμ_σp_tmp)
 
@@ -160,7 +165,7 @@ function logψ!(out::AbstractMatrix, W::NDM, c::NDMBatchedCache, σr_r::Abstract
     mul!(Γ_μ, transpose(W.b_μ), Δσ)
     Γ_μ .= T(0.5) .* (Γ_μ .+ c.∑logℒ_μ_σ .- c.∑logℒ_μ_σp)
 
-    _Π .= logℒ.(_Π)
+    _Π .= W.f.(_Π)
     Π = c.Π .=0.0
     Base.mapreducedim!(identity, +, Π, _Π)
 
@@ -195,16 +200,16 @@ function logψ_and_∇logψ!(∇logψ, out::AbstractMatrix, W::NDM, c::NDMBatche
         mul!(θμ_σ, W.w_μ, σr)
         θμ_σ .+= W.h_μ
 
-        c.θλ_σ_tmp .= logℒ.(θλ_σ)
+        c.θλ_σ_tmp .= W.f.(θλ_σ)
         c.∑logℒ_λ_σ .= 0.0
         Base.mapreducedim!(identity, +, c.∑logℒ_λ_σ, c.θλ_σ_tmp)
 
-        c.θμ_σ_tmp .= logℒ.(θμ_σ)
+        c.θμ_σ_tmp .= W.f.(θμ_σ)
         c.∑logℒ_μ_σ .= 0.0
         Base.mapreducedim!(identity, +, c.∑logℒ_μ_σ, c.θμ_σ_tmp)
 
-        c.∂logℒ_λ_σ .= ∂logℒ.(θλ_σ)
-        c.∂logℒ_μ_σ .= ∂logℒ.(θμ_σ)
+        c.∂logℒ_λ_σ .= fwd_der.(W.f, θλ_σ)
+        c.∂logℒ_μ_σ .= fwd_der.(W.f, θμ_σ)
     end
 
     ∑logℒ_λ_σ = c.∑logℒ_λ_σ
@@ -222,11 +227,11 @@ function logψ_and_∇logψ!(∇logψ, out::AbstractMatrix, W::NDM, c::NDMBatche
     mul!(θμ_σp, W.w_μ, σc)
     θμ_σp .+= W.h_μ
 
-    c.θλ_σp_tmp .= logℒ.(θλ_σp)
+    c.θλ_σp_tmp .= W.f.(θλ_σp)
     c.∑logℒ_λ_σp .= 0.0
     Base.mapreducedim!(identity, +, c.∑logℒ_λ_σp, c.θλ_σp_tmp)
 
-    c.θμ_σp_tmp .= logℒ.(θμ_σp)
+    c.θμ_σp_tmp .= W.f.(θμ_σp)
     c.∑logℒ_μ_σp .= 0.0
     Base.mapreducedim!(identity, +, c.∑logℒ_μ_σp, c.θμ_σp_tmp)
 
@@ -242,15 +247,15 @@ function logψ_and_∇logψ!(∇logψ, out::AbstractMatrix, W::NDM, c::NDMBatche
     mul!(Γ_μ, transpose(W.b_μ), Δσ)
     Γ_μ .= T(0.5) .* (Γ_μ .+ c.∑logℒ_μ_σ .- c.∑logℒ_μ_σp)
 
-    _Π2 .= logℒ.(_Π)
+    _Π2 .= W.f.(_Π)
     Π = c.Π .=0.0
     Base.mapreducedim!(identity, +, Π, _Π2)
 
     out .= Γ_λ .+ T(1.0)im .* Γ_μ .+ Π
     # --- End common terms with computation of ψ --- #
-    ∂logℒ_λ_σp = c.∂logℒ_λ_σp; ∂logℒ_λ_σp .= ∂logℒ.(θλ_σp)
-    ∂logℒ_μ_σp = c.∂logℒ_μ_σp; ∂logℒ_μ_σp .= ∂logℒ.(θμ_σp)
-    ∂logℒ_Π    = c.∂logℒ_Π;    ∂logℒ_Π    .= ∂logℒ.(_Π)
+    ∂logℒ_λ_σp = c.∂logℒ_λ_σp; ∂logℒ_λ_σp .= fwd_der.(W.f, θλ_σp)
+    ∂logℒ_μ_σp = c.∂logℒ_μ_σp; ∂logℒ_μ_σp .= fwd_der.(W.f, θμ_σp)
+    ∂logℒ_Π    = c.∂logℒ_Π;    ∂logℒ_Π    .= fwd_der.(W.f, _Π)
 
     # Store the derivatives
     ∇logψ.b_λ .= T(0.5)   .* ∑σ
