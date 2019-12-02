@@ -8,48 +8,49 @@ ma = (T, N) -> RBMSplit(T, N, 2)
 machines["RBMSplit"] = ma
 
 ma = (T, N) -> RBM(T, N, 2)
-im_machines["RBM_softplus"] = ma
-
-ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
-im_machines["RBM_cosh"] = ma
+machines["RBM"] = ma
 
 N = 4
 T = Float32
 
 @testset "test cached dispatch - values: $name" for name=keys(machines)
     net = machines[name](T,N)
-
+    hilb = HomogeneousHilbert(N, 2)
+    if net isa NeuralQuantum.MatrixNet
+        hilb = SuperOpSpace(hilb)
+    end
     cnet = cached(net)
-    v = state(T, SpinBasis(1//2)^N, net)
-    arr_v = config(v)
+    v = state(T, hilb, net)
 
     @test net(v) ≈ cnet(v)
-    @test net(arr_v) ≈ cnet(arr_v)
-    if !(arr_v isa AbstractVector)
-        @test net(arr_v...) ≈ cnet(arr_v...)
+    if !(v isa AbstractVector)
+        @test net(v...) ≈ cnet(v...)
     end
 end
 
 @testset "test cached dispatch - allocating gradients: $name" for name=keys(machines)
     net = machines[name](T,N)
 
+    hilb = HomogeneousHilbert(N, 2)
+    if net isa NeuralQuantum.MatrixNet
+        hilb = SuperOpSpace(hilb)
+    end
     cnet = cached(net)
-    v = state(T, SpinBasis(1//2)^N, net)
-    arr_v = config(v)
+    v = state(T, hilb, net)
 
     @test ∇logψ(net, v) ≈ ∇logψ(cnet, v)
-    @test ∇logψ(net, arr_v) ≈ ∇logψ(cnet, arr_v)
-    if !(arr_v isa AbstractVector)
-        #@test ∇logψ(net, arr_v...) ≈ ∇logψ(cnet, arr_v...)
-    end
 end
 
 @testset "test cached dispatch - inplace gradients: $name" for name=keys(machines)
     net = machines[name](T,N)
 
+    hilb = HomogeneousHilbert(N, 2)
+    if net isa NeuralQuantum.MatrixNet
+        hilb = SuperOpSpace(hilb)
+    end
     cnet = cached(net)
-    v = state(T, SpinBasis(1//2)^N, net)
-    arr_v = config(v)
+    v = state(T, hilb, net)
+
     g1 = grad_cache(net)
     g2 = grad_cache(net)
 
@@ -59,13 +60,10 @@ end
     @test gg1 ≈ gg2
     @test g1 === gg1 && g2 === gg2
 
-    v1, gg1 = logψ_and_∇logψ!(g1, net, arr_v)
-    v2, gg2 = logψ_and_∇logψ!(g2, cnet, arr_v)
+    v1, gg1 = logψ_and_∇logψ!(g1, net, v)
+    v2, gg2 = logψ_and_∇logψ!(g2, cnet, v)
     @test v1 ≈ v2
     @test gg1 ≈ gg2
     @test g1 === gg1 && g2 === gg2
 
-    if !(arr_v isa AbstractVector)
-        #@test ∇logψ(net, arr_v...) ≈ ∇logψ(cnet, arr_v...)
-    end
 end

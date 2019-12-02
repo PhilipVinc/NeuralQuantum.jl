@@ -63,18 +63,19 @@ function BatchedGradSampler(net,
     return nq
 end
 
-function sample!(is::BatchedGradSampler)
+function sample!(is::BatchedGradSampler; sample=true)
     ch_len         = chain_length(is.sampler, is.sampler_cache)
     batch_sz       = size(is.local_vals, 1)
 
     # Sample phase
-    init_sampler!(is.sampler, is.bnet, unsafe_get_el(is.samples, 1),
-                    is.sampler_cache)
-    for i=1:ch_len-1
-        !samplenext!(unsafe_get_el(is.samples, i+1), unsafe_get_el(is.samples, i),
-                        is.sampler, is.bnet, is.sampler_cache) && break
+    if sample
+        init_sampler!(is.sampler, is.bnet, unsafe_get_el(is.samples, 1),
+                        is.sampler_cache)
+        for i=1:ch_len-1
+            !samplenext!(unsafe_get_el(is.samples, i+1), unsafe_get_el(is.samples, i),
+                            is.sampler, is.bnet, is.sampler_cache) && break
+        end
     end
-
     # Compute logψ and ∇logψ
     logψ_and_∇logψ!(is.∇vals, is.ψvals, is.bnet, is.samples)
 
@@ -109,8 +110,8 @@ function sample!(is::BatchedGradSampler)
 
     # Compute the gradient
     ∇C  = Ĉr*∇Ĉr'
-    #∇C  = Ĉr*∇Ĉr' - Ĉ2r*∇vr'
     ∇C ./= (ch_len*batch_sz)
+    ∇C .-= L_stat.mean .* is.∇vec_avg'
 
     setup_algorithm!(is.precond_cache, reshape(∇C,:), ∇vr)
 

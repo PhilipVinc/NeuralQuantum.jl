@@ -30,7 +30,8 @@ densitymatrix(net::NeuralNetwork, prob::AbstractProblem, args...) =
     densitymatrix(net, basis(prob), args...)
 
 
-Base.Matrix(net::NeuralNetwork, prob) = densitymatrix(net, prob)
+Base.Matrix(net::NeuralNetwork, hilb, norm=true) = densitymatrix(net, hilb, norm)
+Base.Vector(net::MatrixNet, hilb, norm=true) = vec(densitymatrix(net, hilb, norm))
 
 QuantumOpticsBase.dm(net::NeuralNetwork, prob::AbstractProblem, norm=false) =
     densitymatrix(net, prob, norm)

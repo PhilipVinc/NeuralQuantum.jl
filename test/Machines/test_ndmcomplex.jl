@@ -25,11 +25,16 @@ end
         net = machines[name](T,N)
         cnet = cached(net)
 
-        v = state(real(T), SpinBasis(1//2)^N, net)
+        hilb = HomogeneousHilbert(N, 2)
+        if net isa NeuralQuantum.MatrixNet
+            hilb = SuperOpSpace(hilb)
+        end
+
+        v = state(T, hilb, net)
         # compute exact
         vals = []; cvals = [];
-        for i=1:spacedimension(v)
-            set_index!(v, i)
+        for i=1:spacedimension(hilb)
+            set!(v, hilb, i)
             push!(vals, net(v))
             push!(cvals, cnet(v))
         end

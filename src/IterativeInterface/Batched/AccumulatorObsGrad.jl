@@ -37,27 +37,39 @@ end
 accum(a::AccumulatorObsGrad) = a.∇logψ_acc
 
 function init!(c::AccumulatorObsGrad, σ, ψ_σ, ∇ψ_σ)
-    c.ψ_σ     = ψ_σ
-    c.∇ψ_σ    = ∇ψ_σ
+    # Store temporaries
+    c.ψ_σ      = ψ_σ
+    c.∇ψ_σ     = ∇ψ_σ
+
+    # Set accumulators to 0
+    c.res      = 0
+    for ∇res=vec_data(c.∇res)
+        ∇res   .= 0
+    end
+
+    # initialize the lower accumulator.
+    reset!(c, σ)
+    return nothing
+end
+
+# This resets the value at the end of a process_accumulatr
+function reset!(c::AccumulatorObsGrad, σ)
     c.mel_buf .= 0
-    c.res     = 0
 
     init!(accum(c), σ)
     return nothing
 end
 
-
 function (c::AccumulatorObsGrad)(mel::Number, cngs_l, cngs_r, v)
-    isfull(c) && process_accumulator!(c)
+    isfull(c) && (process_accumulator!(c); reset!(c, v))
 
     # If the matrix element is zero, don't do anything
     mel == 0.0 && return acc
-
     n_cngs_l = isnothing(cngs_l) ? 0 : length(cngs_l)
     n_cngs_r = isnothing(cngs_r) ? 0 : length(cngs_r)
 
     # If there are no changes, just sum it
-    if n_cngs_l == 0 && n_cngs_r == 0
+    if n_cngs_l == 0 && n_cngs_r == 0 && false
         c.res += mel
     else
         accum(c)(cngs_l, cngs_r)
@@ -68,7 +80,7 @@ function (c::AccumulatorObsGrad)(mel::Number, cngs_l, cngs_r, v)
 end
 
 function (c::AccumulatorObsGrad)(mel::Number, cngs, v)
-    isfull(c) && process_accumulator!(c)
+    isfull(c) && (process_accumulator!(c); reset!(c, v))
 
     # If the matrix element is zero, don't do anything
     mel == 0.0 && return acc
@@ -76,7 +88,7 @@ function (c::AccumulatorObsGrad)(mel::Number, cngs, v)
     n_cngs = isnothing(cngs) ? 0 : length(cngs)
 
     # If there are no changes, just sum it
-    if cngs == 0
+    if cngs == 0 && false
         c.res += mel
     else
         accum(c)(cngs)
@@ -90,6 +102,7 @@ end
 function process_accumulator!(c::AccumulatorObsGrad)
     count(c) == 0 && return nothing
 
+    count_tmp = count(c)
     ∇ψ_σp, ψ_σp = process_accumulator!(accum(c))
 
     ∇res  = vec_data(c.∇res)[1]
@@ -97,9 +110,12 @@ function process_accumulator!(c::AccumulatorObsGrad)
     ∇ψ_σ  = c.∇ψ_σ
 
     c.mel_buf .*= exp.(ψ_σp .- c.ψ_σ)
-    ∇ψ_σp     .= c.mel_buf .* (∇ψ_σp .- ∇ψ_σ)
+    ∇ψ_σp     .= c.mel_buf .* (∇ψ_σp)# .- ∇ψ_σ)
+    if count_tmp != length(c)
+        uview(∇ψ_σp, :, (count_tmp+1):length(c)) .= 0.0
+    end
 
-    sum!(∇res, ∇ψ_σp)
+    sum!(∇res, ∇ψ_σp, init=false)
     c.res += sum(c.mel_buf)
 
     return nothing

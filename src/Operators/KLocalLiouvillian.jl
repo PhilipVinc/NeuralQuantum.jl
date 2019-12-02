@@ -21,7 +21,7 @@ end
 function QuantumOpticsBase.liouvillian(H::AbsLinearOperator, Lops::AbstractVector)
     HnH = duplicate(H)
     for L=Lops
-        HnH += -0.5im * transpose(conj(L))*L
+        HnH += -0.5im * L'*L
     end
     return KLocalLiouvillian(HnH, Lops)
 end
