@@ -9,13 +9,10 @@ ma = (T, N) -> NDM(T, N, 2, 3)
 re_machines["NDM"] = ma
 
 ma = (T, N) -> RBMSplit(T, N, 2)
-im_machines["RBMSplit"] = ma
+im_machines["RBMSplit"] = max
 
 ma = (T, N) -> RBM(T, N, 2)
-im_machines["RBM_softplus"] = ma
-
-ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
-im_machines["RBM_cosh"] = ma
+im_machines["RBM"] = ma
 
 ma = (T, N) -> PureStateAnsatz(Chain(Dense(N, N*2), Dense(N*2, N*3), WSum(N*3)), N)
 re_machines["ChainKet"] = ma
@@ -47,11 +44,16 @@ end
         net = all_machines[name](T,N)
         cnet = cached(net)
 
-        v = state(T, SpinBasis(1//2)^N, net)
+        hilb = HomogeneousHilbert(N, 2)
+        if net isa NeuralQuantum.MatrixNet
+            hilb = SuperOpSpace(hilb)
+        end
+
+        v = state(T, hilb, net)
         # compute exact
         vals = []; cvals = [];
-        for i=1:spacedimension(v)
-            set_index!(v, i)
+        for i=1:spacedimension(hilb)
+            set!(v, hilb, i)
             push!(vals, net(v))
             push!(cvals, cnet(v))
         end
@@ -75,13 +77,19 @@ end
 
         net = all_machines[name](T,N)
         cnet = cached(net)
+
+        hilb = HomogeneousHilbert(N, 2)
+        if net isa NeuralQuantum.MatrixNet
+            hilb = SuperOpSpace(hilb)
+        end
+
         cder = grad_cache(net)
 
-        v = state(T, SpinBasis(1//2)^N, net)
+        v = state(T, hilb, net)
         # compute exact
         grads = [];
-        for i=1:spacedimension(v)
-            set_index!(v, i)
+        for i=1:spacedimension(hilb)
+            set!(v, hilb, i)
             der_ad = ∇logψ(net,  v)
             ∇logψ!(cder, cnet, v)
             #=for f=propertynames(der_ad)

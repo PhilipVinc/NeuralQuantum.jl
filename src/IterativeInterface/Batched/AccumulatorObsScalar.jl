@@ -58,9 +58,17 @@ function init!(c::AccumulatorObsScalar, σ, ψ_σ)
     return nothing
 end
 
+# This resets the value at the end of a process_accumulatr
+function reset!(c::AccumulatorObsScalar, σ)
+    c.mel_buf .= 0
+
+    init!(accum(c), σ)
+    return nothing
+end
+
 
 function (c::AccumulatorObsScalar)(mel::Number, cngs_l, cngs_r, v)
-    isfull(c) && process_accumulator!(c)
+    isfull(c) && (process_accumulator!(c); reset!(c, v))
 
     # If the matrix element is zero, don't do anything
     mel == 0.0 && return acc
@@ -80,7 +88,7 @@ function (c::AccumulatorObsScalar)(mel::Number, cngs_l, cngs_r, v)
 end
 
 function (c::AccumulatorObsScalar)(mel::Number, cngs, v)
-    isfull(c) && process_accumulator!(c)
+    isfull(c) && (process_accumulator!(c); reset!(c, v))
 
     # If the matrix element is zero, don't do anything
     mel == 0.0 && return acc
@@ -113,6 +121,8 @@ the output, as it is preallocated and will be used for further
 computations of the accumulator.
 """
 function process_accumulator!(c::AccumulatorObsScalar)
+    count(c) == 0 && return nothing
+
     ψ_σp = process_accumulator!(accum(c))
 
     c.mel_buf .*= exp.(ψ_σp .- c.ψ_σ)
