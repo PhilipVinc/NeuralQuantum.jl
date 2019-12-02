@@ -1,6 +1,6 @@
 export RBM
 
-struct RBM{F,VT,MT} <: KetNeuralNetwork
+struct RBM{VT,MT,F} <: KetNeuralNetwork
     a::VT
     b::VT
     W::MT
@@ -40,15 +40,15 @@ RBM(T::Type, in, α, σ::Function=logℒ,
     RBM(inita(in), initb(convert(Int,α*in)),
         initW(convert(Int,α*in), in), σ)
 
-out_type(net::RBM{F,VT,MT}) where {F,VT,MT} = eltype(VT)
+out_type(net::RBM{VT,MT,F}) where {VT,MT,F} = eltype(VT)
 is_analytic(net::RBM) = true
 
 (net::RBM)(σ::State) = net(config(σ))
 (net::RBM)(σ::AbstractVector) = transpose(net.a)*σ .+ sum(net.f.(net.b .+ net.W*σ))
 (net::RBM)(σ::AbstractMatrix) = transpose(net.a)*σ .+ sum(net.f.(net.b .+ net.W*σ), dims=1)
 
-function Base.show(io::IO, m::RBM{T,VT}) where {T,VT}
-    print(io, "RBM($(eltype(VT)), n=$(length(m.a)), n_hid=$(length(m.b)) => α=$(length(m.b)/length(m.a)), f=($T))")
+function Base.show(io::IO, m::RBM{T,VT,F}) where {T,VT,F}
+    print(io, "RBM($(eltype(VT)), n=$(length(m.a)), n_hid=$(length(m.b)) => α=$(length(m.b)/length(m.a)), f=($F))")
 end
 
 # Cached version

@@ -1,6 +1,6 @@
 export NDM
 
-struct NDM{VT,MT} <: MatrixNeuralNetwork
+struct NDM{VT,MT,F} <: MatrixNeuralNetwork
     b_μ::VT
     h_μ::VT
     w_μ::MT
@@ -11,6 +11,8 @@ struct NDM{VT,MT} <: MatrixNeuralNetwork
     d_λ::VT
     w_λ::MT
     u_λ::MT
+
+    f::F
 end
 @functor NDM
 
@@ -36,7 +38,7 @@ Refs:
     https://arxiv.org/abs/1902.10104
 """
 NDM(args...) = NDM(STD_REAL_PREC, args...)
-NDM(T::Type{<:Real}, in, αh, αa,
+NDM(T::Type{<:Real}, in, αh, αa, σ::Function=logℒ,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
     initb=(dims...)->rescaled_normal(T, 0.005, dims...),
     inita=(dims...)->rescaled_normal(T, 0.005, dims...)) =
@@ -48,27 +50,28 @@ NDM(T::Type{<:Real}, in, αh, αa,
         initb(convert(Int,αh*in)),
         initb(convert(Int,αa*in)),
         initW(convert(Int,αh*in), in),
-        initW(convert(Int,αa*in), in))
+        initW(convert(Int,αa*in), in),
+        σ)
 
-out_type(net::NDM{VT,MT}) where {VT,MT} = Complex{eltype(VT)}
+out_type(net::NDM{VT}) where {VT} = Complex{eltype(VT)}
 is_analytic(net::NDM) = true
 
-Base.show(io::IO, m::NDM) = print(io,
-    "NDM($(eltype(m.b_μ)), n=$(length(m.b_μ)), αₕ=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)))")
+Base.show(io::IO, m::NDM{VT,MT,F}) where {VT,MT,F} = print(io,
+    "NDM($VT), n=$(length(m.b_μ)), αₕ=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)), f=($F))")
 
-Base.show(io::IO, ::MIME"text/plain", m::NDM) = print(io,
-    "NDM($(eltype(m.b_μ)), n=$(length(m.b_μ)), α=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)))")
+Base.show(io::IO, ::MIME"text/plain", m::NDM{VT,MT,F}) where {VT,MT,F} = print(io,
+    "NDM($VT), n=$(length(m.b_μ)), α=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)), f=($F))")
 
 
 @inline (net::NDM)(σ::State) = net(config(σ)...)
 @inline (net::NDM)(σ::Tuple) = net(σ...)
 function (W::NDM)(σr, σc)
     T=eltype(W.u_λ)
-    ∑logℒ_λ_σ = sum_autobatch(logℒ.(W.h_λ .+ W.w_λ*σr))
-    ∑logℒ_μ_σ = sum_autobatch(logℒ.(W.h_μ .+ W.w_μ*σr))
+    ∑logℒ_λ_σ = sum_autobatch(W.f.(W.h_λ .+ W.w_λ*σr))
+    ∑logℒ_μ_σ = sum_autobatch(W.f.(W.h_μ .+ W.w_μ*σr))
 
-    ∑logℒ_λ_σp = sum_autobatch(logℒ.(W.h_λ .+ W.w_λ*σc))
-    ∑logℒ_μ_σp = sum_autobatch(logℒ.(W.h_μ .+ W.w_μ*σc))
+    ∑logℒ_λ_σp = sum_autobatch(W.f.(W.h_λ .+ W.w_λ*σc))
+    ∑logℒ_μ_σp = sum_autobatch(W.f.(W.h_μ .+ W.w_μ*σc))
 
     ∑σ = σr .+ σc
     Δσ = σr .- σc
@@ -78,7 +81,7 @@ function (W::NDM)(σr, σc)
 
     Γ_λ = T(0.5)   * (∑logℒ_λ_σ + ∑logℒ_λ_σp + transpose(W.b_λ)*∑σ )
     Γ_μ = T(0.5)im * (∑logℒ_μ_σ - ∑logℒ_μ_σp + transpose(W.b_μ)*Δσ )
-    Π  = sum_autobatch(logℒ.(_Π))
+    Π  = sum_autobatch(W.f.(_Π))
 
     lnψ = Γ_λ + Γ_μ + Π
     return lnψ
@@ -174,15 +177,15 @@ function (W::NDM)(c::NDMCache, σr, σc)
         LinearAlgebra.BLAS.gemv!('N', one(T), W.w_μ, σr, one(T), θμ_σ)
 
         # cache.∑logℒ_λ_σ = sum(logℒ.(θλ_σ, (NT(),)))
-        c.θλ_σ_tmp .= logℒ.(θλ_σ)
+        c.θλ_σ_tmp .= W.f.(θλ_σ)
         c.∑logℒ_λ_σ = sum(c.θλ_σ_tmp)
 
         # cache.∑logℒ_μ_σ = sum(logℒ.(θμ_σ, (NT(),)))
-        c.θμ_σ_tmp .= logℒ.(θμ_σ)
+        c.θμ_σ_tmp .= W.f.(θμ_σ)
         c.∑logℒ_μ_σ = sum(c.θμ_σ_tmp)
 
-        c.∂logℒ_λ_σ .= ∂logℒ.(θλ_σ)
-        c.∂logℒ_μ_σ .= ∂logℒ.(θμ_σ)
+        c.∂logℒ_λ_σ .= fwd_der.(W.f, θλ_σ)
+        c.∂logℒ_μ_σ .= fwd_der.(W.f,θμ_σ)
     end
 
     ∑logℒ_λ_σ = c.∑logℒ_λ_σ
@@ -201,11 +204,11 @@ function (W::NDM)(c::NDMCache, σr, σc)
     LinearAlgebra.BLAS.gemv!('N', T(1.0), W.w_μ, σc, T(1.0), θμ_σp)
 
     #∑logℒ_λ_σp = sum(logℒ.(θλ_σp, (NT(),)))
-    c.θλ_σp_tmp .= logℒ.(θλ_σp)
+    c.θλ_σp_tmp .= W.f.(θλ_σp)
     ∑logℒ_λ_σp = sum(c.θλ_σp_tmp)
 
     #∑logℒ_μ_σp = sum(logℒ.(θμ_σp, (NT(),)))
-    c.θμ_σp_tmp .= logℒ.(θμ_σp)
+    c.θμ_σp_tmp .= W.f.(θμ_σp)
     ∑logℒ_μ_σp = sum(c.θμ_σp_tmp)
 
     #_Π         = (T(0.5)  * W.u_λ*∑σ
@@ -220,7 +223,7 @@ function (W::NDM)(c::NDMCache, σr, σc)
     Γ_μ = T(0.5) * (∑logℒ_μ_σ - ∑logℒ_μ_σp + Δσ ⋅ W.b_μ)
 
     # Π = sum(logℒ.(_Π, (NT(),)))
-    _Π .= logℒ.(_Π)
+    _Π .= W.f.(_Π)
     Π   = sum(_Π)
 
     logψ = Γ_λ + T(1.0)im * Γ_μ + Π
@@ -251,15 +254,15 @@ function logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, σr,σc)
         LinearAlgebra.BLAS.gemv!('N', one(T), W.w_μ, σr, one(T), θμ_σ)
 
         # cache.∑logℒ_λ_σ = sum(logℒ.(θλ_σ, (NT(),)))
-        c.θλ_σ_tmp .= logℒ.(θλ_σ)
+        c.θλ_σ_tmp .= W.f.(θλ_σ)
         c.∑logℒ_λ_σ = sum(c.θλ_σ_tmp)
 
         # cache.∑logℒ_μ_σ = sum(logℒ.(θμ_σ, (NT(),)))
-        c.θμ_σ_tmp .= logℒ.(θμ_σ)
+        c.θμ_σ_tmp .= W.f.(θμ_σ)
         c.∑logℒ_μ_σ = sum(c.θμ_σ_tmp)
 
-        c.∂logℒ_λ_σ .= ∂logℒ.(θλ_σ)
-        c.∂logℒ_μ_σ .= ∂logℒ.(θμ_σ)
+        c.∂logℒ_λ_σ .= fwd_der.(W.f, θλ_σ)
+        c.∂logℒ_μ_σ .= fwd_der.(W.f, θμ_σ)
     end
 
     ∑logℒ_λ_σ = c.∑logℒ_λ_σ
@@ -279,11 +282,11 @@ function logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, σr,σc)
     LinearAlgebra.BLAS.gemv!('N', T(1.0), W.w_μ, σc, T(1.0), θμ_σp);
 
     #∑logℒ_λ_σp = sum(logℒ.(θλ_σp, (NT(),)))
-    c.θλ_σp_tmp .= logℒ.(θλ_σp)
+    c.θλ_σp_tmp .= W.f.(θλ_σp)
     ∑logℒ_λ_σp = sum(c.θλ_σp_tmp)
 
     #∑logℒ_μ_σp = sum(logℒ.(θμ_σp, (NT(),)))
-    c.θμ_σp_tmp .= logℒ.(θμ_σp)
+    c.θμ_σp_tmp .= W.f.(θμ_σp)
     ∑logℒ_μ_σp = sum(c.θμ_σp_tmp)
 
     #_Π         = (T(0.5)  * W.u_λ*∑σ
@@ -297,10 +300,10 @@ function logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, σr,σc)
     # --- End common terms with computation of ψ --- #
 
     # Compute additional terms for derivatives
-    ∂logℒ_λ_σp = c.∂logℒ_λ_σp; ∂logℒ_λ_σp .= ∂logℒ.(θλ_σp)
-    ∂logℒ_μ_σp = c.∂logℒ_μ_σp; ∂logℒ_μ_σp .= ∂logℒ.(θμ_σp)
+    ∂logℒ_λ_σp = c.∂logℒ_λ_σp; ∂logℒ_λ_σp .= fwd_der.(W.f, θλ_σp)
+    ∂logℒ_μ_σp = c.∂logℒ_μ_σp; ∂logℒ_μ_σp .= fwd_der.(W.f, θμ_σp)
 
-    ∂logℒ_Π    = c.∂logℒ_Π;    ∂logℒ_Π    .= ∂logℒ.(_Π)
+    ∂logℒ_Π    = c.∂logℒ_Π;    ∂logℒ_Π    .= fwd_der.(W.f, _Π)
 
     # Store the derivatives
     ∇logψ.b_λ .= T(0.5)   .* ∑σ
@@ -318,7 +321,7 @@ function logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, σr,σc)
 
     Γ_λ = T(0.5) * (∑logℒ_λ_σ + ∑logℒ_λ_σp + ∑σ ⋅ W.b_λ)
     Γ_μ = T(0.5) * (∑logℒ_μ_σ - ∑logℒ_μ_σp + Δσ ⋅ W.b_μ)
-    _Π .= logℒ.(_Π)
+    _Π .= W.f.(_Π)
     Π   = sum(_Π)
     logψ = Γ_λ + T(1.0)im * Γ_μ + Π
 

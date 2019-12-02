@@ -7,8 +7,17 @@ machines = Dict()
 ma = (T, N) -> RBMSplit(T, N, 2)
 machines["RBMSplit"] = ma
 
-ma = (T, N) -> RBM(T, N, 2)
-machines["RBM"] = ma
+ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ)
+machines["RBM_softplus"] = ma
+
+ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
+machines["RBM_cosh"] = ma
+
+ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ)
+machines["NDM_softplus"] = ma
+
+ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ2)
+machines["NDM_cosh"] = ma
 
 N = 4
 T = Float32
