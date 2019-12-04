@@ -13,9 +13,9 @@ rescaled_normal(T::Type, scale::Real, dims::Integer...) = randn(T, dims...) .* T
 @inline ℒ2(x::T) where T = T(2)*cosh(x)
 @inline ∂logℒ2(x) = tanh(x)
 @inline logℒ2(x::T) where T<:Real =
-    log(T(2))+ (abs(x)<= T(12.0) ? log(cosh(x)) : abs(x) - log(2one(X)))
+    (abs(x)<= T(12.0) ? log(cosh(x)) : abs(x) - log(2one(x)))
 @inline logℒ2(x::Complex{T}) where T<:Real =
-    log(T(2.0))+ (abs(x)<= T(12.0) ? log(cosh(x)) : abs(x) - log(2one(x)))
+    (abs(x)<= T(12.0) ? log(cosh(x)) : abs(x) - log(2one(x)))
 
 
 
