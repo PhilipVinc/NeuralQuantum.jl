@@ -1,4 +1,5 @@
 using NeuralQuantum
+using NeuralQuantum: KLocalOperatorSum, row_valdiff_index, local_dim
 using LinearAlgebra, SparseArrays
 using Test
 
@@ -22,9 +23,9 @@ ops2 = ops + op2
 
 # Check that index works for a single site
 check = sparse(zeros(size(matsum)))
-v = NAryState(2, 1)
-for i=1:spacedimension(v)
-    set_index!(v, i)
+v = state(hilb)
+for i=1:local_dim(hilb)
+    set!(v, hilb, i)
     diffs = row_valdiff_index(ops2, v)
     for (mel,j)=diffs
         check[i,j] += mel
@@ -34,15 +35,15 @@ end
 
 # check that the reconstructed matrix is fine
 check = sparse(zeros(size(matsum)))
-v = NAryState(Float64, 2, 1)
-for i=1:spacedimension(v)
-    set_index!(v, i)
+v = state(hilb)
+for i=1:local_dim(hilb)
+    set_index!(v, hilb, i)
     for (mel, changes) = row_valdiff(ops2, v)
-        set_index!(v, i)
+        set!(v, hilb, i)
         for (id,val) = changes
-            setat!(v, id, val)
+            setat!(v, hilb, id, val)
         end
-        j = index(v)
+        j = index(hilb, v)
         check[i,j] += mel
     end
 end
@@ -52,15 +53,15 @@ end
 ms = kron(Matrix(I, 2, 2), matsum)
 #ms = kron(matsum, Matrix(I, 2, 2))
 check = sparse(zeros(size(ms)))
-v = NAryState(Float64, 2, 2)
-for i=1:spacedimension(v)
-    set_index!(v, i)
+v = state(hilb)
+for i=1:spacedimension(hilb)
+    set_index!(v, hilb, i)
     for (mel, changes) = row_valdiff(ops2, v)
-        set_index!(v, i)
+        set!(v, hilb, i)
         for (id,val)=changes
-            setat!(v, id, val)
+            setat!(v, hilb, id, val)
         end
-        j = index(v)
+        j = index(hilb, v)
         check[i,j] += mel
     end
 end
@@ -69,15 +70,15 @@ end
 mat12 = kron(mat1, mat2)
 op12 = KLocalOperatorRow(hilb, [1,2], mat12)
 check = sparse(zeros(size(mat12)))
-v = NAryState(Float64, 2, 2)
-for i=1:spacedimension(v)
-    set_index!(v, i)
+v = state(hilb)
+for i=1:spacedimension(hilb)
+    set_index!(v, hilb, i)
     for (mel, changes) = row_valdiff(op12, v)
-        set_index!(v, i)
+        set_index!(v, hilb, i)
         for (id,val)=changes
-            setat!(v, id, val)
+            setat!(v, hilb, id, val)
         end
-        j = index(v)
+        j = index(hilb, v)
         check[i,j] += mel
     end
 end
@@ -91,15 +92,15 @@ mtot = m3 #ms + m3
 opstot = op3 #ops2 + op3
 
 check = sparse(zeros(size(mtot)))
-v = NAryState(Float64, 2, 2)
-for i=1:spacedimension(v)
-    set_index!(v, i)
+v = state(hilb)
+for i=1:spacedimension(hilb)
+    set_index!(v, hilb, i)
     for (mel, changes) = row_valdiff(opstot, v)
-        set_index!(v, i)
+        set!(v, hilb, i)
         for (id,val)=changes
-            setat!(v, id, val)
+            setat!(v, hilb, id, val)
         end
-        j = index(v)
+        j = index(hilb, v)
         check[i,j] += mel
     end
 end

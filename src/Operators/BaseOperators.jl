@@ -16,7 +16,7 @@ operator `op` by mutating in-place the `OpConnection` object `opconn`
 """
 function row_valdiff! end
 
-#row_valdiff_index(op::AbsLinearOperator, v::State) = row_valdiff_index!(OpConnectionIndex(op), op, v)
+row_valdiff_index(op::AbsLinearOperator, v) = row_valdiff_index!(OpConnectionIndex(op), op, v)
 function row_valdiff_index! end
 
 # standard functions

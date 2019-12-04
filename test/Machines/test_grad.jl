@@ -6,7 +6,7 @@ re_machines = Dict()
 im_machines = Dict()
 
 ma = (T, N) -> RBMSplit(T, N, 2)
-im_machines["RBMSplit"] = max
+im_machines["RBMSplit"] = ma
 
 ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ)
 im_machines["RBM_softplus"] = ma
