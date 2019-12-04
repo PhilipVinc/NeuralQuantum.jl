@@ -43,7 +43,6 @@ RBM(T::Type, in, α, σ::Function=logℒ,
 out_type(net::RBM{VT,MT,F}) where {VT,MT,F} = eltype(VT)
 is_analytic(net::RBM) = true
 
-(net::RBM)(σ::State) = net(config(σ))
 (net::RBM)(σ::AbstractVector) = transpose(net.a)*σ .+ sum(net.f.(net.b .+ net.W*σ))
 (net::RBM)(σ::AbstractMatrix) = transpose(net.a)*σ .+ sum(net.f.(net.b .+ net.W*σ), dims=1)
 

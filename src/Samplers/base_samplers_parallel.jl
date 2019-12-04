@@ -70,7 +70,7 @@ MTSamplerCache(::S, caches, net::N, σ::V, op=copy) where {N,V,S<:Sampler} =
 # When initializing a MTCache the chain of function calls is the following:
 # instead of calling directly _sampler_cache, _mt_sampler_cache is called, which
 # is responsible for creating the multithreaded cache. You can override this, or
-cache(s::MTSampler, v::State, net) =
+cache(s::MTSampler, v, net) =
     _mt_sampler_cache(s, v, net, ParallelThreaded())
 
 # Mt sampler cache normally calls _sampler_cache for every thread. with the thread-local

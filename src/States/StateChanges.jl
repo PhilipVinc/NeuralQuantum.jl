@@ -6,7 +6,7 @@ struct StateChanges{A<:AbstractArray,B<:AbstractArray} <: AbstractStateChanges
     new_values::B
 end
 
-function StateChanges(state::State)
+function StateChanges(state::AbstractArray)
     return StateChanges(Int[], eltype(state)[])
 end
 

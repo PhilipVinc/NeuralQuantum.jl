@@ -1,6 +1,10 @@
 state(prob::AbstractProblem, net, args...) = state(input_type(net), prob, net, args...)
+state(op::AbsLinearOperator, net, args...) = state(input_type(net), basis(op), net, args...)
 state(hilb::AbstractHilbert, net::NeuralNetwork) = state(input_type(net), hilb, net)
-state(T::Type{<:Number}, prob::AbstractProblem, net) = state(T, basis(prob), net)
+
+state(T::Type{<:Number}, prob::AbstractProblem, net, args...) = state(T, basis(prob), net, args...)
+state(T::Type{<:Number}, op::AbsLinearOperator, net, args...) = state(T, basis(op), net, args...)
+
 
 state(T::Type{<:Number}, hilb::AbstractHilbert, net::CachedNet) =
     state(T, hilb, net.net, net.cache)
