@@ -63,7 +63,6 @@ Base.show(io::IO, ::MIME"text/plain", m::NDM{VT,MT,F}) where {VT,MT,F} = print(i
     "NDM($VT), n=$(length(m.b_μ)), α=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)), f=($F))")
 
 
-@inline (net::NDM)(σ::State) = net(config(σ)...)
 @inline (net::NDM)(σ::Tuple) = net(σ...)
 function (W::NDM)(σr, σc)
     T=eltype(W.u_λ)
@@ -151,7 +150,6 @@ cache(net::NDM) =
               false)
 
 
-(net::NDM)(c::NDMCache, σ::State) = net(c, config(σ))
 (net::NDM)(c::NDMCache, (σr, σc)::Tuple{AbstractArray,AbstractArray}) = net(c, σr, σc)
 function (W::NDM)(c::NDMCache, σr, σc)
     ∑σ      = c.∑σ

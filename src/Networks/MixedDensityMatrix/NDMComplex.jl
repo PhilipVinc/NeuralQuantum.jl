@@ -53,7 +53,6 @@ Base.show(io::IO, m::NDMComplex) = print(io,
 Base.show(io::IO, ::MIME"text/plain", m::NDMComplex) = print(io,
     "NDMComplex($(eltype(m.a)), n=$(length(m.a)), α=$(length(m.b)/length(m.a)), αₐ=$(length(m.c)/length(m.a)))")
 
-@inline (net::NDMComplex)(σ::State) = net(config(σ)...)
 @inline (net::NDMComplex)(σ::Tuple) = net(σ...)
 function (W::NDMComplex)(σ, σp)
     T=eltype(W.a)

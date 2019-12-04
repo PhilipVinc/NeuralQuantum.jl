@@ -43,7 +43,6 @@ out_type(net::RBMSplit)    = eltype(net.Wr)
 is_analytic(net::RBMSplit) = true
 
 
-(net::RBMSplit)(σ::State)  = net(config(σ)...)
 (net::RBMSplit)(σ::NTuple{N,<:AbstractArray}) where {N} = net(σ...)
 (net::RBMSplit)(σr, σc)    = transpose(net.ar)*σr .+ transpose(net.ac)*σc .+ sum_autobatch(logℒ.(net.b .+
                                                         net.Wr*σr .+ net.Wc*σc))
@@ -84,7 +83,6 @@ cache(net::RBMSplit) =
                   similar(net.b, length(net.ar)),
                   false)
 
-(net::RBMSplit)(c::RBMSplitCache, σ::State) = net(c, config(σ))
 (net::RBMSplit)(c::RBMSplitCache, (σr, σc)::Tuple{AbstractArray,AbstractArray}) = net(c, σr, σc)
 function (net::RBMSplit)(c::RBMSplitCache, σr_r, σc_r)
     θ = c.θ
