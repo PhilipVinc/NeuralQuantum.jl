@@ -9,7 +9,7 @@ using GPUArrays
 using CuArrays
 const use_cuda = Ref(false)
 
-using QuantumOpticsBase
+@reexport using QuantumOpticsBase
 using LightGraphs
 using Zygote
 using NNlib
@@ -22,9 +22,6 @@ using Printf
 include("IterativeSolvers/minresqlp.jl")
 using .MinresQlp
 
-# Quantum Lattices, used to construct lattice hamiltonians (custom package)
-@reexport using QuantumLattices
-
 # Optimisers, that will be split in a separate package at some point
 include("Optimisers/Optimisers.jl")
 using .Optimisers
@@ -36,14 +33,10 @@ abstract type NeuralNetwork end
 
 abstract type AbstractHilbert end
 
-abstract type State end
-abstract type FiniteBasisState <: State end
-
 abstract type Sampler end
 abstract type AbstractAccumulator end
 
 abstract type AbstractProblem end
-include("Problems/base_problems.jl")
 
 # Type describing the parallel backend used by a solver.
 abstract type ParallelType end
@@ -72,15 +65,6 @@ include("tuple_logic.jl")
 include("utils/math.jl")
 include("utils/stats.jl")
 
-#=
-include("States/NAryState.jl")
-include("States/DoubleState.jl")
-include("States/PurifiedState.jl")
-include("States/DiagonalStateWrapper.jl")
-include("States/ModifiedState.jl")
-export ModifiedState, local_index
-=#
-
 include("Hilbert/DiscreteHilbert.jl")
 include("Hilbert/HomogeneousHilbert.jl")
 include("Hilbert/HomogeneousSpin.jl")
@@ -103,7 +87,6 @@ include("Operators/KLocalLiouvillian.jl")
 include("Operators/SimpleOperators.jl")
 include("Operators/OpConversion.jl")
 
-include("Operators/GraphConversion.jl")
 export OpConnection
 export KLocalOperator, KLocalOperatorTensor, KLocalOperatorSum, KLocalOperatorRow, operators
 export row_valdiff, row_valdiff_index, col_valdiff, sites, conn_type
@@ -134,20 +117,6 @@ include("Networks/ClosedSystems/NQConv.jl")
 # Wrappers
 include("Networks/NetworkWrappers.jl")
 
-# Problems
-include("Problems/SteadyStateLindblad/LRhoKLocalSOpProblem.jl")
-
-include("Problems/SteadyStateLindblad/build_SteadyStateProblem.jl")
-
-# Hamiltonian problems
-include("Problems/Hamiltonian/HamiltonianGSEnergyProblem.jl")
-include("Problems/Hamiltonian/HamiltonianGSVarianceProblem.jl")
-include("Problems/Hamiltonian/build_GroundStateProblem.jl")
-
-# Observables problem
-include("Problems/ObservablesProblem.jl")
-
-
 # gen state
 export state
 include("generate_state.jl")
@@ -157,14 +126,14 @@ abstract type Algorithm end
 abstract type EvaluatedAlgorithm end
 abstract type EvaluationSamplingCache end
 include("Algorithms/base_algorithms.jl")
-export EvaluatedNetwork, evaluation_post_sampling!, precondition!, SamplingCache
+export precondition!
 
 # SR
 include("Algorithms/SR/SR.jl")
 # Gradient
 include("Algorithms/Gradient/Gradient.jl")
 # Observables
-include("Algorithms/Observables/Obs.jl")
+#include("Algorithms/Observables/Obs.jl")
 
 include("Algorithms/batched_algorithms.jl")
 include("Algorithms/SR/SR_batched.jl")
@@ -183,15 +152,15 @@ include("Samplers/MCMCRules/Nagy.jl")
 
 # other
 include("utils/densitymatrix.jl")
-include("utils/expectation_values.jl")
+#include("utils/expectation_values.jl")
 include("utils/translational_symm.jl")
 #include("utils/logging.jl")
 include("utils/loading.jl")
 
 # interface
 include("IterativeInterface/BaseIterativeSampler.jl")
-include("IterativeInterface/IterativeSampler.jl")
-include("IterativeInterface/MTIterativeSampler.jl")
+#include("IterativeInterface/IterativeSampler.jl")
+#include("IterativeInterface/MTIterativeSampler.jl")
 
 include("IterativeInterface/Batched/base_accumulators.jl")
 include("IterativeInterface/Batched/AccumulatorLogPsi.jl")
