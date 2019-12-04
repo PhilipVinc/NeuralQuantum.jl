@@ -1,6 +1,13 @@
 export gradient_numerical
 
-function gradient_numerical(net::KetNet, op, h=0.001)
+_expval(psi::AbstractVector, Ĥ, op::AbsLinearOperator) =
+    psi'*Ĥ*psi/(psi'psi)
+
+_expval(psi::AbstractVector, Ĥ, op::KLocalLiouvillian) =
+    sum(abs2.((Ĥ*psi)./psi))
+
+
+function gradient_numerical(net, op, h=0.001)
     Ĥ = Matrix(op)
     cnet = cached(net)
     hilb = basis(op)
@@ -11,10 +18,7 @@ function gradient_numerical(net::KetNet, op, h=0.001)
     Δ = grad_cache(eltype(trainable_first(net)), net)
     Δv = vec_data(Δ)[1]
 
-    optimizer = Optimisers.Descent(h)
-
-    expval(psi::AbstractVector) =
-        psi'*Ĥ*psi/(psi'psi)
+    optimizer = Optimisers.Descent(1)
 
     if eltype(Δv) isa Complex
         h = h+h*1im
@@ -24,14 +28,15 @@ function gradient_numerical(net::KetNet, op, h=0.001)
     for i=1:length(Δv)
         Δv[i] = -h
         Optimisers.update!(optimizer, net, Δ)
-        E_p = expval(Vector(cnet, hilb))
+        E_p = _expval(Vector(cnet, hilb), Ĥ, op)
 
         Δv[i] = 2h
         Optimisers.update!(optimizer, net, Δ)
-        E_m = expval(Vector(cnet, hilb))
+        E_m = _expval(Vector(cnet, hilb), Ĥ, op)
 
         Δv[i] = -h
         Optimisers.update!(optimizer, net, Δ)
+        Δv[i] = 0
 
         ∇gv[i] = (E_p - E_m) / (2h)
     end
