@@ -26,6 +26,7 @@ function setup_algorithm!(g::SRDirectCache, ∇C, Ô)
         T = eltype(S)
         N = size(Ô,2)
 
+        # TODO MPI Sync Sc
         mul!(Sc, O, O')
 
         if T <: Real
@@ -96,7 +97,7 @@ function _sr_iterative_cache(algo::SR, prob, net)
     else
         Sc = S
     end
-    return SRFullData(Sc, S, g, grad_cache(T, net))
+    return SRIterativeCache(Sc, S, g, grad_cache(T, net))
 end
 
 function precondition!(data::SRIterativeCache, params::SR, iter_n)
@@ -118,40 +119,30 @@ function precondition!(data::SRIterativeCache, params::SR, iter_n)
 
         end
 
-        if !params.use_iterative
-            try
-                Δw = pinv(Sprecond)*F
-            catch err
-                println("Could not invert: $err")
-                Δw = 0.0
-                success = false
-            end
-        else
-            if params.algorithm == sr_minres
-                x, hist = minresqlp(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
-            elseif params.algorithm == sr_lsq
-                x, hist = lsqr(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
-            elseif params.algorithm == sr_cg
-                x, hist = cg(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
-            end
+        if params.algorithm == sr_minres
+            x, hist = minresqlp(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
+        elseif params.algorithm == sr_lsq
+            x, hist = lsqr(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
+        elseif params.algorithm == sr_cg
+            x, hist = cg(Sprecond, F, maxiter=size(S,2)*10, log=true, verbose=false, tol=params.sr_precision)
+        end
             #x, hist = cg(S.+ ϵ*I, F, maxiter=size(S,2)*10, log=true, verbose=true, tol=10e-10)
-            if eltype(Δw) <: Real
-                Δw .= real.(x)
-            else
-                Δw .= x
-            end
-            add_iters = 1
-            while !hist.isconverged
-                println("minresqlp not conerged. Additional $(size(S,2)*10) iters for the $add_iters time.")
-                x, hist = minresqlp(ΔW, Sprecond, F, maxiter=size(S,2)*10, log=true)
-                Δw .= x
-                add_iters += 1
-                add_iters > 5 && break
-            end
-            if add_iters > 5 && !hist.isconverged
-                success = false
-                Δw .= 0.0
-            end
+        if eltype(Δw) <: Real
+            Δw .= real.(x)
+        else
+            Δw .= x
+        end
+        add_iters = 1
+        while !hist.isconverged
+            println("minresqlp not conerged. Additional $(size(S,2)*10) iters for the $add_iters time.")
+            x, hist = minresqlp(ΔW, Sprecond, F, maxiter=size(S,2)*10, log=true)
+            Δw .= x
+            add_iters += 1
+            add_iters > 5 && break
+        end
+        if add_iters > 5 && !hist.isconverged
+            success = false
+            Δw .= 0.0
         end
     end
     return data.∇out
