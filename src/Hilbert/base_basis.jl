@@ -3,9 +3,10 @@ export nsites, toint, index
 
 # Global somewhat slow methods
 """
-    local_dim(hilbert, i) -> Int
+    local_dim(hilbert [, i]) -> Int
 
-Returns the local dimension of the `hilbert` space on site `i`
+Returns the local dimension of the `hilbert` space on site `i`.
+If the space is homogeneous then specifying `i` is not needed.
 """
 @inline local_dim(h::AbstractHilbert, i) = shape(h)[i]
 
@@ -27,7 +28,6 @@ state(h::AbstractHilbert) = state(STD_REAL_PREC, h)
 state(T::Type{<:Number}, h::AbstractHilbert) = state(zeros(1), STD_REAL_PREC, h)
 state(arrT::AbstractArray, h::AbstractHilbert) = state(arrT, STD_REAL_PREC, h)
 
-
 function state(h::AbstractHilbert, i::Int)
     σ = state(h)
     return set!(σ, h, i)
@@ -39,6 +39,17 @@ function apply!(σ::ADoubleState, h::AbstractHilbert, cngs_l, cngs_r) 
     return σ
 end
 
+"""
+    apply!(state, changes, [changes_r] )
+
+Apply the changes `changes` to the `state`. If state is a double
+state and changes is a tuple, then the first element of the tuple
+is the row-changes and the second element is the column-changes.
+Optionally the two elements of the tuple can be passed separately.
+
+If the state is double but there is only 1 element of changes,
+it's applied to the rows.
+"""
 function apply!(σ::ADoubleState, cngs_l::Union{StateChanges,Nothing}) 
     apply!(row(σ), cngs_l)
     return σ
@@ -71,9 +82,20 @@ function apply!(σ::AbstractVector, cngs) 
     return σ
 end
 
+"""
+    flipat!(state, hilb, i) -> (old_val, new_val)
 
+Randomly flips `state[i]` to another available state. Returns the
+old value of `state[i]` and the new value. state is changed in-place.
+"""
 @inline flipat!(σ, hilb::AbstractHilbert, i::Int) = flipat!(GLOBAL_RNG, σ, hilb, i)
 
+"""
+    flipat!([rng=GLOBAL_RNG], state, hilb)
+
+Generates a random state of hilbert space on the state (can also be a batch
+of states). Optionally you can pass the rng.
+"""
 @inline Random.rand!(σ::AbstractArray, h::AbstractHilbert) = rand!(GLOBAL_RNG, σ, h)
 @inline Random.rand!(σ::NTuple{2,<:AbstractArray}, h::AbstractHilbert) = rand!(GLOBAL_RNG, σ, h)
 @inline Random.rand(h::AbstractHilbert) = rand!(GLOBAL_RNG, state(h), h)

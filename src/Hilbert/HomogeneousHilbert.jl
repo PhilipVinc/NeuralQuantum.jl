@@ -5,6 +5,11 @@ mutable struct HomogeneousHilbert{D} <: AbstractHilbert
     shape::Vector{Int}
 end
 
+"""
+    HomogeneousHilbert(N, m)
+
+Constructs the Hilbert space of `N` identical modes with `m` levels.
+"""
 HomogeneousHilbert(n_sites, hilb_dim) =
     HomogeneousHilbert{hilb_dim}(n_sites, fill(hilb_dim, n_sites))
 
