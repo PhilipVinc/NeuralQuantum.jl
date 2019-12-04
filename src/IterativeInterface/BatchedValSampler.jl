@@ -2,7 +2,7 @@ export BatchedSampler
 
 mutable struct BatchedValSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Pc} <: AbstractIterativeSampler
     bnet::BN
-    problem::P
+    Ĉ::P # the operator defining the observable to minimise
 
     sampler::S
     sampler_cache::Sc
@@ -61,7 +61,7 @@ function sample!(is::BatchedValSampler)
     ch_len         = chain_length(is.sampler, is.sampler_cache)
     batch_sz       = size(is.local_vals, 1)
 
-    # Sample phase
+    # Monte-Carlo sampling
     σ_old = unsafe_get_el(is.samples, 1)
 
     init_sampler!(is.sampler, is.bnet, σ_old, is.sampler_cache)
@@ -85,18 +85,18 @@ function sample!(is::BatchedValSampler)
         samples = is.samples
     end
 
-    # Compute LdagL
-    Ĉ = operator(is.problem)
+    # Compute terms C^{loc} = ⟨σ|Ĉ|ψ⟩/⟨σ|ψ⟩
     for i=1:ch_len
         for j = 1:batch_sz
             σv = unsafe_get_el(samples, j, i)
             init!(is.accum, σv, ψvals[1,j,i])
-            accumulate_connections!(is.accum, Ĉ, σv)
+            accumulate_connections!(is.accum, is.Ĉ, σv)
             L_loc = NeuralQuantum.finalize!(is.accum)
             is.local_vals[j, i] = L_loc
         end
     end
 
+    # Perform some simple analysis to estimate error and autocorrelations
     L_stat = stat_analysis(is.local_vals)
 
     # Center the gradient so that it has zero-average
@@ -111,6 +111,9 @@ function sample!(is::BatchedValSampler)
     ∇C  = Ĉr*∇vr'
     ∇C ./= (ch_len*batch_sz)
 
+    # Setup the algorithm.
+    # IF we are doing gradient descent, this does nothing, otherwise initializes
+    # the SR/Natural gradient structures.
     setup_algorithm!(is.precond_cache, reshape(∇C,:), ∇vr)
 
     return L_stat, is.precond_cache
@@ -127,5 +130,5 @@ end
 Base.show(io::IO, is::BatchedValSampler) = print(io,
     "BatchedValSampler for :"*
     "\n\tnet\t\t: $(is.bnet)"*
-    "\n\tproblem\t: $(is.problem)"*
+    "\n\tproblem\t: $(is.Ĉ)"*
     "\n\tsampler\t: $(is.sampler)")

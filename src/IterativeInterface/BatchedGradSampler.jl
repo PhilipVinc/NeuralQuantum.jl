@@ -2,7 +2,7 @@ export BatchedSampler
 
 mutable struct BatchedGradSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Lgv, Pc} <: AbstractIterativeSampler
     bnet::BN
-    problem::P
+    Ĉ::P
 
     sampler::S
     sampler_cache::Sc
@@ -49,7 +49,7 @@ function BatchedGradSampler(net,
 
     precond        = algorithm_cache(algo, prob, net)
 
-    if prob isa LRhoKLocalSOpProblem
+    if prob isa KLocalLiouvillian
         obs        = BatchedObsDMSampler(bnet, sampl, basis(prob), batch_sz=batch_sz)
     else
         obs        = BatchedObsKetSampler(samples, ψvals, local_acc)
@@ -80,12 +80,11 @@ function sample!(is::BatchedGradSampler; sample=true)
     logψ_and_∇logψ!(is.∇vals, is.ψvals, is.bnet, is.samples)
 
     # Compute LdagL
-    Ĉ = operator(is.problem)
     for i=1:ch_len
         for j = 1:batch_sz
             σv = unsafe_get_el(is.samples, j, i)
             init!(is.accum, σv, is.ψvals[1,j,i], vec_data(is.∇vals[i])[1][:,j] )
-            accumulate_connections!(is.accum, Ĉ, σv)
+            accumulate_connections!(is.accum, is.Ĉ, σv)
             L_loc, ∇L_loc = NeuralQuantum.finalize!(is.accum)
             is.local_vals[j, i]   = L_loc
             uview(is.∇local_vals, :, j, i) .= vec_data(∇L_loc)[1]
@@ -107,11 +106,11 @@ function sample!(is::BatchedGradSampler; sample=true)
     Ĉr  = reshape(is.local_vals, 1, :)
     Ĉ2r = reshape(Ĉ2, 1, :)
 
-
     # Compute the gradient
     ∇C  = Ĉr*∇Ĉr'
     ∇C ./= (ch_len*batch_sz)
     ∇C .-= L_stat.mean .* is.∇vec_avg'
+    ∇C .= conj.(∇C)
 
     setup_algorithm!(is.precond_cache, reshape(∇C,:), ∇vr)
 
@@ -130,5 +129,5 @@ end
 Base.show(io::IO, is::BatchedGradSampler) = print(io,
     "BatchedGradSampler for :"*
     "\n\tnet\t\t: $(is.bnet)"*
-    "\n\tproblem\t: $(is.problem)"*
+    "\n\tproblem\t: $(is.Ĉ)"*
     "\n\tsampler\t: $(is.sampler)")
