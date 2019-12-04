@@ -14,7 +14,7 @@ using LightGraphs
 using Zygote
 using NNlib
 using LinearMaps
-using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!
+using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!, randn!
 using LinearAlgebra, SparseArrays, Strided, UnsafeArrays
 using Statistics
 using Printf
@@ -74,7 +74,6 @@ include("Hilbert/basis_convert.jl")
 include("base_batched_networks.jl")
 
 # Linear Operators
-import Base: +, *
 include("Operators/BaseOperators.jl")
 include("Operators/OpConnection.jl")
 include("Operators/OpConnectionIndex.jl")
@@ -88,8 +87,8 @@ include("Operators/SimpleOperators.jl")
 include("Operators/OpConversion.jl")
 
 export OpConnection
-export KLocalOperator, KLocalOperatorTensor, KLocalOperatorSum, KLocalOperatorRow, operators
-export row_valdiff, row_valdiff_index, col_valdiff, sites, conn_type
+export KLocalOperator, KLocalOperatorTensor, KLocalOperatorRow, operators
+export row_valdiff, col_valdiff, sites, conn_type
 export duplicate
 
 
