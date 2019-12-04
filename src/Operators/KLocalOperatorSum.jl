@@ -64,22 +64,22 @@ function accumulate_connections!(acc::AbstractAccumulator, ∑Ô::KLocalOperato
     return acc
 end
 
-function Base.sum!(op_sum::KLocalOperatorSum, op::AbsLinearOperator)
+function _add!(op_sum::KLocalOperatorSum, op::AbsLinearOperator)
     id = findfirst(isequal(sites(op)), op_sum.sites)
 
     if isnothing(id)
         push!(op_sum.sites, sites(op))
         push!(op_sum.operators, op)
     else
-        _sum_samesite!(op_sum.operators[id], op)
+        _add_samesite!(op_sum.operators[id], op)
     end
 
     return op_sum
 end
 
-function Base.sum!(op_l::KLocalOperatorSum, op_r::KLocalOperatorSum)
+function _add!(op_l::KLocalOperatorSum, op_r::KLocalOperatorSum)
     for op=operators(op_r)
-        sum!(op_l, op)
+        _add!(op_l, op)
     end
     op_l
 end
@@ -87,12 +87,22 @@ end
 Base.:+(op::AbsLinearOperator, ops::KLocalOperatorSum) = ops + op
 Base.:-(op::AbsLinearOperator, ops::KLocalOperatorSum) = ops - op
 
-Base.:+(op_l::KLocalOperatorSum, op::AbsLinearOperator) = sum!(duplicate(op_l), op)
-Base.:+(op_l::KLocalOperatorSum, op_r::KLocalOperatorSum) = sum!(duplicate(op_l), op_r)
+Base.:+(op_l::KLocalOperatorSum, op::AbsLinearOperator) = _add!(duplicate(op_l), op)
+Base.:-(op_l::KLocalOperatorSum, op::AbsLinearOperator) = _add!(duplicate(op_l), -op)
+
+Base.:+(op_l::KLocalOperatorSum, op::KLocalOperatorSum) = _add!(duplicate(op_l), op)
+Base.:-(op_l::KLocalOperatorSum, op::KLocalOperatorSum) = _add!(duplicate(op_l), -op)
+
 Base.:+(op_l::KLocalOperator, op_r::KLocalOperator) = begin
-    sites(op_l) == sites(op_r) && return _sum_samesite(op_l, op_r)
+    sites(op_l) == sites(op_r) && return _add_samesite(op_l, op_r)
     return KLocalOperatorSum(op_l) + op_r
 end
+
+Base.:-(op_l::KLocalOperator, op_r::KLocalOperator) = begin
+    sites(op_l) == sites(op_r) && return _add_samesite(op_l, -op_r)
+    return KLocalOperatorSum(op_l) - op_r
+end
+
 
 function Base.transpose(ops::KLocalOperatorSum)
     new_sites  = similar(ops.sites)
