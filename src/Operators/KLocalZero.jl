@@ -27,6 +27,9 @@ function map_connections(fun::Function , op::KLocalOperatorZero, v) end
 Base.:+(op_l::KLocalOperatorZero, op_r::KLocalOperator) = duplicate(op_r)
 Base.:+(op_l::KLocalOperator, op_r::KLocalOperatorZero) = duplicate(op_l)
 
+Base.:-(op_l::KLocalOperatorZero, op_r::KLocalOperator) = -op_r
+Base.:-(op_l::KLocalOperator, op_r::KLocalOperatorZero) = -op_l
+
 _sum_samesite(op_l::KLocalOperatorZero,
                 op_r::AbsLinearOperator) = duplicate(opop_r_r)
 

@@ -150,14 +150,14 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperatorTen
 end
 
 
-_sum_samesite(op_l::KLocalOperatorTensor, op_r::KLocalOperatorTensor) = _sum_samesite!(duplicate(op_l), op_r)
+_add_samesite(op_l::KLocalOperatorTensor, op_r::KLocalOperatorTensor) = _add_samesite!(duplicate(op_l), op_r)
 
-_sum_samesite!(::Nothing, ::Nothing) = nothing
-function _sum_samesite!(op_l::KLocalOperatorTensor, op_r::KLocalOperatorTensor)
+_add_samesite!(::Nothing, ::Nothing) = nothing
+function _add_samesite!(op_l::KLocalOperatorTensor, op_r::KLocalOperatorTensor)
     @assert op_l.sites == op_r.sites
 
-    _sum_samesite!(op_l.op_l, op_r.op_l)
-    _sum_samesite!(op_l.op_r, op_r.op_r)
+    _add_samesite!(op_l.op_l, op_r.op_l)
+    _add_samesite!(op_l.op_r, op_r.op_r)
     return op_l
 end
 
@@ -178,7 +178,7 @@ Base.adjoint(op::KLocalOperatorTensor) = conj(transpose(op))
 
 
 Base.:+(op_l::KLocalOperatorTensor, op_r::KLocalOperatorTensor) = begin
-    sites(op_l) == sites(op_r) && return _sum_samesite(op_l, op_r)
+    sites(op_l) == sites(op_r) && return _add_samesite(op_l, op_r)
     return KLocalOperatorSum(op_l) + op_r
 end
 

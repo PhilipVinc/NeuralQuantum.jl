@@ -187,9 +187,11 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperator, v
     return acc
 end
 
-_sum_samesite(op_l::KLocalOperator, op_r::KLocalOperator) = _sum_samesite!(duplicate(op_l), op_r)
+Base.:-(op::KLocalOperator) = KLocalOperator(op, -op.mat)
 
-function _sum_samesite!(op_l::KLocalOperator, op_r::KLocalOperator)
+_add_samesite(op_l::KLocalOperator, op_r::KLocalOperator) = _add_samesite!(duplicate(op_l), op_r)
+
+function _add_samesite!(op_l::KLocalOperator, op_r::KLocalOperator)
     @assert op_l.sites == op_r.sites
     @assert length(op_l.mel) == length(op_r.mel)
 
