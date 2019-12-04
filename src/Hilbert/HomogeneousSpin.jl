@@ -5,9 +5,18 @@ mutable struct HomogeneousSpin{D} <: AbstractHilbert
     shape::Vector{Int}
 end
 
+"""
+    HomogeneousSpins(N, S::Rational=1//2)
+
+Constructs the Hilbert space of `N` identical spins-S (by default 1//2).
+"""
 function HomogeneousSpin(n_sites, S::Rational=1//2)
-    @assert S.den == 2
-    N = S.num +1
+    @assert S.den == 2 || S.den == 1
+    if S.den == 2
+        N = S.num +1
+    elseif S.den == 1
+        N = 2*S.num +1
+    end
     return HomogeneousSpin{N}(n_sites, fill(N, n_sites))
 end
 
