@@ -17,7 +17,7 @@ for i=1:N
     global H  += J * sigmaz(hilb, i) * sigmaz(hilb, mod(i, N)+1)
 end
 
-net  = RBM(Float32, N, 1 , NeuralQuantum.logℒ2 )
+net  = RBM(Float32, N, 1, af_logcosh)
 init_random_pars!(net, sigma=0.01)
 
 sampl = MetropolisSampler(LocalRule(), 125, N, burn=100)
