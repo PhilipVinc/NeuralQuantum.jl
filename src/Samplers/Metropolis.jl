@@ -17,6 +17,10 @@ Constructs a Metropolis-Hastings sampler which samples Markov chains of length
 specified by the rule `rule`. To reduce auto-correlation, `passes` number of
 metropolis-hastings steps are performed for each sample returned (minimum 1).
 
+Effectively, this means that the chain is actually `passes * (chain_lenght + burn)`
+long, but only 1 every passes elements are stored and used to compute expectation
+values.
+
 Initial seed can be set bu specifying `seed`.
 """
 function MetropolisSampler(rule, chain_length, passes; burn=0, seed=rand(UInt))

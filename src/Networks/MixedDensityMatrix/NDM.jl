@@ -17,13 +17,16 @@ end
 @functor NDM
 
 """
-    NDM([T=STD_REAL_PREC], N, αₕ, αₐ, [initW, initb, inita])
+    NDM([T=STD_REAL_PREC], N, αₕ, αₐ, f=af_sigmoid, [initW, initb, inita])
 
 Constructs a Neural Density Matrix with numerical precision `T` (Defaults to
 Float32), `N` input neurons, N⋅αₕ hidden neurons and N⋅αₐ ancillary neurons.
 This network ensure that the density matrix is always positive definite.
 
 The number of input neurons `N` must match the size of the lattice.
+
+By default the activation function is a sigmoid. You can also use logcosh by
+    passing as an additional parameter `af_logcosh`.
 
 The initial parameters of the neurons are initialized with a rescaled normal
 distribution of width 0.01 for the coupling matrix and 0.005 for the local
