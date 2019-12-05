@@ -155,15 +155,17 @@ function init_sampler!(sampler::ExactSampler,
         for (i, h_i)=enumerate(batch_i)
             set!(unsafe_get_batch(σ, i), c.hilb, h_i)
         end
-        logψ!(c.logψ, net, σ)
-        c.logψ .= exp.(real.(2.0 .* c.logψ))
+        log_prob_ψ!(c.logψ, c.logψ, net, σ)
 
         for (i, h_i)=enumerate(batch_i)
             c.pdf[h_i] = c.logψ[i]
         end
     end
-    c.pdf ./= sum(c.pdf)
+    #c.pdf ./= sum(c.pdf)
+    tot = sum(c.pdf)
     cumsum!(c.pdf, c.pdf)
+    c.pdf ./= tot
+
     c.steps_done = 0
 
     samplenext!(σ, σ, sampler, net, c)
@@ -178,9 +180,6 @@ function samplenext!(σ_out::T, σ_in::T,
                      c::ExactSamplerBatchedCache) where {T<:Union{AStateBatch, ADoubleStateBatch}}
     # Check termination condition, and return if verified
     done(s, σ, c) && return false
-
-    # sample and set
-    σ_out !== σ_in && statecopy!(σ_out, σ_in)
 
     for i=1:batch_size(net)
         r = rand(c.rng)
