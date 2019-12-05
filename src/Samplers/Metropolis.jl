@@ -114,15 +114,13 @@ function samplenext!(σ_out::T, σ_in::T, s::MetropolisSampler,
     # when input === ouput
 
     # Compute the old value
-    ψtmp     = logψ!(c.ψtmp, net, σ_in)
-    logψ_σ .= 2 .*real.(ψtmp)
+    ψtmp     = log_prob_ψ!(logψ_σ, c.ψtmp, net, σ_in)
 
     for i=1:s.passes
         # Apply the transition rule
         propose_step!(σ_out, s, net, c, rule_cache(c))
 
-        ψtmp     = logψ!(c.ψtmp, net, σ_out)
-        logψ_σp .= 2 .*real.(ψtmp)
+        ψtmp     = log_prob_ψ!(logψ_σp, c.ψtmp, net, σ_out)
 
         rand!(c.rng, c.prob)
         c.prob .-= exp.(logψ_σp .- logψ_σ)

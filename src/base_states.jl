@@ -4,10 +4,14 @@ export setat!, set!, set_index!, rand!
 
 const AState = AbstractVector
 const AStateBatch = AbstractMatrix
+const AStateBatchVec{T} = AbstractArray{T,3}
+
 const ADoubleState{T} = NTuple{2,AState{T}} where T
 const ADoubleStateBatch{T} = NTuple{2,AStateBatch{T}} where T
-const AStateBatchVec{T} = AbstractArray{T,3}
 const ADoubleStateBatchVec{T} = NTuple{2,AStateBatchVec{T}} where T
+
+const AStateOrBatchOrVec{T} = Union{AState{T},AStateBatch{T},AStateBatchVec{T}} where T
+const ADoubleStateOrBatchOrVec{T} = Union{ADoubleState{T},ADoubleStateBatch{T},ADoubleStateBatchVec{T}} where T
 
 @inline row(v::Union{ADoubleState,ADoubleStateBatch,ADoubleStateBatchVec}) = first(v)
 @inline col(v::Union{ADoubleState,ADoubleStateBatch,ADoubleStateBatchVec}) = last(v)

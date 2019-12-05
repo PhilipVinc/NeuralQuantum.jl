@@ -31,7 +31,7 @@ with minimal allocations.
 """
 @inline logψ(net::NeuralNetwork, σ) = net(σ)
 @inline logψ(net::NeuralNetwork, σ::NTuple{N,<:AbstractArray}) where N = net(σ...)
-@inline log_prob_ψ(net, σ...)       = 2.0*real(net(σ...))
+@inline log_prob_ψ(net, σ)          = 2.0*real(net(σ))
 @inline ∇logψ(args...)              = logψ_and_∇logψ(args...)[2]
 @inline ∇logψ!(args...)             = logψ_and_∇logψ!(args...)[2]
 

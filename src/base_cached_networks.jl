@@ -137,6 +137,8 @@ Base.show(io::IO, ::MIME"text/plain", m::CachedNet) = print(io, "CachedNet{$(m.n
 # representing row and column of a density matrix in the same space.
 abstract type MatrixNeuralNetwork <: NeuralNetwork end
 const MatrixNet   = Union{MatrixNeuralNetwork, CachedNet{<:MatrixNeuralNetwork}}
+log_prob_ψ(net::MatrixNeuralNetwork, σ::AStateOrBatchOrVec) =
+    abs(net(σ, σ))
 
 # Thing for Pure Neural Network
 # A MatrixNeuralNetwork is a network for a state that has a bi-partite state,
