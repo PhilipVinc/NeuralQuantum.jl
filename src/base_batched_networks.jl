@@ -263,3 +263,18 @@ end
 # diagonal
 logψ!(out::AbstractArray, net::MatrixNeuralNetwork, cache::NNCache, σ::AStateBatch) =
     logψ!(out, net, cache, σ, σ)
+
+log_prob_ψ!(prob::AbstractArray, net::NeuralNetwork, σ) =
+    log_prob_ψ!(prob, prob, net, σ)
+
+function log_prob_ψ!(prob::AbstractArray, out_tmp::AbstractArray, net::MatrixNeuralNetwork, σ::AStateOrBatchOrVec)
+    logψ!(out_tmp, net, σ, σ)
+    prob .= abs.(out_tmp)
+    return prob
+end
+
+function log_prob_ψ!(prob::AbstractArray, out_tmp::AbstractArray, net::NeuralNetwork, σ)
+    logψ!(out_tmp, net, σ)
+    prob .= 2 .* real.(out_tmp)
+    return prob
+end
