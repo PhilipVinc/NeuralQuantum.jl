@@ -39,5 +39,12 @@ Returns the estimated length of the chain.
 """
 function chain_length end
 
+"""
+    sampling_function(s::SamplerCache) -> function
+
+Returns the sampling function. By default it's 2.0*real().
+"""
+function sampling_function end
+
 samplenext!(σ, sampl::Sampler, net, sampler_cache) =
     samplenext!(σ, σ, sampl, net, sampler_cache)

@@ -69,9 +69,9 @@ algo  = SR(ϵ=(0.001), algorithm=sr_cholesky)
 
 net  = NDM(Float64, N, 1, 1, NeuralQuantum.logℒ)
 is = BatchedSampler(net, sampl, liouv, algo; batch_sz=16)
-add_observable(is, "Sx", Sx)
-add_observable(is, "Sy", Sy)
-add_observable(is, "Sz", Sz)
+add_observable!(is, "Sx", Sx)
+add_observable!(is, "Sy", Sy)
+add_observable!(is, "Sz", Sz)
 
 optimizer = Optimisers.Descent(0.01)
 

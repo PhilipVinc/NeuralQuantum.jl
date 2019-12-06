@@ -22,7 +22,7 @@ KLocalOperatorSum(op::KLocalOperatorSum) = duplicate(op)
 QuantumOpticsBase.basis(op::KLocalOperatorSum) = op.hilb
 operators(op::KLocalOperatorSum) = op.operators
 conn_type(op::KLocalOperatorSum) = conn_type(eltype(operators(op)))
-
+sites(op::KLocalOperatorSum) = op.sites
 
 # Copy
 function duplicate(op::KLocalOperatorSum)
