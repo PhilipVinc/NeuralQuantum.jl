@@ -17,10 +17,16 @@ Initializes all weights of the neural network to a random distribution with
 variance `sigma`.
 """
 init_random_pars!(net::NeuralNetwork, args...; kwargs...) = init_random_pars!(GLOBAL_RNG, net, args...; kwargs...)
-function init_random_pars!(rng::AbstractRNG, net::NeuralNetwork; sigma=0.01)
+function init_random_pars!(rng::AbstractRNG, net; sigma=0.01)
     for f=trainable(net)
-        randn!(rng, f)
-        f .*= sqrt(sigma)
+        init_random_pars!(rng, f; sigma=sigma)
     end
     return net
+end
+
+function init_random_pars!(rng::AbstractRNG, f::AbstractArray; sigma=0.01)
+    randn!(rng, f)
+    f .*= sqrt(sigma)
+
+    return f
 end

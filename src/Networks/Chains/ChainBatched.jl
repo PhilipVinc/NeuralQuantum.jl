@@ -3,10 +3,10 @@ struct ChainBatchedCache{T<:Tuple} <: NNBatchedCache{Chain}
     valid::Bool
 end
 
-cache(l::Chain, in_T, in_sz, batch_sz) = begin
+cache(l::Chain, arr_T, in_T, in_sz, batch_sz) = begin
     caches = []
     for layer = l.layers
-        c = cache(layer, in_T, in_sz, batch_sz)
+        c = cache(layer, arr_T, in_T, in_sz, batch_sz)
         in_T, in_sz = layer_out_type_size(layer, in_T, in_sz)
         push!(caches, c)
     end
