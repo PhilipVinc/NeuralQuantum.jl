@@ -100,7 +100,7 @@ function sample!(is::BatchedValSampler)
     L_stat = stat_analysis(is.local_vals)
 
     # Center the gradient so that it has zero-average
-    mean!(is.∇vec_avg, is.∇vals_vec)
+    mean!(is.∇vec_avg, is.∇vals_vec) # MPI
     is.∇vals_vec .-= is.∇vec_avg
 
     # Flatten the batches and the iterations
@@ -109,7 +109,7 @@ function sample!(is::BatchedValSampler)
 
     # Compute the gradient
     ∇C  = Ĉr*∇vr'
-    ∇C ./= (ch_len*batch_sz)
+    ∇C ./= (ch_len*batch_sz) # MPI
 
     # Setup the algorithm.
     # IF we are doing gradient descent, this does nothing, otherwise initializes

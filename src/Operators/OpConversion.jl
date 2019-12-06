@@ -57,7 +57,7 @@ end
 
 SparseArrays.sparse(op::AbsLinearOperator) = to_sparse(op)
 
-#=
+
 function to_map(op::AbsLinearOperator)
     hilb = basis(op)
     N = spacedimension(hilb)
@@ -86,4 +86,3 @@ function to_map(op::AbsLinearOperator)
 
     return LinearMap{ComplexF64}(op_v_prod!, N, N; ismutating=true)
 end
-=#
