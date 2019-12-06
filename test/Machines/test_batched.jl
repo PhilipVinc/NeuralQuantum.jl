@@ -26,7 +26,7 @@ b_sz = 3
 
 @testset "test batched dispatch - values: $name" for name=keys(machines)
     net = machines[name](T,N)
-    hilb = HomogeneousHilbert(N, 2)
+    hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end
@@ -60,7 +60,7 @@ end
 
     snet = cache(net)
     cnet = cached(net, b_sz)
-    hilb = HomogeneousHilbert(N, 2)
+    hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end
@@ -105,7 +105,7 @@ end
 
     cnet = cached(net)
     bnet = cached(net, b_sz)
-    hilb = HomogeneousHilbert(N, 2)
+    hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end
@@ -138,7 +138,7 @@ end
 
     cnet = cached(net)
     bnet = cached(net, b_sz)
-    hilb = HomogeneousHilbert(N, 2)
+    hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end

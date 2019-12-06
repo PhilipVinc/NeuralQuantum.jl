@@ -50,7 +50,7 @@ end
         net = all_machines[name](T,N)
         cnet = cached(net)
 
-        hilb = HomogeneousHilbert(N, 2)
+        hilb = HomogeneousFock(N, 2)
         if net isa NeuralQuantum.MatrixNet
             hilb = SuperOpSpace(hilb)
         end
@@ -84,7 +84,7 @@ end
         net = all_machines[name](T,N)
         cnet = cached(net)
 
-        hilb = HomogeneousHilbert(N, 2)
+        hilb = HomogeneousFock(N, 2)
         if net isa NeuralQuantum.MatrixNet
             hilb = SuperOpSpace(hilb)
         end

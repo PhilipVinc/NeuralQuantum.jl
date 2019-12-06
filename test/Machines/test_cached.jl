@@ -24,7 +24,7 @@ T = Float32
 
 @testset "test cached dispatch - values: $name" for name=keys(machines)
     net = machines[name](T,N)
-    hilb = HomogeneousHilbert(N, 2)
+    hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end
@@ -40,7 +40,7 @@ end
 @testset "test cached dispatch - allocating gradients: $name" for name=keys(machines)
     net = machines[name](T,N)
 
-    hilb = HomogeneousHilbert(N, 2)
+    hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end
@@ -53,7 +53,7 @@ end
 @testset "test cached dispatch - inplace gradients: $name" for name=keys(machines)
     net = machines[name](T,N)
 
-    hilb = HomogeneousHilbert(N, 2)
+    hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end

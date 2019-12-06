@@ -31,7 +31,7 @@ You must write the training loop by yourself. Check the documentation and the ex
 
 *IMPORTANT:* If you want to use multithreaded samplers (identified by a `MT` at the beginning of their name), you will launch one markov chain per julia thread. As such, you will get much better performance if you set `JULIA_NUM_THREADS` environment variable to the number of physical cores in your computer before launching julia.
 
-```
+```language=julia
 using NeuralQuantum, QuantumOpticsBase, ProgressMeter
 using NeuralQuantum: unsafe_get_el
 
@@ -40,7 +40,7 @@ g = 0.4
 V = 2.0
 
 hilb = HomogeneousSpin(N,1//2)
-hilb = HomogeneousHilbert(N,2)
+hilb = HomogeneousFock(N,2)
 
 ops = []
 H = LocalOperator(hilb)

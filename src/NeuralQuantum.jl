@@ -16,6 +16,7 @@ using NNlib
 using LinearMaps
 using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!, randn!
 using LinearAlgebra, SparseArrays, Strided, UnsafeArrays
+using IterativeSolvers: minres, lsqr, cg
 using Statistics
 using Printf
 
@@ -66,7 +67,7 @@ include("utils/math.jl")
 include("utils/stats.jl")
 
 include("Hilbert/DiscreteHilbert.jl")
-include("Hilbert/HomogeneousHilbert.jl")
+include("Hilbert/HomogeneousFock.jl")
 include("Hilbert/HomogeneousSpin.jl")
 include("Hilbert/SuperHilbert.jl")
 include("Hilbert/basis_convert.jl")
