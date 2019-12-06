@@ -24,7 +24,7 @@ function BatchedObsKetSampler(samples, ψvals, accum)
     return is
 end
 
-function add_observable(is::BatchedObsKetSampler, name::String, obs::AbsLinearOperator)
+function add_observable!(is::BatchedObsKetSampler, name::String, obs::AbsLinearOperator)
     is.observables[name] = obs
 end
 

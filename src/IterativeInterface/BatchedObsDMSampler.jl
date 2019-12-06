@@ -50,7 +50,7 @@ function BatchedObsDMSampler(bnet,
     return nq
 end
 
-function add_observable(is::BatchedObsDMSampler, name::String, obs::AbsLinearOperator)
+function add_observable!(is::BatchedObsDMSampler, name::String, obs::AbsLinearOperator)
     is.observables[name] = obs
 end
 

@@ -6,7 +6,7 @@ mutable struct WSumBatchedCache{Ta,Tb,Tc}
 end
 
 cache(l::WSum, arr_T, in_T, in_sz, batch_sz)  =
-    SumBatchedCache(similar(l.c, Complex{real(eltype(l.c))}, length(l.c),batch_sz),
+    WSumBatchedCache(similar(l.c, Complex{real(eltype(l.c))}, length(l.c),batch_sz),
               similar(l.c, Complex{real(eltype(l.c))}, 1, batch_sz),
               similar(l.c, Complex{real(eltype(l.c))}, 1, length(l.c), batch_sz),
               false)

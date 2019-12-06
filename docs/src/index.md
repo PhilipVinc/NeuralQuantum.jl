@@ -1,10 +1,7 @@
 
-# NeuralQuantum.jl
+# NeuralQuantum.jl : Neural Network states for Quantum Systems
 
-*A Neural-Network steady-state solver*
-
-**NeuralQuantum.jl** is a numerical framework written in [Julia](http://julialang.org)
-to investigate Neural-Network representations of pure and mixed quantum states, and to find the Steady-State of such (Open) Quantum Systems through MonteCarlo procedures.
+**NeuralQuantum.jl** is a numerical framework written in [Julia](http://julialang.org) to investigate Neural-Network representations of pure and mixed quantum states, and to find the Steady-State of such (Open) Quantum Systems through MonteCarlo procedures.
 The package can also compute the ground state of a many-body hamiltonian.
 
 !!! note
@@ -13,7 +10,7 @@ The package can also compute the ground state of a many-body hamiltonian.
 
 ## Installation
 
-To install `NeuralQuantum`, run in a Julia prompt the following command.
+Download [Julia 1.3](https://julialang.org) or a more recent version (we do not support older versions of Julia). To install `NeuralQuantum`, run in a Julia prompt the following command.
 ```
 ] add https://github.com/PhilipVinc/NeuralQuantum.jl
 ```
@@ -30,81 +27,11 @@ When using NeuralQuantum, to determine the Ground State or Steady State of a man
 
 Here you can find a very short, commented example. For a more in-depth walkthrough of `NeuralQuantum.jl` please refer to Sec. [Basics](@ref).
 
-```
-# Load dependencies
-using NeuralQuantum, Random, Plots
-
-# Parameters of the transverse field ising model
-N = 20
-h = 1.0
-J = 1.0
-
-# Constructs the Hilbert space for N 1//2 spins.
-hilb = HomogeneousSpin(N, 1//2)
-
-# Builds the hamiltonian
-H = LocalOperator(hilb)
-for i=1:N
-    global H  -= h * sigmax(hilb, i)
-    global H  += J * sigmaz(hilb, i) * sigmaz(hilb, mod(i, N)+1)
-end
-
-# Constructs the Neural Network
-net  = RBM(Float32, N, 1)
-# Initializes the parameters to a random gaussian of variance 0.01
-init_random_pars!(net, sigma=0.01)
-
-# Chose a Metropolis-Hastings sampler with Local Transition rule.
-# Each chain has length 125 and every step involves applying the transition rule N times.
-# Trash (burn) the first 100 elements of the chain.
-sampl = MetropolisSampler(LocalRule(), 125, N, burn=100)
-
-# Use Stochastic Reconfiguration with 0.1 diagonal offset and use a cholesky solver for inverting the matrix.
-algo  = SR(ϵ=(0.1), algorithm=sr_cholesky)
-
-# Run 8 chains in parallel
-is = BatchedSampler(net, sampl, H, algo; batch_sz=8)
-
-# SGD optimizer with step size 0.1
-optimizer = Optimisers.Descent(0.1)
-
-Evalues = Float64[];
-Eerr = Float64[];
-for i=1:300
-    ldata, prec = sample!(is)
-    ob = compute_observables(is)
-
-    println(ldata)
-
-    push!(Evalues, real(ldata.mean))
-    push!(Eerr, ldata.error)
-    grad = precondition!(prec, algo, i)
-    Optimisers.update!(optimizer, net, grad)
-end
-
-plot(Evalues, yerr=Eerr)
-
-# N=20 (thanks netket)
-exact = -1.274549484318e00 * 20
-hline!([exact, exact])
-```
-
 
 ## Table Of Contents
 ```@contents
 ```
 
-
-
-## Main Functions
-
-```@docs
-solve
-```
-
-```@docs
-ExactSamplerCache
-```
 
 
 ## Index

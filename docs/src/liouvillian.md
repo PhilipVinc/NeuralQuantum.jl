@@ -1,4 +1,4 @@
-# Problems
+# Liouvillian Master Equation
 
 A `Problem` encodes a many-body quantum problem into a cost function to be
 minimized. Problems can encode the search for the Ground State energy of an

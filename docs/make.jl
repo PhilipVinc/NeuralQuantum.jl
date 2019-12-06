@@ -8,22 +8,22 @@ using Documenter, NeuralQuantum
 
 makedocs(
     modules   = [NeuralQuantum],
-    format    = Documenter.HTML(prettyurls = haskey(ENV, "CI")),
     sitename  = "NeuralQuantum.jl",
     authors   = "Filippo Vicentini",
     pages     = [
             "Home"          => "index.md",
             "Manual"        => Any[
                 "Basics"        => "basics.md",
-                "Problems"      => "problems.md",
-                "Algorithms"    => "algorithms.md",
+                "Liouvillian"   => "liouvillian.md",
                 "Networks"      => "networks.md",
+                "SR"            => "algorithms.md",
                 "Optimizers"    => "optimizers.md"
             ],
             "Internals"     => Any[
                 "States"        => "states.md",
             ]
-    ]
+    ],
+    format    = Documenter.HTML(prettyurls = haskey(ENV, "CI"))
 )
 
 deploydocs(

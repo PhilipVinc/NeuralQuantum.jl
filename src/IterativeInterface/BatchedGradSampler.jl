@@ -121,8 +121,8 @@ function compute_observables(is::BatchedGradSampler)
     return compute_observables(is.observables_sampler)
 end
 
-function add_observable(is::BatchedGradSampler, name::String, obs)
-    return add_observable(is.observables_sampler, name, obs)
+function add_observable!(is::BatchedGradSampler, name::String, obs)
+    return add_observable!(is.observables_sampler, name, obs)
 end
 
 
