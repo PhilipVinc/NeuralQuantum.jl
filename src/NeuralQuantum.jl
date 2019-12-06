@@ -109,10 +109,14 @@ include("Networks/ClosedSystems/RBM.jl")
 include("Networks/ClosedSystems/RBMBatched.jl")
 
 # FFNN
-include("Networks/ClosedSystems/Chain.jl")
-include("Networks/ClosedSystems/SimpleLayers.jl")
-include("Networks/ClosedSystems/conv.jl")
-include("Networks/ClosedSystems/NQConv.jl")
+include("Networks/Chains/Chain.jl")
+include("Networks/Chains/SimpleLayers.jl")
+include("Networks/Chains/conv.jl")
+include("Networks/Chains/NQConv.jl")
+
+include("Networks/Chains/ChainBatched.jl")
+include("Networks/Chains/SimpleLayersBatched.jl")
+
 
 # Wrappers
 include("Networks/NetworkWrappers.jl")

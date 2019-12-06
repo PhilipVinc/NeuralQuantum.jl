@@ -62,7 +62,7 @@ function logψ_and_∇logψ!(∇lnψ, net::Chain, c::ChainCache, σ)
 
     # backward
     backpropchain(∇lnψ, net.layers, c.caches, 1.0)
-    return lnψ, ∇lnψ
+    return lnψ
 end
 
 is_analytic(net::Chain) = true

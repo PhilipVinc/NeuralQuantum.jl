@@ -20,6 +20,12 @@ machines["RBM_softplus"] = ma
 ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
 machines["RBM_cosh"] = ma
 
+ma = (T, N) -> begin
+    ch = Chain(Dense(N, N-1, af_softplus), Dense(N-1, N-2, af_softplus), WSum(N-2))
+    return PureStateAnsatz(ch, N)
+end
+machines["chain_pure"] = ma
+
 N = 4
 T = Float32
 b_sz = 3

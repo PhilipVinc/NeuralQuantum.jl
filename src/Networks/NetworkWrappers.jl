@@ -34,6 +34,12 @@ cache(psa::PureStateAnsatz, batch_sz::Int) =
 (c::PureStateAnsatz)(x::Vararg{N,V}) where {N,V} = ansatz(c)(x...)
 (c::PureStateAnsatz)(cache::NNCache, σ) = ansatz(c)(cache, σ)
 
+logψ!(out, net::PureStateAnsatz, c::NNBatchedCache, σ) =
+    logψ!(out, ansatz(net), c, σ)
+
+logψ_and_∇logψ!(∇logψ, out::AbstractMatrix, net::PureStateAnsatz, c::NNBatchedCache, σ) =
+    logψ_and_∇logψ!(∇logψ[1], out, ansatz(net), c, σ)
+
 logψ_and_∇logψ!(∇logψ, net::PureStateAnsatz, c::NNCache, σ) =
     logψ_and_∇logψ!(∇logψ[1], ansatz(net), c, σ)
 

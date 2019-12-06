@@ -37,6 +37,18 @@ Internally uses the fact that R is a StridedView
     return R
 end
 
+@inline function _batched_outer_prod_noconj!(R::StridedView, vb, wb)
+    @inbounds @simd for i=1:size(R, 3)
+        for j=1:size(wb, 1)
+            for k=1:size(vb, 1)
+                R[k,j,i] = vb[k,i]*wb[j,i]
+            end
+        end
+    end
+    return R
+end
+
+
 @inline function _batched_outer_prod!(R::StridedView, α, vb, wb)
     #@unsafe_strided R begin
         @inbounds @simd for i=1:size(R, 3)

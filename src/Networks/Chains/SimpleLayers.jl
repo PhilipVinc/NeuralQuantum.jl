@@ -6,7 +6,7 @@ struct Dense{Ta,Tb,C}
     σ::C
 end
 functor(d::Dense) = (W=d.W, b=d.b), (W,b) -> Dense(W,b,d.σ)
-(l::Dense)(x) = logℒ.(l.W*x .+ l.b)
+(l::Dense)(x) = l.σ.(l.W*x .+ l.b)
 
 Dense(in::Integer, args...;kwargs...)= Dense(Complex{STD_REAL_PREC}, in, args...;kwargs...)
 function Dense(T::Type, in::Integer, out::Integer, σ = identity;
@@ -54,7 +54,7 @@ function (l::Dense)(c::DenseCache, x)
     θ .+= l.b
 
     # Apply the nonlinear function
-    logℒθ  .= logℒ.(θ)
+    logℒθ  .= l.σ.(θ)
     return logℒθ
 end
 
@@ -65,7 +65,7 @@ function backprop(∇, l::Dense, c::DenseCache, δℒ)
 
     # Compute the actual sensitivity
     copyto!(δℒℒ, δℒ)
-    δℒℒ .*= ∂logℒ.(θ)
+    δℒℒ .*= fwd_der.(l.σ, θ)
 
     ∇.W .= δℒℒ.*transpose(c.σ)
     ∇.b .= δℒℒ
@@ -77,7 +77,8 @@ struct WSum{T}
     c::T
 end
 @functor WSum
-(l::WSum)(x) = sum(x.*l.c)
+(l::WSum)(x::AbstractVector) = sum(x.*l.c)
+(l::WSum)(x::AbstractArray) = sum_autobatch(x.*l.c)
 
 function WSum(in::Integer, σ = identity;
               initb = glorot_uniform)
@@ -107,6 +108,7 @@ end
 function (l::WSum)(c::WSumCache, x)
     σ = copyto!(c.σᵢₙ, x)
 
+    # TODO the dot product allocates
     c.out = sum(x.*l.c)
     return c.out
 end
