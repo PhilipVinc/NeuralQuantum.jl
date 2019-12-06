@@ -88,7 +88,7 @@ function (c::AccumulatorObsGrad)(mel::Number, cngs, v)
     n_cngs = isnothing(cngs) ? 0 : length(cngs)
 
     # If there are no changes, just sum it
-    if cngs == 0 && false
+    if n_cngs == 0 && false
         c.res += mel
     else
         accum(c)(cngs)
