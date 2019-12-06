@@ -21,7 +21,7 @@ net  = RBM(Float32, N, 1, af_logcosh)
 init_random_pars!(net, sigma=0.01)
 
 sampl = MetropolisSampler(LocalRule(), 125, N, burn=100)
-algo  = SR(ϵ=(0.1), algorithm=sr_cholesky)
+algo  = SR(ϵ=(0.1), algorithm=sr_cg, precision=1e-3)
 
 is = BatchedSampler(net, sampl, H, algo; batch_sz=8)
 
@@ -33,7 +33,7 @@ for i=1:300
     ldata, prec = sample!(is)
     ob = compute_observables(is)
 
-    println(ldata)
+    println("$i - $ldata")
 
     push!(Evalues, real(ldata.mean))
     push!(Eerr, ldata.error)

@@ -9,7 +9,7 @@ is_iterative(alg::SRAlgorithm) = Int(alg) >=10
 ######   Preconditioning algorithm definition (structure holding params)  ######
 ################################################################################
 """
-    SR([use_iterative=true, ϵ=0.001, λ0=100, b=0.95, λmin=1e-4, [precondition_type=sr_shift, algorithm=sr_qlp])
+    SR([use_iterative=true, ϵ=0.001, λ0=100, b=0.95, λmin=1e-4, [precondition_type=sr_shift, algorithm=sr_qlp, precision=1e-4])
 
 Stochastic Reconfiguration preconditioner which corrects the gradient according
 to the natural gradient computed as S^-1 ∇C. Using this algorithm will lead to
