@@ -21,10 +21,23 @@ ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
 machines["RBM_cosh"] = ma
 
 ma = (T, N) -> begin
-    ch = Chain(Dense(N, N-1, af_softplus), Dense(N-1, N-2, af_softplus), WSum(N-2))
+    ch = Chain(Dense(T, N, N-1, af_softplus), Dense(T, N-1, N-2, af_softplus), WSum(T, N-2))
     return PureStateAnsatz(ch, N)
 end
 machines["chain_pure"] = ma
+
+ma = (T, N) -> begin
+    ch = Chain(Dense(T, N, 2*N, af_softplus), sum_autobatch)
+    return PureStateAnsatz(ch, N)
+end
+machines["chain_pure_softplus"] = ma
+
+ma = (T, N) -> begin
+    ch = Chain(Dense(T, N, 2*N, af_logcosh), sum_autobatch)
+    return PureStateAnsatz(ch, N)
+end
+machines["chain_pure_cosh"] = ma
+
 
 N = 4
 T = Float32

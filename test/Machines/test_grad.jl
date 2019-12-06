@@ -20,9 +20,20 @@ re_machines["NDM_softplus"] = ma
 ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ2)
 re_machines["NDM_cosh"] = ma
 
-ma = (T, N) -> PureStateAnsatz(Chain(Dense(N, N*2), Dense(N*2, N*3), WSum(N*3)), N)
+ma = (T, N) -> PureStateAnsatz(Chain(Dense(T, N, N*2), Dense(T, N*2, N*3), WSum(T, N*3)), N)
 re_machines["ChainKet"] = ma
 
+ma = (T, N) -> begin
+    ch = Chain(Dense(T, N, 2*N, af_softplus), sum_autobatch)
+    return PureStateAnsatz(ch, N)
+end
+im_machines["chain_pure_softplus"] = ma
+
+ma = (T, N) -> begin
+    ch = Chain(Dense(T, N, 2*N, af_logcosh), Dense(T, 2*N, N, af_logcosh), sum_autobatch)
+    return PureStateAnsatz(ch, N)
+end
+im_machines["chain_pure_cosh_2"] = ma
 
 all_machines = merge(re_machines, im_machines)
 

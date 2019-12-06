@@ -19,6 +19,25 @@ machines["NDM_softplus"] = ma
 ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ2)
 machines["NDM_cosh"] = ma
 
+ma = (T, N) -> begin
+    ch = Chain(Dense(T, N, 2*N, af_softplus), sum_autobatch)
+    return PureStateAnsatz(ch, N)
+end
+machines["chain_pure_softplus"] = ma
+
+ma = (T, N) -> begin
+    ch = Chain(Dense(T, N, 2*N, af_logcosh), sum_autobatch)
+    return PureStateAnsatz(ch, N)
+end
+machines["chain_pure_cosh"] = ma
+
+ma = (T, N) -> begin
+    ch = Chain(Dense(T, N, 2*N, af_logcosh), Dense(T, 2*N, N, af_logcosh), sum_autobatch)
+    return PureStateAnsatz(ch, N)
+end
+machines["chain_pure_cosh_2"] = ma
+
+
 N = 4
 T = Float32
 
@@ -74,5 +93,4 @@ end
     @test v1 ≈ v2
     @test gg1 ≈ gg2
     @test g1 === gg1 && g2 === gg2
-
 end
