@@ -6,7 +6,7 @@ g = 0.4
 V = 2.0
 
 hilb = HomogeneousSpin(N,1//2)
-hilb = HomogeneousHilbert(N,2)
+hilb = HomogeneousFock(N,2)
 
 ops = []
 H = LocalOperator(hilb)

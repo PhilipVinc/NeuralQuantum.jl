@@ -1,5 +1,5 @@
 export local_dimension, spacedimension
-export nsites, toint, index
+export nsites, toint, index, shape
 
 # Global somewhat slow methods
 """

@@ -16,7 +16,7 @@ end
 
 # efficient state generation for homogeneous spaces on gpu
 # could be improved with a custom kernel...
-function Random.rand!(rng::AbstractRNG, σ::Union{gpuAState,gpuAStateBatch}, h::HomogeneousHilbert{N}) where N
+function Random.rand!(rng::AbstractRNG, σ::Union{gpuAState,gpuAStateBatch}, h::HomogeneousFock{N}) where N
     T = eltype(σ)
     rand!(rng, σ) # must find a way to use an RNG in here...
     σ .*= N
