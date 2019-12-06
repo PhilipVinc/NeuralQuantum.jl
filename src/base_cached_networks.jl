@@ -156,8 +156,12 @@ const KetNet   = Union{KetNeuralNetwork, CachedNet{<:KetNeuralNetwork}}
 # should not happen
 #@inline logψ(cnet::CachedNet{<:KetNeuralNetwork}, σ) = cnet.net(cnet.cache, config(σ))
 
-function logψ_and_∇logψ(n::CachedNet{<:KetNeuralNetwork}, σ)
-    ∇lnψ = grad_cache(n)
+function logψ_and_∇logψ(n::CachedNet{<:KetNeuralNetwork}, σ::AbstractVector)
+    if σ isa AbstractVector
+        ∇lnψ = grad_cache(n)
+    elseif σ isa AbstractMatrix
+        ∇lnψ = grad_cache(n, batch_size(σ))
+    end
     lnψ = logψ_and_∇logψ!(∇lnψ, n.net, n.cache, σ);
     return (lnψ, ∇lnψ)
 end

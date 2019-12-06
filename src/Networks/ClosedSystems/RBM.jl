@@ -12,7 +12,7 @@ end
 functor(x::RBM) = (a=x.a, b=x.b, W=x.W), y -> RBM(y...)
 
 """
-    RBMSplit([T=Complex{STD_REAL_PREC}], N, α, f=af_simoid, [initW, initb])
+    RBMSplit([T=Complex{STD_REAL_PREC}], N, α, f=af_softplus, [initW, initb])
 
 Constructs a Restricted Bolzmann Machine to encode a wavefunction,
 with weights of type `T` (Defaults to ComplexF32), `N` input neurons,
@@ -36,7 +36,7 @@ Refs:
     https://arxiv.org/abs/1606.02318
 """
 RBM(in, α, args...) = RBM(ComplexF32, in, α, args...)
-RBM(T::Type, in, α, σ::Function=logℒ,
+RBM(T::Type, in, α, σ::Function=af_softplus,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
     initb=(dims...)->rescaled_normal(T, 0.01, dims...),
     inita=(dims...)->rescaled_normal(T, 0.01, dims...)) =
