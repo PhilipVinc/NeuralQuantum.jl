@@ -91,12 +91,12 @@ function (c::AccumulatorObsScalar)(mel::Number, cngs, v)
     isfull(c) && (process_accumulator!(c); reset!(c, v))
 
     # If the matrix element is zero, don't do anything
-    mel == 0.0 && return acc
+    mel == 0.0 && return c
 
     n_cngs = isnothing(cngs) ? 0 : length(cngs)
 
     # If there are no changes, just sum it
-    if cngs == 0
+    if n_cngs == 0
         c.res += mel
     else
         accum(c)(cngs)
