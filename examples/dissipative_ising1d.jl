@@ -33,7 +33,7 @@ sampl = MetropolisSampler(LocalRule(), 125, N, burn=100)
 algo  = SR(ϵ=(0.001), algorithm=sr_cholesky)
 #algo  = Gradient()
 
-net  = NDM(Float64, N, 1, 1, af_sigmoid)
+net  = NDM(Float64, N, 1, 1, af_softplus)
 is = BatchedSampler(net, sampl, liouv, algo; batch_sz=16)
 add_observable(is, "Sx", Sx)
 add_observable(is, "Sy", Sy)

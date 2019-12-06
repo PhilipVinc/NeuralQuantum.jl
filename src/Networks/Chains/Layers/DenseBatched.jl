@@ -1,17 +1,20 @@
-struct DenseBatchedCache{Ta,Tb,Tc,Td}
+struct DenseBatchedCache{Ta,Tb,Tc,Td,Te}
     σ::Tc
     out::Tb
     δℒℒ::Td
+    δℒ::Te
 
     θ::Ta
     out2::Tb
     valid::Bool
 end
 
-function cache(l::Dense{Ta,Tb}, in_T ,in_sz, batch_sz) where {Ta,Tb}
+function cache(l::Dense{Ta,Tb}, arr_T, in_T ,in_sz, batch_sz) where {Ta,Tb}
     c = DenseBatchedCache(similar(l.W, size(l.W,2), batch_sz),
                           similar(l.b, size(l.b,1), batch_sz),
                           similar(l.W, size(l.W,1), batch_sz),
+                          similar(l.W, size(l.W,2), batch_sz),
+
                           similar(l.b, size(l.b,1), batch_sz),
                           similar(l.b, size(l.b,1), batch_sz),
                           false)
@@ -49,41 +52,6 @@ function backprop(∇, l::Dense, c::DenseBatchedCache, δℒ)
     _batched_outer_prod_noconj!(∇.W, δℒℒ, c.σ)
     ∇.b .= δℒℒ
 
-    return transpose(transpose(δℒℒ)*l.W)
-end
-
-
-mutable struct WSumBatchedCache{Ta,Tb,Tc}
-    σᵢₙ::Ta
-    out::Tc
-    δℒ::Tb
-    valid::Bool
-end
-
-cache(l::WSum, in_T, in_sz, batch_sz)  =
-    WSumBatchedCache(similar(l.c, Complex{real(eltype(l.c))}, length(l.c),batch_sz),
-              similar(l.c, Complex{real(eltype(l.c))}, 1, batch_sz),
-              similar(l.c, Complex{real(eltype(l.c))}, 1, length(l.c), batch_sz),
-              false)
-
-batch_size(c::DenseSplitCache) = size(c.out, 2)
-
-function (l::WSum)(c::WSumBatchedCache, x)
-    # dot product in temp cache
-    c.σᵢₙ .= x .* l.c
-    c.out .= sum_autobatch(c.σᵢₙ)
-
-    # Store the input for backpropagation
-    σ = copyto!(c.σᵢₙ, x)
-
-    return c.out
-end
-
-function backprop(∇, l::WSum, c::WSumBatchedCache, δℒ::Number)
-    # compute the derivative
-    ∇.c .= c.σᵢₙ
-
-    # Backpropagate
-    c.δℒ .= δℒ .* transpose(l.c)
-    return c.δℒ
+    δℒ = mul!(c.δℒ, transpose(l.W), δℒℒ)
+    return δℒ
 end

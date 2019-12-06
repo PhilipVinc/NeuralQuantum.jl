@@ -1,14 +1,13 @@
-# batched
+export sum_autobatch
+
 """
     sum_autobatch(v)
 
-it's equivalent to sum(v, dims=1) except for the case
-of a vector, where it will return a scalar instead of
-a 1-element vector.
+it's equivalent to `sum(v, dims=1)` except for the case of a vector, where it
+will return a scalar instead of a 1-element vector.
 """
 sum_autobatch(v) = sum(v, dims=1)
 sum_autobatch(v::Vector) = sum(v)
-
 
 """
     _batched_outer_prod!(R, vb, wb)
