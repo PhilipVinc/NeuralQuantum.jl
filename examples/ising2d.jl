@@ -29,7 +29,7 @@ net  = RBM(Float32, N, 1, af_logcosh)
 init_random_pars!(net, sigma=0.01)
 
 sampl = MetropolisSampler(LocalRule(), 75, N, burn=100)
-algo  = SR(ϵ=(0.1), algorithm=sr_cholesky)
+algo  = SR(ϵ=(0.1), algorithm=sr_minres)
 
 is = BatchedSampler(net, sampl, H, algo; batch_sz=16)
 
