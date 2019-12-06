@@ -17,7 +17,7 @@ end
 @functor NDM
 
 """
-    NDM([T=STD_REAL_PREC], N, αₕ, αₐ, f=af_sigmoid, [initW, initb, inita])
+    NDM([T=STD_REAL_PREC], N, αₕ, αₐ, f=af_softplus, [initW, initb, inita])
 
 Constructs a Neural Density Matrix with numerical precision `T` (Defaults to
 Float32), `N` input neurons, N⋅αₕ hidden neurons and N⋅αₐ ancillary neurons.

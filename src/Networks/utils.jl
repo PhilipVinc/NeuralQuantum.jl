@@ -33,13 +33,16 @@ rescaled_normal(T::Type, scale::Real, dims::Integer...) = randn(T, dims...) .* T
 @inline fwd_der(f::typeof(logℒ2)) = ∂logℒ
 @inline fwd_der(f::typeof(logℒ2), x) = ∂logℒ2(x)
 
-export af_sigmoid, af_logcosh
-"""
-    af_sigmoid(x) = 1 / (1 + exp(-x))
+@inline fwd_der(f::typeof(identity)) = identity
+@inline fwd_der(f::typeof(identity), x::T) where T = one(T) 
 
-Classic sigmoid (https://en.wikipedia.org/wiki/Sigmoid_function) activation function.
+export af_softplus, af_logcosh
 """
-const af_sigmoid = logℒ
+    af_softplus(x) = log( 1 + exp(x) )
+
+Classic softplus (https://en.wikipedia.org/wiki/Sigmoid_function) activation function.
+"""
+const af_softplus = logℒ
 
 # TODO use NNlib implementation
 """
