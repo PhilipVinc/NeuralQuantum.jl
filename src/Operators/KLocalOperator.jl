@@ -72,13 +72,13 @@ function KLocalOperatorRow(T::Type{<:Number}, hilb::AbstractHilbert, sites::Abst
         new_values_els = Vector{Vector{T}}()
         conns_els      = eltype(op_conns)()
 
-        if abs(row[r]) > 10e-6
+        #if abs(row[r]) > 10e-6
             push!(mel_els, row[r])
             push!(mel_indices, r)
             push!(to_change_els, Int[])
             push!(new_values_els, eltype(st)[])
             push!(conns_els, (row[r], Int[], eltype(st)[]))
-        end
+        #end
 
         set!(st, hilb, r)
         for (c, val) = enumerate(row)

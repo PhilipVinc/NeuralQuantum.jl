@@ -55,8 +55,24 @@ function Base.append!(c::OpConnection, (m_els, cngs)::Tuple{Vector{<:Number},Vec
 end
 
 function Base.append!(c::OpConnection, new::OpConnection)
-    append!(c.mel, new.mel)
-    append!(c.changes, new.changes)
+    L = length(new)
+
+    L == 0 && return c
+
+    # If this accumulator is empty, then simply append
+    if length(c) == 0
+        append!(c.mel, new.mel)
+        append!(c.changes, new.changes)
+    else
+        # We assume that the first element is always for len(statechanges) = 0
+        c.mel[1] += new.mel[1]
+
+        L == 1 && return c
+
+        append!(c.mel, uview(new.mel, 2:L))
+        append!(c.changes, uview(new.changes, 2:L ))
+    end
+
     return c
 end
 
