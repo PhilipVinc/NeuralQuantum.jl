@@ -122,7 +122,7 @@ include("Networks/Chains/Layers/sum.jl")
 include("Networks/Chains/Layers/DenseSplit.jl")
 
 include("Networks/Chains/Layers/DenseBatched.jl")
-include("Networks/Chains/Layers/WeightedSumBAtched.jl")
+include("Networks/Chains/Layers/WeightedSumBatched.jl")
 include("Networks/Chains/Layers/sumBatched.jl")
 include("Networks/Chains/Layers/DenseSplitBatched.jl")
 
@@ -189,7 +189,7 @@ include("IterativeInterface/BatchedObsDMSampler.jl")
 include("IterativeInterface/BatchedObsKetSampler.jl")
 include("IterativeInterface/build_Batched.jl")
 
-export sample!, add_observable, compute_observables
+export sample!, add_observable!, compute_observables
 
 include("utils/num_grad.jl")
 

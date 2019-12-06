@@ -123,8 +123,8 @@ function compute_observables(is::BatchedValSampler)
     return compute_observables(is.observables_sampler)
 end
 
-function add_observable(is::BatchedValSampler, name::String, obs)
-    return add_observable(is.observables_sampler, name, obs)
+function add_observable!(is::BatchedValSampler, name::String, obs)
+    return add_observable!(is.observables_sampler, name, obs)
 end
 
 Base.show(io::IO, is::BatchedValSampler) = print(io,

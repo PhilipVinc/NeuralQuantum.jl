@@ -17,10 +17,10 @@ There exist some way to improve upon this formula, for example by including mome
 ### Gradient Descent (GD)
 
 ```@docs
-GD
+Optimisers.Descent
 ```
 
 ### Gradient Descent with Corrected Momentum (NesterovGD)
 ```@docs
-NesterovGD
+Optimisers.Nesterov
 ```

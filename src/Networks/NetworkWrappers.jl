@@ -1,4 +1,4 @@
-export PureStateAnsatz
+export PureStateAnsatz, PureChain
 
 struct PureStateAnsatz{A,IT,OT,Anal,S} <: KetNeuralNetwork
     __ansatz::A
@@ -18,6 +18,25 @@ function PureStateAnsatz(ansatz, in_size)
     ansatz = (ansatz,)
     S=typeof(in_size)
     return PureStateAnsatz{typeof(ansatz), in_t, out_t, anal,S}(ansatz, in_size)
+end
+
+"""
+    PureChain(N, args...)
+
+Constructs a FeedForward network (a chain) encoding a pure-state. `N` must be
+the number of input sites, while args... should be a series of layers.
+
+Note: when you want to use sum, to output the total sum of states, don't use it
+and use instead `sum_autobatch`, defined in this package. `sum_autobatch` behaves
+as sum only for vectors, while for batches of data it sum along batches.
+    
+ex:
+```
+PureChain(5, Dense(5,3), Dense(3,2), sum_autobatch)
+"""
+function PureChain(N, args...)
+    ch = Chain(args...)
+    return PureStateAnsatz(N, ch)
 end
 
 @forward PureStateAnsatz.__m_ansatz Base.length, Base.first, Base.last,
