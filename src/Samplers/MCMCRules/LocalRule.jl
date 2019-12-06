@@ -2,12 +2,10 @@
 export LocalRule
 
 """
-    LocalRule([n_switches=1])
+    LocalRule()
 
-LocalRule rule for Markov Chain Monte Carlo sampling where at every step
-`n_switches` sites are switched.
-
-The number of switches must be odd, otherwise there might
+Transition rule for Metropolis-Hastings sampling where at every step a random
+site is switched to another random state.
 """
 struct LocalRule <: MCMCRule
 end

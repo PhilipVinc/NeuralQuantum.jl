@@ -110,12 +110,22 @@ include("Networks/ClosedSystems/RBMBatched.jl")
 
 # FFNN
 include("Networks/Chains/Chain.jl")
-include("Networks/Chains/SimpleLayers.jl")
 include("Networks/Chains/conv.jl")
 include("Networks/Chains/NQConv.jl")
 
 include("Networks/Chains/ChainBatched.jl")
-include("Networks/Chains/SimpleLayersBatched.jl")
+
+# Layers
+include("Networks/Chains/Layers/Dense.jl")
+include("Networks/Chains/Layers/WeightedSum.jl")
+include("Networks/Chains/Layers/sum.jl")
+include("Networks/Chains/Layers/DenseSplit.jl")
+
+include("Networks/Chains/Layers/DenseBatched.jl")
+include("Networks/Chains/Layers/WeightedSumBAtched.jl")
+include("Networks/Chains/Layers/sumBatched.jl")
+include("Networks/Chains/Layers/DenseSplitBatched.jl")
+
 
 
 # Wrappers
@@ -152,6 +162,7 @@ export get_sampler, sampler_list, multithread
 include("Samplers/Exact.jl")
 include("Samplers/Metropolis.jl")
 include("Samplers/MCMCRules/LocalRule.jl")
+include("Samplers/MCMCRules/ExchangeRule.jl")
 include("Samplers/MCMCRules/Nagy.jl")
 
 # other
