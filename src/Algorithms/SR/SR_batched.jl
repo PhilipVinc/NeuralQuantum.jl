@@ -33,7 +33,9 @@ function setup_algorithm!(g::SRDirectCache, ∇C, Ô)
             S .= real.(Sc ./ N)
             F .= real.(∇C)
         else
-            Sc ./= N
+            # We take the conjugate because O is actually Oconj matrix respect
+            # to the standard SR implementation..
+            S .= conj.(Sc) ./ N
             F .= ∇C
         end
     end
@@ -115,7 +117,9 @@ function setup_algorithm!(g::SRIterativeCache, ∇C, Ô)
             S .= real.(Sc ./ N)
             F .= real.(∇C)
         else
-            Sc ./= N
+            # We take the conjugate because O is actually Oconj matrix respect
+            # to the standard SR implementation..
+            S .= conj.(Sc) ./ N
             F .= ∇C
         end
     end
