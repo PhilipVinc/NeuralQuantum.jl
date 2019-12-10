@@ -9,20 +9,19 @@ struct RBM{VT,MT,F} <: KetNeuralNetwork
 end
 #@functor RBM
 
-functor(x::RBM) = (a=x.a, b=x.b, W=x.W), y -> RBM(y...)
+functor(x::RBM) = (a=x.a, b=x.b, W=x.W), y -> RBM(y..., x.f)
 
 """
     RBMSplit([T=Complex{STD_REAL_PREC}], N, α, f=af_softplus, [initW, initb])
 
 Constructs a Restricted Bolzmann Machine to encode a wavefunction,
-with weights of type `T` (Defaults to ComplexF32), `N` input neurons,
-N⋅α hidden neurons.
-This is the Neural Quantum State (NQS) Ansatz.
+with weights of type `T`, `N` input neurons and `αN` hidden neurons.
+This is the Neural Quantum State (NQS) Ansatz of [1].
 
 `N` must match the size of the lattice.
 
 By default the activation function is a sigmoid. You can also use logcosh by
-    passing as an additional parameter `af_logcosh`.
+passing as an additional parameter `af_logcosh`.
 
 The initial parameters of the neurons are initialized with a rescaled normal
 distribution of width 0.01 for the coupling matrix and 0.05 for the local

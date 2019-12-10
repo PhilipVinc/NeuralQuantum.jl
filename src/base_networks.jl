@@ -118,8 +118,14 @@ out_similar(net::NeuralNetwork) = zero(out_type(net))
 """
     is_analytic(net) -> Bool
 
-Returns true if the network is an analytic function (almost everywhere) or if it
-has real weights.
+Returns true if the network is an R-analytic function (almost everywhere).
+
+Please note that this is a weaker condition than holomorphicity, which is
+equivalent to C-analytic.
+
+Ref:
+    [1] K. Kreuz-Delgado The Complex Gradient Operator and the CR-Calculus,
+        arXiv:0906.4835
 """
 is_analytic(net::NeuralNetwork) = false
 

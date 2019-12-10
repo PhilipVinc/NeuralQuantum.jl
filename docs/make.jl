@@ -18,12 +18,11 @@ makedocs(
                 "Networks"      => "networks.md",
                 "SR"            => "algorithms.md",
                 "Optimizers"    => "optimizers.md"
-            ],
-            "Internals"     => Any[
-                "States"        => "states.md",
             ]
     ],
-    format    = Documenter.HTML(prettyurls = haskey(ENV, "CI"))
+    format    = Documenter.HTML(
+                    prettyurls = haskey(ENV, "CI"),
+                    mathengine = MathJax())
 )
 
 deploydocs(

@@ -5,6 +5,21 @@ struct PureStateAnsatz{A,IT,OT,Anal,S} <: KetNeuralNetwork
     in_size::S
 end
 
+"""
+    PureStateAnsatz(ansatz, input_size)
+
+Wraps an arbitrary function into a structure that can be used as a variational
+ansatz for a pure state, assuming that the width of the input is `input_size`
+(corresponding to the number of lattice sites in the input hilbert space).
+
+For this to work, ansatz must be a function respecting the following:
+```
+ansatz(rand(input_size)) --> scalar
+trainable(ansatz) -> NamedTuple
+```
+
+To make `trainable` work with your functions, see the docs of [`functor`](@ref)
+"""
 function PureStateAnsatz(ansatz, in_size)
     if ansatz isa PureStateAnsatz
         throw("ansatz is already a network!")
@@ -29,7 +44,7 @@ the number of input sites, while args... should be a series of layers.
 Note: when you want to use sum, to output the total sum of states, don't use it
 and use instead `sum_autobatch`, defined in this package. `sum_autobatch` behaves
 as sum only for vectors, while for batches of data it sum along batches.
-    
+
 ex:
 ```
 PureChain(5, Dense(5,3), Dense(3,2), sum_autobatch)

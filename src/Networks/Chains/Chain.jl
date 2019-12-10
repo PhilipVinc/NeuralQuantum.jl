@@ -1,5 +1,26 @@
 export Chain
 
+"""
+    Chain(layers...)
+
+Chain multiple layers / functions together, so that they are called in sequence
+on a given input.
+
+```julia
+m = Chain(x -> x^2, x -> x+1)
+m(5) == 26
+m = Chain(Dense(10, 5), Dense(5, 2))
+x = rand(10)
+m(x) == m[2](m[1](x))
+```
+
+`Chain` also supports indexing and slicing, e.g. `m[2]` or `m[1:end-1]`.
+`m[1:3](x)` will calculate the output of the first three layers.
+
+# Note
+Chain is simply a Neural Network, but it is not a quantum state. To use it with
+NeuralQuantum you should wrap it into a `PureStateAnsatz`.
+"""
 struct Chain{T<:Tuple}
   layers::T
   Chain(xs...) = new{typeof(xs)}(xs)

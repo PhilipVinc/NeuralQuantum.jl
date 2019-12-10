@@ -34,7 +34,7 @@ rescaled_normal(T::Type, scale::Real, dims::Integer...) = randn(T, dims...) .* T
 @inline fwd_der(f::typeof(logℒ2), x) = ∂logℒ2(x)
 
 @inline fwd_der(f::typeof(identity)) = identity
-@inline fwd_der(f::typeof(identity), x::T) where T = one(T) 
+@inline fwd_der(f::typeof(identity), x::T) where T = one(T)
 
 export af_softplus, af_logcosh
 """
