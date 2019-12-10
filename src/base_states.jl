@@ -94,6 +94,9 @@ vec_of_batches(v::ADoubleStateBatch, n) =
 
 Given a vector of batches of states with size `size(state) = [:, batches, els]`,
 take the batch group `el`, and if specified also selects one single batch.
+
+It's somewhat equivalent to a `view`, but handles tuples of states for density
+matrices correctly and uses unsafe views to prevent allocation on CPU.
 """
 @inline unsafe_get_el(σ::AStateBatchVec, i) = uview(σ, :, :, i)
 @inline unsafe_get_el(σ::AStateBatchVec, batch, el) = uview(σ, :, batch, el)

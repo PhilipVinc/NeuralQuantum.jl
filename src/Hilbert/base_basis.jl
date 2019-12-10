@@ -1,6 +1,53 @@
 export local_dimension, spacedimension
 export nsites, toint, index, shape
 
+"""
+    nsites(hilbert) -> Int
+
+Returns the number of lattice sites in the Hilbert space.
+"""
+function nsites end
+
+"""
+    shape(hilbert) -> Vector{Int}
+
+Returns a vector containing the local hilbert space dimensions of every
+mode in the Hilbert space.
+
+In the case of homogeneous spaces, it is usually more efficient to call
+`local_dim`.
+"""
+function shape end
+
+"""
+    spacedimension(hilbert) = prod(shape(hilbert)) -> Int
+
+Returns the total dimension of the vector space `hilbert`.
+This is only valid if `indexable(hilbert) == true`, otherwise it's 0.
+"""
+function spacedimension end
+
+"""
+    indexable(hilbert) -> Bool
+
+Returns true if the space is can be indexed with an Int64, which means that htis
+tests true when
+
+```
+    spacedimension(hilbert) <= typemax(Int64)
+```
+"""
+function indexable end
+
+"""
+    is_homogeneous(hilbert) -> Bool
+
+Returns true if the space is homogeneous, that is, if all the modes have the
+same local hilbert space dimension.
+"""
+function is_homogeneous end
+
+
 # Global somewhat slow methods
 """
     local_dim(hilbert [, i]) -> Int
@@ -91,13 +138,21 @@ old value of `state[i]` and the new value. state is changed in-place.
 @inline flipat!(σ, hilb::AbstractHilbert, i::Int) = flipat!(GLOBAL_RNG, σ, hilb, i)
 
 """
-    flipat!([rng=GLOBAL_RNG], state, hilb)
+    rand!([rng=GLOBAL_RNG], state, hilb)
 
-Generates a random state of hilbert space on the state (can also be a batch
-of states). Optionally you can pass the rng.
+Generates a random state of hilbert space and stores on the preallocated
+state `state`. It can also be a batch of states.
+Optionally you can pass the rng.
 """
 @inline Random.rand!(σ::AbstractArray, h::AbstractHilbert) = rand!(GLOBAL_RNG, σ, h)
 @inline Random.rand!(σ::NTuple{2,<:AbstractArray}, h::AbstractHilbert) = rand!(GLOBAL_RNG, σ, h)
+
+"""
+    rand([rng=GLOBAL_RNG], hilb)
+
+Generates a random state of hilbert space on the state.
+Optionally you can pass the rng.
+"""
 @inline Random.rand(h::AbstractHilbert) = rand!(GLOBAL_RNG, state(h), h)
 
 """

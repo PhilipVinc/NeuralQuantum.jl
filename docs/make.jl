@@ -18,7 +18,8 @@ makedocs(
                 "Networks"      => "networks.md",
                 "SR"            => "algorithms.md",
                 "Optimizers"    => "optimizers.md"
-            ]
+            ],
+            "Reference" => "reference.md"
     ],
     format    = Documenter.HTML(
                     prettyurls = haskey(ENV, "CI"),
