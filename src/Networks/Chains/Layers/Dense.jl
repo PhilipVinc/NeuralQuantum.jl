@@ -56,7 +56,7 @@ function cache(l::Dense{Ta,Tb}, arr_T, in_T, in_sz) where {Ta,Tb}
     c = DenseCache(similar(l.W, size(l.W,2)),
                    similar(l.b),
                    similar(l.W, size(l.W,1)),
-                   similar(1,   size(l.W,2)),
+                   similar(l.W, 1,   size(l.W,2)),
 
                    similar(l.b),
                    similar(l.b),
