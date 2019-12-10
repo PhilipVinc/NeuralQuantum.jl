@@ -45,6 +45,14 @@ function init!(c::AccumulatorObsScalarGPU, σ, ψ_σ)
     return nothing
 end
 
+# This resets the value at the end of a process_accumulatr
+function reset!(c::AccumulatorObsScalarGPU, σ)
+    c.mel_buf .= 0
+
+    init!(accum(c), σ)
+    return nothing
+end
+
 
 function (c::AccumulatorObsScalarGPU)(mel::Number, cngs_l, cngs_r, v)
     isfull(c) && process_accumulator!(c)
@@ -86,6 +94,8 @@ function (c::AccumulatorObsScalarGPU)(mel::Number, cngs, v)
 end
 
 function process_accumulator!(c::AccumulatorObsScalarGPU)
+    count(c) == 0 && return nothing
+
     ψ_σp = process_accumulator!(accum(c))
 
     ψ_σp .= exp.(ψ_σp .- c.ψ_σ)

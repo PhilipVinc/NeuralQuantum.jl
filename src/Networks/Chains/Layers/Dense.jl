@@ -1,5 +1,26 @@
 export Dense, WSum
 
+"""
+    Dense([T::Type=ComplexF32], in::Integer, out::Integer, σ = identity)
+
+Creates a traditional `Dense` layer with parameters `W` and `b`.
+
+    y = σ.(W * x .+ b)
+
+The input `x` must be a vector of length `in`, or a batch of vectors represente
+d
+as an `in × N` matrix. The out `y` will be a vector or batch of length `out`.
+
+```julia
+julia> d = Dense(5, 2)
+Dense(5, 2)
+julia> d(rand(5))
+2-element Array{Float64,1}:
+  0.00257447
+  -0.00449443
+```
+
+"""
 struct Dense{Ta,Tb,C}
     W::Ta
     b::Tb
@@ -14,10 +35,17 @@ function Dense(T::Type, in::Integer, out::Integer, σ = identity;
   return Dense(initW(T, out, in), initb(T, out), σ)
 end
 
-struct DenseCache{Ta,Tb,Tc,Td}
+function Base.show(io::IO, l::Dense)
+  print(io, "Dense(", size(l.W, 2), ", ", size(l.W, 1))
+  l.σ == identity || print(io, ", ", l.σ)
+  print(io, ")")
+end
+
+struct DenseCache{Ta,Tb,Tc,Td,Te}
     σ::Tc
     out::Tb
     δℒℒ::Td
+    δℒ::Te
 
     θ::Ta
     out2::Tb
@@ -26,11 +54,13 @@ end
 
 function cache(l::Dense{Ta,Tb}, arr_T, in_T, in_sz) where {Ta,Tb}
     c = DenseCache(similar(l.W, size(l.W,2)),
-               similar(l.b),
-               similar(l.W, size(l.W,1)),
-               similar(l.b),
-               similar(l.b),
-               false)
+                   similar(l.b),
+                   similar(l.W, size(l.W,1)),
+                   similar(1,   size(l.W,2)),
+
+                   similar(l.b),
+                   similar(l.b),
+                   false)
     return c
 end
 
@@ -70,5 +100,6 @@ function backprop(∇, l::Dense, c::DenseCache, δℒ)
     ∇.W .= δℒℒ.*transpose(c.σ)
     ∇.b .= δℒℒ
 
-    return transpose(δℒℒ)*l.W
+    δℒ = mul!(c.δℒ, transpose(δℒℒ), l.W)
+    return δℒ
 end
