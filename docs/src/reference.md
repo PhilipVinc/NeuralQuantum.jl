@@ -38,3 +38,32 @@ NeuralQuantum.setat!
 NeuralQuantum.local_index
 NeuralQuantum.unsafe_get_el
 ```
+
+## Operators
+
+```@docs
+sigmax
+sigmay
+sigmaz
+sigmap
+sigmam
+create
+destroy
+KLocalOperator
+NeuralQuantum.KLocalOperatorRow
+NeuralQuantum.liouvillian
+```
+
+## Samplers
+
+```@docs
+ExactSampler
+MetropolisSampler
+```
+
+### Transition Rules
+
+```@docs
+LocalRule
+ExchangeRule
+```

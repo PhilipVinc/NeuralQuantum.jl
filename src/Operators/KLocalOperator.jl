@@ -36,17 +36,17 @@ struct KLocalOperator{H<:AbstractHilbert,SV,M,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOp
     new_indices::Vector{Vti}
 end
 
+#KLocalOperatorRow(sites::AbstractVector, hilb_dims::AbstractVector, operator) = begin
+#    hilb = DiscreteHilbert(hilb_dims)
+#    KLocalOperatorRow(hilb, eltype(operator), sites, hilb_dims, operator)
+#end
+
 """
     KLocalOperatorRow(sites::Vector, hilb_dims::Vector, operator)
 
 Creates a KLocalOperator where connections are stored by row for the operator
     `operator` acting on `sites` each with `hilb_dims` local dimension.
 """
-#KLocalOperatorRow(sites::AbstractVector, hilb_dims::AbstractVector, operator) = begin
-#    hilb = DiscreteHilbert(hilb_dims)
-#    KLocalOperatorRow(hilb, eltype(operator), sites, hilb_dims, operator)
-#end
-
 KLocalOperatorRow(hilb::AbstractHilbert, sites::AbstractVector, operator) =
     KLocalOperatorRow(eltype(operator), hilb, sites, shape(hilb)[sites], operator)
 

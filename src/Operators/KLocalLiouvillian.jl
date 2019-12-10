@@ -18,6 +18,12 @@ function KLocalLiouvillian(HnH, Lops)
     return KLocalLiouvillian(SuperOpSpace(basis(HnH)),[], HnH_l, HnH_r, LLdag)
 end
 
+"""
+    liouvillian(Ĥ, ops::Vector)
+
+Constructs the LocalOperator representation of a liouvillian super-operator with
+coherent part given by the hamilotnian `Ĥ`, and `ops` as the list of jump operators.
+"""
 function QuantumOpticsBase.liouvillian(H::AbsLinearOperator, Lops::AbstractVector)
     HnH = duplicate(H)
     for L=Lops

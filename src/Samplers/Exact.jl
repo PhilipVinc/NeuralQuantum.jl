@@ -1,5 +1,17 @@
 export ExactSampler
 
+"""
+    ExactSampler(n_samples; seed=rand)
+
+Constructs an exact sampler, which builds the full pdf of the quantum state and
+samples it exactly.
+
+This sampler can only be used on `indexable` spaces, and should be used only for
+somewhat small systems (Closed N<14, Open N<7), as the computational cost increases
+exponentially with the number of sites.
+
+Initial seed can be set bu specifying `seed`.
+"""
 mutable struct ExactSampler{S} <: MonteCarloSampler
     samples_length::Int
     seed::S
