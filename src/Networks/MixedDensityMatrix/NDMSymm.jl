@@ -61,11 +61,6 @@ function symmetrize_∇logψ_NDM!(∇lnψ_symm, ∇lnψ, net)
     ∇lnψ_symm
 end
 
-
-
-
-
-
 function set_bare_params!(bare_net, symm_net, permutations)
     # Load a bit
     n_symm = length(permutations)

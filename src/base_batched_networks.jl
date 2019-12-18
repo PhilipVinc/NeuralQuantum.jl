@@ -102,6 +102,10 @@ function grad_cache(T::Type{<:Number}, net::NeuralNetwork, batch_sz)
     return WirtingerDerivative(T, net, batch_sz)
 end
 
+#
+grad_cache(T::Type{<:Number}, net::CachedNet{N,C}) where {N,C<:NNBatchedCache} =
+    grad_cache(T, net, batch_size(net))
+
 function RealDerivative(T::Type{<:Number}, net::NeuralNetwork, batch_sz::Int)
     pars = trainable(net)
 

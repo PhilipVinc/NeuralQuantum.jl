@@ -10,6 +10,9 @@ const ADoubleState{T} = NTuple{2,AState{T}} where T
 const ADoubleStateBatch{T} = NTuple{2,AStateBatch{T}} where T
 const ADoubleStateBatchVec{T} = NTuple{2,AStateBatchVec{T}} where T
 
+const AStateOrBatch{T} = Union{AState{T},AStateBatch{T}} where T
+const ADoubleStateOrBatch{T} = Union{ADoubleState{T},ADoubleStateBatch{T}} where T
+
 const AStateOrBatchOrVec{T} = Union{AState{T},AStateBatch{T},AStateBatchVec{T}} where T
 const ADoubleStateOrBatchOrVec{T} = Union{ADoubleState{T},ADoubleStateBatch{T},ADoubleStateBatchVec{T}} where T
 

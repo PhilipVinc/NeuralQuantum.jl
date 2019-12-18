@@ -187,6 +187,9 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperator, v
     return acc
 end
 
+is_same_operator(l::KLocalOperator, r::KLocalOperator) =
+    l.mat == r.mat && l.hilb_dims == r.hilb_dims
+
 Base.:-(op::KLocalOperator) = KLocalOperator(op, -op.mat)
 
 _add_samesite(op_l::KLocalOperator, op_r::KLocalOperator) = _add_samesite!(duplicate(op_l), op_r)

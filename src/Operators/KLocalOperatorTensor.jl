@@ -195,3 +195,9 @@ function _op_alpha_prod(op::KLocalOperatorTensor, a::Number)
         return KLocalOperatorTensor(a*op.op_l, a*op.op_r)
     end
 end
+
+is_same_operator(l::KLocalOperatorTensor, r::KLocalOperatorTensor) =
+    is_same_operator(l.op_l, r.op_l) && is_same_operator(l.op_r, r.op_r)
+
+is_same_operator(::Nothing, ::Nothing) = true
+is_same_operator(l,r) = false
