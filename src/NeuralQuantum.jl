@@ -1,6 +1,5 @@
 module NeuralQuantum
 
-# Using statements
 using Reexport
 using Requires
 using MacroTools: @forward
@@ -9,18 +8,28 @@ using GPUArrays
 using CuArrays
 const use_cuda = Ref(false)
 
-@reexport using QuantumOpticsBase
-using LightGraphs
+# Standard Precision used
+const STD_REAL_PREC = Float32
+
+
+using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!, randn!
+using LinearAlgebra
+using SparseArrays
+using LinearMaps
+using Strided
+using UnsafeArrays
+using Statistics
+
 using Zygote
 using NNlib
-using LinearMaps
-using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!, randn!
-using LinearAlgebra, SparseArrays, Strided, UnsafeArrays
-using IterativeSolvers: minres, lsqr, cg
-using Statistics
+
 using Printf
 
-include("IterativeSolvers/minresqlp.jl")
+@reexport using QuantumOpticsBase
+using LightGraphs
+# Iterative Solvers and custom minres solver
+using IterativeSolvers: minres, lsqr, cg
+include("External/IterativeSolvers/minresqlp.jl")
 using .MinresQlp
 
 # Optimisers, that will be split in a separate package at some point
@@ -30,23 +39,16 @@ import .Optimisers: update, update!
 export Optimisers
 
 # Abstract Types
-abstract type NeuralNetwork end
-
 abstract type AbstractHilbert end
-
+abstract type NeuralNetwork end
 abstract type Sampler end
 abstract type AbstractAccumulator end
-
-abstract type AbstractProblem end
 
 # Type describing the parallel backend used by a solver.
 abstract type ParallelType end
 struct NotParallel <: ParallelType end
 struct ParallelThreaded <: ParallelType end
 export NotParallel, ParallelThreaded
-
-# Universal defines
-const STD_REAL_PREC =  Float32
 
 include("utils/rng.jl")
 
@@ -137,17 +139,13 @@ include("generate_state.jl")
 
 # Algorithms
 abstract type Algorithm end
-abstract type EvaluatedAlgorithm end
-abstract type EvaluationSamplingCache end
-include("Algorithms/base_algorithms.jl")
+abstract type AlgorithmCache end
 export precondition!
 
 # SR
 include("Algorithms/SR/SR.jl")
 # Gradient
 include("Algorithms/Gradient/Gradient.jl")
-# Observables
-#include("Algorithms/Observables/Obs.jl")
 
 include("Algorithms/batched_algorithms.jl")
 include("Algorithms/SR/SR_batched.jl")

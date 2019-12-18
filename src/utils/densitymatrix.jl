@@ -26,15 +26,8 @@ function densitymatrix(net::NeuralNetwork, hilb::AbstractHilbert, norm=true)
     ρ
 end
 
-densitymatrix(net::NeuralNetwork, prob::AbstractProblem, args...) =
-    densitymatrix(net, basis(prob), args...)
-
-
 Base.Matrix(net::NeuralNetwork, hilb, norm=true) = densitymatrix(net, hilb, norm)
 Base.Vector(net::MatrixNet, hilb, norm=true) = vec(densitymatrix(net, hilb, norm))
-
-QuantumOpticsBase.dm(net::NeuralNetwork, prob::AbstractProblem, norm=false) =
-    densitymatrix(net, prob, norm)
 
 """
     ket(net, prob, norm=true)
@@ -55,8 +48,5 @@ function ket(net, hilb::AbstractHilbert, norm=true)
     end
     return psi
 end
-
-ket(net, prob::AbstractProblem, args...) =
-    ket(net, basis(prob), args...)
 
 Base.Vector(net::NeuralNetwork, hilb, norm=true) = ket(net, hilb, norm)

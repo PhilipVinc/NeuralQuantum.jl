@@ -42,6 +42,16 @@ apply(σ::Union{AState, ADoubleState}, cngs) = apply!(deepcopy(σ), cngs)
 
 
 # Logic to copy states
+"""
+    statecopy!(σp, σ, [mask=nothing])
+
+Copies the state `σ` onto `σp`.
+Equivalent to `σp .= σ` in most cases, but if the state is a tuple (double state)
+maps the operation on every element of the tuple.
+
+If the BitMask `mask` is passed, only the elements where mask has 1s are copied
+over, while the others are left unchanged.
+"""
 @inline statecopy!(σp::S, σ::Sp) where {T,N,S<:AbstractArray{T,N}, Sp<:AbstractArray{T,N}}= copyto!(σp, σ)
 @inline statecopy!(σp::S2, σ::S) where {T,N,S<:AbstractArray{T,N},S2<:NTuple{2,AbstractArray{T,N}}} =
     statecopy!(σp, (σ,σ))
@@ -62,17 +72,24 @@ end
     σp .= σ .* mask .+ σp .* .! mask
     return σp
 end
-
-@inline function statecopy_invertmask!(σp::Union{AState, AStateBatch}, σ::Union{AState, AStateBatch},
-                   mask)
-    σp .= σ .* .! mask .+ σp .* mask
-    return σp
-end
-
 function statecopy!(σp::Union{ADoubleState, ADoubleStateBatch},
            σ::Union{ADoubleState, ADoubleStateBatch}, mask)
     statecopy!(row(σp), row(σ), mask)
     statecopy!(col(σp), col(σ), mask)
+    return σp
+end
+
+
+
+"""
+    statecopy_invertmask!(σp, σ, mask)
+
+Copies the state `σ` onto `σp`, but only the elements where `mask` has 0s.
+Equivalent to `statecopy!(σp, σ, !mask)`.
+"""
+@inline function statecopy_invertmask!(σp::Union{AState, AStateBatch}, σ::Union{AState, AStateBatch},
+                   mask)
+    σp .= σ .* .! mask .+ σp .* mask
     return σp
 end
 

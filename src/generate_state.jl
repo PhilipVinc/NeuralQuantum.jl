@@ -1,15 +1,23 @@
-state(prob::AbstractProblem, net, args...) = state(input_type(net), prob, net, args...)
-state(op::AbsLinearOperator, net, args...) = state(input_type(net), basis(op), net, args...)
-state(hilb::AbstractHilbert, net::NeuralNetwork) = state(input_type(net), hilb, net)
+#=
+    generate_state.jl
 
-state(T::Type{<:Number}, prob::AbstractProblem, net, args...) = state(T, basis(prob), net, args...)
-state(T::Type{<:Number}, op::AbsLinearOperator, net, args...) = state(T, basis(op), net, args...)
+This file contains several methods to generate the state associated to a
+Neural Network and an hilbert space.
+While the basic logic is simple, handling batches of states and diagonal
+states of the density matrix complicates it.
+=#
 
+state(op::AbsLinearOperator, net, args...) =
+    state(input_type(net), basis(op), net, args...)
+state(hilb::AbstractHilbert, net::NeuralNetwork) =
+    state(input_type(net), hilb, net)
 
+state(T::Type{<:Number}, op::AbsLinearOperator, net, args...) =
+    state(T, basis(op), net, args...)
 state(T::Type{<:Number}, hilb::AbstractHilbert, net::CachedNet) =
     state(T, hilb, net.net, net.cache)
 
-#ignore cache if standard cache
+# Ignore the cache if standard cache (non-batched)
 state(T::Type{<:Number}, hilb::AbstractHilbert, net::NeuralNetwork, cache::NNCache) =
     state(T, hilb, net)
 
