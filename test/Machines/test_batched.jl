@@ -38,6 +38,11 @@ ma = (T, N) -> begin
 end
 machines["chain_pure_cosh"] = ma
 
+ma = (T, N) -> begin
+    ch = Chain(DenseSplit(T, N, 2*N, af_softplus), sum_autobatch)
+    return MixedStateAnsatz(ch, N)
+end
+machines["chain_mixed_softplus"] = ma
 
 N = 4
 T = Float32

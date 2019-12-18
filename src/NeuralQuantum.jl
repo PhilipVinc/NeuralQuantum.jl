@@ -129,9 +129,9 @@ include("Networks/Chains/Layers/sumBatched.jl")
 include("Networks/Chains/Layers/DenseSplitBatched.jl")
 
 
-
 # Wrappers
-include("Networks/NetworkWrappers.jl")
+include("Networks/ClosedSystems/PureChainWrapper.jl")
+include("Networks/MixedDensityMatrix/MixedChainWrapper.jl")
 
 # gen state
 export state

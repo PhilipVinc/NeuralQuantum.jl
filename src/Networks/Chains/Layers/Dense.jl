@@ -48,7 +48,6 @@ struct DenseCache{Ta,Tb,Tc,Td,Te}
     δℒ::Te
 
     θ::Ta
-    out2::Tb
     valid::Bool
 end
 
@@ -58,7 +57,6 @@ function cache(l::Dense{Ta,Tb}, arr_T, in_T, in_sz) where {Ta,Tb}
                    similar(l.W, size(l.W,1)),
                    similar(l.W, 1,   size(l.W,2)),
 
-                   similar(l.b),
                    similar(l.b),
                    false)
     return c
@@ -84,7 +82,7 @@ function (l::Dense)(c::DenseCache, x)
     θ .+= l.b
 
     # Apply the nonlinear function
-    logℒθ  .= l.σ.(θ)
+    logℒθ .= l.σ.(θ)
     return logℒθ
 end
 

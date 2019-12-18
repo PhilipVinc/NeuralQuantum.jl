@@ -35,6 +35,12 @@ ma = (T, N) -> begin
 end
 im_machines["chain_pure_cosh_2"] = ma
 
+ma = (T, N) -> begin
+    ch = Chain(DenseSplit(T, N, 2*N, af_softplus), sum_autobatch)
+    return MixedStateAnsatz(ch, N)
+end
+im_machines["chain_mixed_softplus"] = ma
+
 all_machines = merge(re_machines, im_machines)
 
 N = 4
