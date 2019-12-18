@@ -64,7 +64,7 @@ function (c::AccumulatorObsGrad)(mel::Number, cngs_l, cngs_r, v)
     isfull(c) && (process_accumulator!(c); reset!(c, v))
 
     # If the matrix element is zero, don't do anything
-    mel == 0.0 && return acc
+    mel == 0.0 && return c
     n_cngs_l = isnothing(cngs_l) ? 0 : length(cngs_l)
     n_cngs_r = isnothing(cngs_r) ? 0 : length(cngs_r)
 
