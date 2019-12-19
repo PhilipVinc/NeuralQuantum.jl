@@ -83,7 +83,7 @@ function logψ_and_∇logψ!(der, net::NeuralNetwork, σ)
     _der = back(Int8(1))
 
     # Convert the AD derivative to our contiguous type.
-    apply_recurse!(fields(der), _der, net)
+    apply_recurse!(fields(der), _der, net, conj!)
     return y, der
 end
 
