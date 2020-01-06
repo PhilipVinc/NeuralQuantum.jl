@@ -1,3 +1,5 @@
+export WSum
+
 struct WSum{T}
     c::T
 end
