@@ -10,13 +10,15 @@ struct DenseBatchedCache{Ta,Tb,Tc,Td,Te}
 end
 
 function cache(l::Dense{Ta,Tb}, arr_T, in_T ,in_sz, batch_sz) where {Ta,Tb}
-    c = DenseBatchedCache(similar(l.W, size(l.W,2), batch_sz),
-                          similar(l.b, size(l.b,1), batch_sz),
-                          similar(l.W, size(l.W,1), batch_sz),
-                          similar(l.W, size(l.W,2), batch_sz),
+    in_T2 = promote_type(in_T, eltype(l.W))
 
-                          similar(l.b, size(l.b,1), batch_sz),
-                          similar(l.b, size(l.b,1), batch_sz),
+    c = DenseBatchedCache(similar(l.W, in_T2, size(l.W,2), batch_sz),
+                          similar(l.b, in_T2, size(l.b,1), batch_sz),
+                          similar(l.W, in_T2, size(l.W,1), batch_sz),
+                          similar(l.W, in_T2, size(l.W,2), batch_sz),
+
+                          similar(l.b, in_T2, size(l.b,1), batch_sz),
+                          similar(l.b, in_T2, size(l.b,1), batch_sz),
                           false)
     return c
 end

@@ -1,4 +1,4 @@
-export Dense, WSum
+export Dense
 
 """
     Dense([T::Type=ComplexF32], in::Integer, out::Integer, σ = identity)
@@ -52,12 +52,13 @@ struct DenseCache{Ta,Tb,Tc,Td,Te}
 end
 
 function cache(l::Dense{Ta,Tb}, arr_T, in_T, in_sz) where {Ta,Tb}
-    c = DenseCache(similar(l.W, size(l.W,2)),
-                   similar(l.b),
+    in_T2 = promote_type(in_T, eltype(l.W))
+    c = DenseCache(similar(l.W, in_T2, size(l.W,2)),
+                   similar(l.b, in_T2),
                    similar(l.W, size(l.W,1)),
                    similar(l.W, 1,   size(l.W,2)),
 
-                   similar(l.b),
+                   similar(l.b, in_T2),
                    false)
     return c
 end
