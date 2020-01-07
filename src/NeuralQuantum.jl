@@ -216,6 +216,7 @@ function __init__()
   else
     use_cuda[] = true
     include(joinpath(@__DIR__, "GPU/cuda.jl"))
+    include(joinpath(@__DIR__, "GPU/upstream.jl"))
 
     # FIXME: this functionality should be conditional at run time by checking `use_cuda`
     #        (or even better, get moved to CuArrays.jl as much as possible)
