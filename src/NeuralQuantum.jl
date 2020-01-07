@@ -11,7 +11,6 @@ const use_cuda = Ref(false)
 # Standard Precision used
 const STD_REAL_PREC = Float32
 
-
 using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!, randn!
 using LinearAlgebra
 using SparseArrays
@@ -26,7 +25,14 @@ using NNlib
 using Printf
 
 @reexport using QuantumOpticsBase
+
+# Support for Colored Graphs
 using LightGraphs
+@reexport using LightGraphs
+include("External/ColoredGraphs/ColoredGraphs.jl")
+using .ColoredGraphs
+export HyperCube, translational_symm_table
+
 # Iterative Solvers and custom minres solver
 using IterativeSolvers: minres, lsqr, cg
 include("External/IterativeSolvers/minresqlp.jl")
@@ -50,6 +56,9 @@ struct NotParallel <: ParallelType end
 struct ParallelThreaded <: ParallelType end
 export NotParallel, ParallelThreaded
 
+# Various utility functions
+include("utils/math.jl")
+include("utils/stats.jl")
 include("utils/rng.jl")
 
 # Basic states for uniform systems
@@ -64,9 +73,6 @@ include("base_cached_networks.jl")
 include("treelike.jl") # from flux
 include("tuple_logic.jl")
 
-# Useful
-include("utils/math.jl")
-include("utils/stats.jl")
 
 include("Hilbert/DiscreteHilbert.jl")
 include("Hilbert/HomogeneousFock.jl")
