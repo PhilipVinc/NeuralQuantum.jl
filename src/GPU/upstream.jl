@@ -1,5 +1,6 @@
 using CuArrays: cudims, @cuda, cudaconvert, cufunction, mapreducedim_kernel_parallel
-using CuArrays: CUDAnative, CUDAdrv, attribute
+using CuArrays: CUDAnative, CUDAdrv, attribute, @cufunc
+
 function Base._mapreducedim!(f, op, R::CuArray{T}, A::CuArray{T}) where {T}
     # the kernel as generated from `f` and `op` can require lots of registers (eg. #160),
     # so we need to be careful about how many threads we launch not to run out of them.
@@ -42,3 +43,7 @@ function Base._mapreducedim!(f, op, R::CuArray{T}, A::CuArray{T}) where {T}
 
     return R
 end
+
+# Fix my bug
+@inline CUDAnative.exp(x::Complex{Float32}) = CUDAnative.exp(x.re) * (CUDAnative.cos(x.im) + 1.0f0im * CUDAnative.sin(x.im))
+@inline CUDAnative.exp_fast(x::Complex{Float32}) = CUDAnative.exp_fast(x.re) * (CUDAnative.cos_fast(x.im) + 1.0f0im * CUDAnative.sin_fast(x.im))

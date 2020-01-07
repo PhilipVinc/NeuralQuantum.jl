@@ -78,7 +78,7 @@ function (c::AccumulatorObsScalarGPU)(mel::Number, cngs, v)
     isfull(c) && process_accumulator!(c)
 
     # If the matrix element is zero, don't do anything
-    mel == 0.0 && return acc
+    mel == 0.0 && return c
 
     n_cngs = isnothing(cngs) ? 0 : length(cngs)
 

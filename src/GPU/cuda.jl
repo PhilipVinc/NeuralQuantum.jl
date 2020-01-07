@@ -1,16 +1,25 @@
-using CuArrays: CuArrays, CuArray, @cufunc, CUBLAS
-using CuArrays: CuArrays.GPUArrays.GPUArray
+using CuArrays: CuArrays, CuArray, @cufunc, CUBLAS, CUDAnative
+using CuArrays: CuArrays.GPUArrays.GPUArray, @cufunc
 using Base: ReshapedArray
 
 
 @cufunc NeuralQuantum.ℒ(x) = one(x) + exp(x)
+@cufunc NeuralQuantum.logℒ(x::Real) = log1p(exp(x)) #_gpu_logℒ(x)
+@cufunc NeuralQuantum.logℒ(x::Complex) = log(one(x) + exp(x)) #_gpu_logℒ(x)
 @cufunc NeuralQuantum.∂logℒ(x) = one(x)/(one(x)+exp(-x))
+
+@cufunc NeuralQuantum.ℒ2(x)  = 2*cosh(x)
+@cufunc NeuralQuantum.logℒ2(x)  = logℒ2(real(x)) + log(cos(imag(x)) +
+    im * tanh(real(x)) * sin(imag(x)))
+@cufunc NeuralQuantum.∂logℒ2(x) = tanh(x)
+
+@cufunc fwd_der(f::typeof(NeuralQuantum.logℒ), x) = NeuralQuantum.∂logℒ(x)
+@cufunc fwd_der(f::typeof(NeuralQuantum.logℒ2), x) = NeuralQuantum.∂logℒ2(x)
 
 #_gpu_logℒ(x) = log1p(exp(x))
 #@cufunc _gpu_logℒ(x::Real) = log1p(exp(x))
 #@cufunc _gpu_logℒ(x::Complex) = log(one(x) + exp(x))
 
-@cufunc NeuralQuantum.logℒ(x) = log(one(x) + exp(x)) #_gpu_logℒ(x)
 
 function build_rng_generator_T(arrT::CuArray, seed)
     return CuArrays.CURAND.generator()
