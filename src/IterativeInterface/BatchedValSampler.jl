@@ -39,8 +39,8 @@ function BatchedValSampler(net,
 
     samples        = NeuralQuantum.vec_of_batches(v, ch_len)
     ψvals          = similar(trainable_first(bnet), out_type(bnet), 1, batch_sz, ch_len)
-    ∇vals, ∇vec    = grad_cache(bnet, batch_sz, ch_len)
-    ∇vec_avg       = similar(∇vec, size(∇vec, 1))
+    ∇vals, ∇vecs   = grad_cache(bnet, batch_sz, ch_len)
+    ∇vec_avg       = tuple([similar(∇vec, size(∇vec, 1)) for ∇vec=∇vecs ]...)
 
     local_acc      = AccumulatorObsScalar(net, basis(prob), v, local_batch_sz)
     Llocal_vals    = collect(similar(ψvals, size(ψvals)[2:end]...)) #ensure it's on cpu
@@ -51,7 +51,7 @@ function BatchedValSampler(net,
 
     nq = BatchedValSampler(bnet, prob,
             sampl, sampler_cache, samples,
-            ψvals, ∇vals, ∇vec, ∇vec_avg,
+            ψvals, ∇vals, ∇vecs, ∇vec_avg,
             local_acc, Llocal_vals, precond, obs)
 
     return nq
@@ -100,11 +100,14 @@ function sample!(is::BatchedValSampler)
     L_stat = stat_analysis(is.local_vals)
 
     # Center the gradient so that it has zero-average
-    mean!(is.∇vec_avg, is.∇vals_vec) # MPI
-    is.∇vals_vec .-= is.∇vec_avg
+    # do it for every block of gradients / cogradients
+    for (∇vec_avg, ∇vals_vec)=zip(is.∇vec_avg, is.∇vals_vec)
+        mean!(∇vec_avg, ∇vals_vec) # MPI
+        ∇vals_vec .-= ∇vec_avg
+    end
 
     # Flatten the batches and the iterations
-    ∇vr = reshape(is.∇vals_vec, :, ch_len*batch_sz)
+    ∇vr = reshape(is.∇vals_vec[1], :, ch_len*batch_sz)
     Ĉr  = reshape(is.local_vals, 1, :)
 
     # Compute the gradient

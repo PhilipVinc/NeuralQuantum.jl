@@ -41,11 +41,11 @@ function BatchedGradSampler(net,
     samples        = NeuralQuantum.vec_of_batches(v, ch_len)
     ψvals          = similar(trainable_first(bnet), out_type(bnet), 1, batch_sz, ch_len)
     ∇vals, ∇vec    = grad_cache(bnet, batch_sz, ch_len)
-    ∇vec_avg       = similar(∇vec, size(∇vec, 1))
+    ∇vec_avg       = tuple([similar(∇vec_i, size(∇vec_i, 1)) for ∇vec_i=∇vec]...)
 
     local_acc      = AccumulatorObsGrad(net, basis(prob), v, local_batch_sz)
-    Llocal_vals    = similar(ψvals, size(ψvals)[2:end]...)
-    ∇Llocal_vals   = similar(ψvals, size(∇vec, 1), size(ψvals)[2:end]...)
+    Llocal_vals    = collect(similar(ψvals, size(ψvals)[2:end]...)) #ensure it's on cpu #tocheck
+    ∇Llocal_vals   = tuple([similar(ψvals, size(∇vec_i, 1), size(ψvals)[2:end]...) for ∇vec_i=∇vec]...)
 
     precond        = algorithm_cache(algo, prob, net)
 
@@ -87,7 +87,7 @@ function sample!(is::BatchedGradSampler; sample=true)
             accumulate_connections!(is.accum, is.Ĉ, σv)
             L_loc, ∇L_loc = NeuralQuantum.finalize!(is.accum)
             is.local_vals[j, i]   = L_loc
-            uview(is.∇local_vals, :, j, i) .= vec_data(∇L_loc)[1]
+            uview(is.∇local_vals[1], :, j, i) .= vec_data(∇L_loc)[1]
         end
     end
 
@@ -96,20 +96,22 @@ function sample!(is::BatchedGradSampler; sample=true)
     L_stat = stat_analysis(Ĉ2)
 
     # Center the gradient so that it has zero-average
-    mean!(is.∇vec_avg, is.∇vals_vec)
-    is.∇vals_vec .-= is.∇vec_avg
+    for (∇vals_vec, ∇vec_avg)=zip(is.∇vals_vec, is.∇vec_avg)
+        mean!(∇vec_avg, ∇vals_vec)
+        ∇vals_vec .-= ∇vec_avg
+    end
 
     # Compute the gradient
     # Flatten the batches and the iterations
-    ∇vr = reshape(is.∇vals_vec, :, ch_len*batch_sz)
-    ∇Ĉr = reshape(is.∇local_vals, :, ch_len*batch_sz)
+    ∇vr = reshape(is.∇vals_vec[1], :, ch_len*batch_sz)
+    ∇Ĉr = reshape(is.∇local_vals[1], :, ch_len*batch_sz)
     Ĉr  = reshape(is.local_vals, 1, :)
-    Ĉ2r = reshape(Ĉ2, 1, :)
+    #Ĉ2r = reshape(Ĉ2, 1, :)
 
     # Compute the gradient
     ∇C  = Ĉr*∇Ĉr'
     ∇C ./= (ch_len*batch_sz)
-    ∇C .-= L_stat.mean .* is.∇vec_avg'
+    ∇C .-= L_stat.mean .* is.∇vec_avg[1]'
     ∇C .= conj.(∇C)
 
     setup_algorithm!(is.precond_cache, reshape(∇C,:), ∇vr)
