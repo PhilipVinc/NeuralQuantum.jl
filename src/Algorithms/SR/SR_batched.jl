@@ -85,8 +85,8 @@ end
 ###########
 
 struct SRIterativeCache{Tc,T,G,E}
-    S_c::Tc
     S::T
+    S_c::Tc
     F::G
     ∇out::E
 end
@@ -95,32 +95,49 @@ function _sr_iterative_cache(algo::SR, prob, net)
     T = eltype(trainable_first(net))
     g = grad_cache(T, net)
     gv = vec_data(g)
-    S = [similar(gv, T, length(gv), length(gv)) for gv in vec_data(g)]
-    if T isa Real
-        Sc = [similar(gv, Complex{T}, length(gv), length(gv)) for gv in vec_data(g)]
-    else
-        Sc = S
+    if algo.use_fullmat
+        S = tuple([similar(gv, T, length(gv), length(gv))
+                        for gv in vec_data(g)]...)
+        if T isa Real
+            Sc = tuple([similar(gv, Complex{T}, length(gv), length(gv))
+                            for gv in vec_data(g)]...)
+        else
+            Sc = S
+        end
+    else # use O
+        S = tuple([SrMatrix(T, similar(gv, T, length(gv), 1))
+                    for gv in vec_data(g)]...)
+        Sc = tuple([nothing for gv in vec_data(g)]...)
     end
-    return SRIterativeCache(Sc, S, g, grad_cache(T, net))
+    return SRIterativeCache(S, Sc, g, grad_cache(T, net))
 end
 
 function setup_algorithm!(g::SRIterativeCache, ∇C, Ô)
     O = Ô
     for (Sc, S, F) in zip(g.S_c, g.S, vec_data(g.F))
-        T = eltype(S)
-        N = size(Ô, 2)
-
-        # TODO MPI Sync Sc
-        mul!(Sc, O, O')
-
-        if T <: Real
-            S .= real.(Sc ./ N)
-            F .= real.(∇C)
+        if S isa SrMat
+            init!(S, O)
+            if isreal(F)
+                F .= real.(∇C)
+            else
+                F .= ∇C
+            end
         else
-            # We take the conjugate because O is actually Oconj matrix respect
-            # to the standard SR implementation..
-            S .= conj.(Sc) ./ N
-            F .= ∇C
+            T = eltype(S)
+            N = size(Ô, 2)
+
+            # TODO MPI Sync Sc
+            mul!(Sc, O, O')
+
+            if T <: Real
+                S .= real.(Sc ./ N)
+                F .= real.(∇C)
+            else
+                # We take the conjugate because O is actually Oconj matrix respect
+                # to the standard SR implementation..
+                S .= conj.(Sc) ./ N
+                F .= ∇C
+            end
         end
     end
 end
@@ -192,7 +209,7 @@ function precondition!(data::SRIterativeCache, params::SR, iter_n)
         while !hist.isconverged
             println("minresqlp not conerged. Additional $(size(S,2)*10) iters for the $add_iters time.")
             x, hist = minresqlp(
-                ΔW,
+                Δw,
                 Sprecond,
                 F,
                 maxiter = size(S, 2) * 10,

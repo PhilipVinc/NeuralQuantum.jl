@@ -150,6 +150,7 @@ include("Algorithms/SR/SR.jl")
 include("Algorithms/Gradient/Gradient.jl")
 
 include("Algorithms/batched_algorithms.jl")
+include("Algorithms/SR/SR_notfull.jl")
 include("Algorithms/SR/SR_batched.jl")
 include("Algorithms/Gradient/Gradient_batched.jl")
 
