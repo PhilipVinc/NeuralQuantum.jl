@@ -109,7 +109,7 @@ grad_cache(T::Type{<:Number}, net::CachedNet{N,C}) where {N,C<:NNBatchedCache} =
 function RealDerivative(T::Type{<:Number}, net::NeuralNetwork, batch_sz::Int)
     pars = trainable(net)
 
-    vec    = similar(trainable_first(pars), T, _tlen(pars), batch_sz)
+    vec       = similar(trainable_first(pars), T, _tlen(pars), batch_sz)
     i, fields = batched_weight_tuple(net, vec)
     return RealDerivative(fields, [vec])
 end
@@ -125,24 +125,26 @@ grad_cache(net::NeuralNetwork, batch_sz::Integer, vec_len::Integer) =
     grad_cache(out_type(net), net, batch_sz, vec_len)
 
 function grad_cache(T::Type{<:Number}, net::NeuralNetwork, batch_sz, vec_len)
-    pars = trainable(net)
+    pars  = trainable(net)
+    npars = _tlen(pars)
 
     if is_analytic(net)
-        vec       = similar(trainable_first(pars), T, _tlen(pars), batch_sz, vec_len)
+        vec       = similar(trainable_first(pars), T, npars, batch_sz, vec_len)
         # compute type
         j, fields = batched_weight_tuple(net, view(vec, :, :, 1))
-        der       = RealDerivative(fields, [view(vec, :, :, 1)])
+        der       = RealDerivative(fields, (view(vec, :, :, 1),))
         ders      = Vector{typeof(der)}()
         for i=1:vec_len
             vec_rsp   = view(vec, :, :, i)
             j, fields = batched_weight_tuple(net, vec_rsp)
-            der       = RealDerivative(fields, [vec_rsp])
+            der       = RealDerivative(fields, (vec_rsp,))
             push!(ders, der)
         end
+        vecs = (vec,)
     else
         throw("To implement")
     end
-    return (ders, vec)
+    return ders, vecs
 end
 
 

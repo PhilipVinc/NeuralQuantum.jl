@@ -67,12 +67,16 @@ include("States/StateChanges.jl")
 
 # Base elements
 include("Hilbert/base_basis.jl")
-include("base_derivatives.jl")
+
+# Nets
 include("base_networks.jl")
 include("base_cached_networks.jl")
 include("treelike.jl") # from flux
 include("tuple_logic.jl")
 
+#AD
+include("AD/base_derivatives.jl")
+include("AD/RealDerivatives.jl")
 
 include("Hilbert/DiscreteHilbert.jl")
 include("Hilbert/HomogeneousFock.jl")
