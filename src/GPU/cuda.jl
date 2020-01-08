@@ -22,7 +22,9 @@ using Base: ReshapedArray
 
 
 function build_rng_generator_T(arrT::CuArray, seed)
-    return CuArrays.CURAND.generator()
+    gen = CuArrays.CURAND.generator()
+    CuArrays.CURAND.seed!(gen, seed, 0)
+    return gen
 end
 
 
