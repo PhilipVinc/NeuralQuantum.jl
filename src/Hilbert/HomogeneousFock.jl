@@ -37,9 +37,10 @@ function flipat!(rng::AbstractRNG, σ::AState, h::HomogeneousFock{N}, i) where N
     T = eltype(σ)
 
     old_val = σ[i]
-    #new_val = T(rand(rng, 0:(N-2)))
-    new_val =  floor(rand(rng, T)*N)
-    σ[i]    = new_val + (new_val >= old_val)
+    new_val =  floor(rand(rng, T)*(N-1))
+    new_val = new_val + (new_val >= old_val)
+    σ[i]    = new_val
+    
     return old_val, new_val
 end
 
