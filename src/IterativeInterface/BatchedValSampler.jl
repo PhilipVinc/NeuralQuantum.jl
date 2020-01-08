@@ -110,6 +110,10 @@ function sample!(is::BatchedValSampler)
     ∇vr = reshape(is.∇vals_vec[1], :, ch_len*batch_sz)
     Ĉr  = reshape(is.local_vals, 1, :)
 
+    if typeof(is.ψvals) <: GPUArray
+        Ĉr = CuArrays.adapt(CuArray, Ĉr)
+    end
+
     # Compute the gradient
     ∇C  = Ĉr*∇vr'
     ∇C ./= (ch_len*batch_sz) # MPI

@@ -47,3 +47,10 @@ end
 # Fix my bug
 @inline CUDAnative.exp(x::Complex{Float32}) = CUDAnative.exp(x.re) * (CUDAnative.cos(x.im) + 1.0f0im * CUDAnative.sin(x.im))
 @inline CUDAnative.exp_fast(x::Complex{Float32}) = CUDAnative.exp_fast(x.re) * (CUDAnative.cos_fast(x.im) + 1.0f0im * CUDAnative.sin_fast(x.im))
+
+#
+function mean!(y::CuVector, x::CuArray{T,3}) where T
+    ỹ = reshape(y, length(y), 1, 1)
+    mean!(ỹ, x)
+    return y
+end
