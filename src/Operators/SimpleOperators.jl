@@ -126,3 +126,20 @@ function QuantumOpticsBase.create(h::AbstractHilbert, i::Int)
 
     return KLocalOperatorRow(h, [i], mat)
 end
+
+"""
+    number(hilbert::AbstractHilbert, site::Int)
+
+Builds a bosonic creation operator acting on the `site`-th site of the Many
+body Hilbert space `hilbert`.
+
+Note: spin-`m//2` spaces are treated as fock spaces with dimension `m+1`
+"""
+function QuantumOpticsBase.number(h::AbstractHilbert, i::Int)
+    N = shape(h)[i] - 1
+
+    D = complex.(0.:N)
+    mat = diagm(0 => D)
+
+    return KLocalOperatorRow(h, [i], mat)
+end
