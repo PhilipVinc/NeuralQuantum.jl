@@ -1,6 +1,6 @@
 export BatchedSampler
 
-mutable struct BatchedGradSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Lgv, Pc} <: AbstractIterativeSampler
+mutable struct BatchedGradSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Lgv, Pc, Pd} <: AbstractIterativeSampler
     bnet::BN
     Ĉ::P
 
@@ -20,6 +20,8 @@ mutable struct BatchedGradSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Lg
     precond_cache::Pc
 
     observables_sampler
+
+    parallel_cache::Pd
 end
 
 function BatchedGradSampler(net,
@@ -27,14 +29,17 @@ function BatchedGradSampler(net,
                         prob,
                         algo=prob;
                         batch_sz=2^4,
-                        local_batch_sz=batch_sz)
+                        local_batch_sz=batch_sz,
+                        par_type=automatic_parallel_type())
     if net isa CachedNet
         throw("Only takes standard network.")
     end
 
+    par_cache      = parallel_execution_cache(par_type)
+
     bnet           = cached(net, batch_sz)
     v              = state(prob, bnet)
-    sampler_cache  = init_sampler!(sampl, bnet, basis(prob), v)
+    sampler_cache  = init_sampler!(sampl, bnet, basis(prob), v, par_cache)
 
     ch_len         = chain_length(sampl, sampler_cache)
 
@@ -47,7 +52,7 @@ function BatchedGradSampler(net,
     Llocal_vals    = collect(similar(ψvals, size(ψvals)[2:end]...)) #ensure it's on cpu #tocheck
     ∇Llocal_vals   = tuple([similar(ψvals, size(∇vec_i, 1), size(ψvals)[2:end]...) for ∇vec_i=∇vec]...)
 
-    precond        = algorithm_cache(algo, prob, net)
+    precond        = algorithm_cache(algo, prob, net, par_cache)
 
     if prob isa KLocalLiouvillian
         obs        = BatchedObsDMSampler(bnet, sampl, basis(prob), batch_sz=batch_sz)
@@ -58,7 +63,8 @@ function BatchedGradSampler(net,
     nq = BatchedGradSampler(bnet, prob,
             sampl, sampler_cache, samples,
             ψvals, ∇vals, ∇vec, ∇vec_avg,
-            local_acc, Llocal_vals, ∇Llocal_vals, precond, obs)
+            local_acc, Llocal_vals, ∇Llocal_vals, precond, obs,
+            par_cache)
 
     return nq
 end
@@ -93,11 +99,11 @@ function sample!(is::BatchedGradSampler; sample=true)
 
     Ĉ2 = abs2.(is.local_vals)
 
-    L_stat = stat_analysis(Ĉ2)
+    L_stat = stat_analysis(Ĉ2, is.parallel_cache)
 
     # Center the gradient so that it has zero-average
     for (∇vals_vec, ∇vec_avg)=zip(is.∇vals_vec, is.∇vec_avg)
-        mean!(∇vec_avg, ∇vals_vec)
+        workers_mean!(∇vec_avg, ∇vals_vec, is.parallel_cache)
         ∇vals_vec .-= ∇vec_avg
     end
 
@@ -113,8 +119,9 @@ function sample!(is::BatchedGradSampler; sample=true)
     ∇C ./= (ch_len*batch_sz)
     ∇C .-= L_stat.mean .* is.∇vec_avg[1]'
     ∇C .= conj.(∇C)
+    workers_mean!(∇C, is.parallel_cache)
 
-    setup_algorithm!(is.precond_cache, reshape(∇C,:), ∇vr)
+    setup_algorithm!(is.precond_cache, reshape(∇C,:), ∇vr, is.parallel_cache)
 
     return L_stat, is.precond_cache
 end

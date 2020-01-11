@@ -5,7 +5,7 @@ struct SRDirectCache{Tc,T,G,E}
     ∇out::E
 end
 
-function _sr_direct_cache(algo::SR, prob, net)
+function _sr_direct_cache(algo::SR, prob, net, par_cache)
     T = eltype(trainable_first(net))
     g = grad_cache(T, net)
     gv = vec_data(g)
@@ -20,7 +20,7 @@ function _sr_direct_cache(algo::SR, prob, net)
     return SRDirectCache(Sc, S, g, grad_cache(T, net))
 end
 
-function setup_algorithm!(g::SRDirectCache, ∇C, Ô)
+function setup_algorithm!(g::SRDirectCache, ∇C, Ô, par_cache)
     O = Ô
     for (Sc, S, F) in zip(g.S_c, g.S, vec_data(g.F))
         T = eltype(S)
@@ -38,6 +38,8 @@ function setup_algorithm!(g::SRDirectCache, ∇C, Ô)
             S .= conj.(Sc) ./ N
             F .= ∇C
         end
+
+        workers_sum!(S, par_cache)
     end
 end
 
@@ -91,7 +93,7 @@ struct SRIterativeCache{Tc,T,G,E}
     ∇out::E
 end
 
-function _sr_iterative_cache(algo::SR, prob, net)
+function _sr_iterative_cache(algo::SR, prob, net, par_cache)
     T = eltype(trainable_first(net))
     g = grad_cache(T, net)
     gv = vec_data(g)
@@ -105,19 +107,19 @@ function _sr_iterative_cache(algo::SR, prob, net)
             Sc = S
         end
     else # use O
-        S = tuple([SrMatrix(T, similar(gv, T, length(gv), 1))
+        S = tuple([SrMatrix(T, similar(gv, T, length(gv), 1), 0, par_cache)
                     for gv in vec_data(g)]...)
         Sc = tuple([nothing for gv in vec_data(g)]...)
     end
     return SRIterativeCache(S, Sc, g, grad_cache(T, net))
 end
 
-function setup_algorithm!(g::SRIterativeCache, ∇C, Ô)
+function setup_algorithm!(g::SRIterativeCache, ∇C, Ô, par_cache)
     O = Ô
     for (Sc, S, F) in zip(g.S_c, g.S, vec_data(g.F))
         if S isa SrMat
             init!(S, O)
-            if isreal(F)
+            if eltype(F) <: Real
                 F .= real.(∇C)
             else
                 F .= ∇C
@@ -138,12 +140,18 @@ function setup_algorithm!(g::SRIterativeCache, ∇C, Ô)
                 S .= conj.(Sc) ./ N
                 F .= ∇C
             end
+
+            workers_mean!(S, par_cache)
         end
     end
+
 end
 
-
 function precondition!(data::SRIterativeCache, params::SR, iter_n)
+    return _precondition!(data, params, iter_n)
+end
+
+function _precondition!(data::SRIterativeCache, params::SR, iter_n)
     ϵ = params.sr_diag_shift
     success = true
 
