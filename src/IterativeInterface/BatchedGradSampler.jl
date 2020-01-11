@@ -73,15 +73,9 @@ function sample!(is::BatchedGradSampler; sample=true)
     ch_len         = chain_length(is.sampler, is.sampler_cache)
     batch_sz       = size(is.local_vals, 1)
 
-    # Sample phase
-    if sample
-        init_sampler!(is.sampler, is.bnet, unsafe_get_el(is.samples, 1),
-                        is.sampler_cache)
-        for i=1:ch_len-1
-            !samplenext!(unsafe_get_el(is.samples, i+1), unsafe_get_el(is.samples, i),
-                            is.sampler, is.bnet, is.sampler_cache) && break
-        end
-    end
+    # Sample the new configurations
+    sample && _sample_state!(is)
+
     # Compute logψ and ∇logψ
     logψ_and_∇logψ!(is.∇vals, is.ψvals, is.bnet, is.samples)
 
@@ -102,10 +96,7 @@ function sample!(is::BatchedGradSampler; sample=true)
     L_stat = stat_analysis(Ĉ2, is.parallel_cache)
 
     # Center the gradient so that it has zero-average
-    for (∇vals_vec, ∇vec_avg)=zip(is.∇vals_vec, is.∇vec_avg)
-        workers_mean!(∇vec_avg, ∇vals_vec, is.parallel_cache)
-        ∇vals_vec .-= ∇vec_avg
-    end
+    _center_gradient!(is)
 
     # Compute the gradient
     # Flatten the batches and the iterations

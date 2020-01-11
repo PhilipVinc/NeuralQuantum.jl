@@ -63,25 +63,6 @@ function BatchedValSampler(net,
     return nq
 end
 
-function _sample_state!(is::BatchedValSampler)
-    ch_len         = chain_length(is.sampler, is.sampler_cache)
-    batch_sz       = size(is.local_vals, 1)
-
-    # Monte-Carlo sampling
-    σ_old = unsafe_get_el(is.samples, 1)
-
-    init_sampler!(is.sampler, is.bnet, σ_old, is.sampler_cache)
-    for i=1:ch_len-1
-        σ_next = unsafe_get_el(is.samples, i+1)
-        !samplenext!(σ_next, σ_old,
-                        is.sampler, is.bnet, is.sampler_cache) && break
-        σ_old = σ_next
-    end
-
-    # Compute logψ and ∇logψ
-    logψ_and_∇logψ!(is.∇vals, is.ψvals, is.bnet, is.samples)
-end
-
 function _sample_compute_obs!(is::BatchedValSampler)
     ch_len         = chain_length(is.sampler, is.sampler_cache)
     batch_sz       = size(is.local_vals, 1)
@@ -113,15 +94,6 @@ function _sample_compute_obs!(is::BatchedValSampler)
     return L_stat
 end
 
-function _center_gradient!(is::BatchedValSampler)
-    # Center the gradient so that it has zero-average
-    # do it for every block of gradients / cogradients
-    for (∇vec_avg, ∇vals_vec)=zip(is.∇vec_avg, is.∇vals_vec)
-        workers_mean!(∇vec_avg, ∇vals_vec, is.parallel_cache) # MPI
-        ∇vals_vec .-= ∇vec_avg
-    end
-end
-
 function _compute_gradient!(is::BatchedValSampler)
     ch_len         = chain_length(is.sampler, is.sampler_cache)
     batch_sz       = size(is.local_vals, 1)
@@ -142,13 +114,20 @@ function _compute_gradient!(is::BatchedValSampler)
     return ∇C, ∇vr
 end
 
-function sample!(is::BatchedValSampler)
-    _sample_state!(is)
+function sample!(is::BatchedValSampler; sample = true)
+    # Sample the new configurations
+    sample && _sample_state!(is)
 
+    # Compute logψ and ∇logψ
+    logψ_and_∇logψ!(is.∇vals, is.ψvals, is.bnet, is.samples)
+
+    # Compute the cost function
     L_stat = _sample_compute_obs!(is)
 
+    # Center the gradient
     _center_gradient!(is)
 
+    # Compute the cost-gradient for optimization
     ∇C, ∇vr = _compute_gradient!(is)
 
     # Setup the algorithm.

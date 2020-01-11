@@ -12,7 +12,7 @@ mutable struct BatchedObsKetSampler{S,V,O,A,R,Pd}
     parallel_cache::Pd
 end
 
-function BatchedObsKetSampler(samples, ψvals, accum, 
+function BatchedObsKetSampler(samples, ψvals, accum;
                               par_type=automatic_parallel_type())
 
     Oloc_vals    = similar(ψvals, size(ψvals)[2:end]...)

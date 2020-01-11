@@ -27,7 +27,8 @@ function BatchedObsDMSampler(bnet,
                         sampl,
                         hilb_doubled;
                         batch_sz=2^4,
-                        local_batch_sz=batch_sz)
+                        local_batch_sz=batch_sz,
+                        par_type=automatic_parallel_type())
     hilb_ph        = physical(hilb_doubled)
 
     par_cache      = parallel_execution_cache(par_type)
@@ -64,12 +65,7 @@ function compute_observables(is::BatchedObsDMSampler)
     batch_sz       = size(is.local_vals, 1)
 
     # Sample phase
-    init_sampler!(is.sampler, is.bnet, unsafe_get_el(is.samples, 1),
-                  is.sampler_cache)
-    for i=1:ch_len-1
-        !samplenext!(unsafe_get_el(is.samples, i+1), unsafe_get_el(is.samples, i),
-                        is.sampler, is.bnet, is.sampler_cache) && break
-    end
+    _sample_state!(is)
 
     # Compute logψ and ∇logψ
     logψ!(is.ψvals, is.bnet, is.samples)
