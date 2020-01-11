@@ -35,9 +35,9 @@ version = "0.5.8"
 
 [[BinningAnalysis]]
 deps = ["Lazy", "Random", "RecursiveArrayTools", "Reexport", "Statistics"]
-git-tree-sha1 = "e9ee7ab183f0b6e87a9153e91314209583a2aa3d"
+git-tree-sha1 = "4f7a25ceb43ad9fda74e5c0e6b0c44a8b67deba2"
 uuid = "b7192094-8e58-5052-a244-180a858778ee"
-version = "0.3.2"
+version = "0.3.3"
 
 [[CEnum]]
 git-tree-sha1 = "62847acab40e6855a9b5905ccb99c2b5cf6b3ebb"
@@ -205,6 +205,12 @@ git-tree-sha1 = "61069ae718b8ab1e325bbfb4e5268902e7ea08e3"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
 version = "2019.0.117+0"
 
+[[MPI]]
+deps = ["Distributed", "Libdl", "Random", "Requires", "Serialization", "Sockets"]
+git-tree-sha1 = "958dff41198353e1aa1092efa911c07cbd894193"
+uuid = "da04e1cc-30fd-572f-bb4f-1f8673147195"
+version = "0.10.1"
+
 [[MacroTools]]
 deps = ["DataStructures", "Markdown", "Random"]
 git-tree-sha1 = "e2fc7a55bb2224e203bbd8b59f72b91323233458"
@@ -270,9 +276,9 @@ version = "0.7.0"
 
 [[RecursiveArrayTools]]
 deps = ["ArrayInterface", "RecipesBase", "Requires", "StaticArrays", "Statistics"]
-git-tree-sha1 = "35a01ee8529e84d1ca4c7131fee30e7f61047fc8"
+git-tree-sha1 = "f795d0f557ff9f40a16e2b0634fc709ceb59c0d5"
 uuid = "731186ca-8d62-57ce-b412-fbd966d074cd"
-version = "1.2.1"
+version = "2.0.0"
 
 [[Reexport]]
 deps = ["Pkg"]
@@ -360,9 +366,9 @@ version = "1.0.0"
 
 [[Zygote]]
 deps = ["DiffRules", "FFTW", "FillArrays", "ForwardDiff", "IRTools", "InteractiveUtils", "LinearAlgebra", "MacroTools", "NNlib", "NaNMath", "Random", "Requires", "SpecialFunctions", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "7e293d7bef87c2cf2847e99ed0da4edadb75fe90"
+git-tree-sha1 = "74382bcc4c1e8075e14554da67d75565f8fb7827"
 uuid = "e88e6eb3-aa80-5325-afca-941959d7151f"
-version = "0.4.4"
+version = "0.4.5"
 
 [[ZygoteRules]]
 deps = ["MacroTools"]
