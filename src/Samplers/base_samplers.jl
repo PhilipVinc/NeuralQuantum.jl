@@ -20,7 +20,8 @@ Initializes the sampler `sampler` and state `σ`. If no `SamplerCache` is
 provided, one will be initialized and returned. The state σ is the first in the
 list of sampled states.
 """
-init_sampler!(s::Sampler, net, hilb::AbstractHilbert, σ) = init_sampler!(s, net, σ, cache(s, hilb, net))
+init_sampler!(s::Sampler, net, hilb::AbstractHilbert, σ, par_cache=NotParallel()) =
+    init_sampler!(s, net, σ, cache(s, hilb, net, par_cache))
 
 """
     chain_length(sampler, sampler_cache) -> Int
