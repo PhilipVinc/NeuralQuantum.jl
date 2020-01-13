@@ -1,6 +1,11 @@
 function automatic_parallel_type()
     MPI.REFCOUNT[] == -1 && MPI.Init()
-    return ParallelMPI();
+    
+    if MPI.Comm_size(MPI.COMM_WORLD) == 1
+        return NotParallel()
+    else
+        return ParallelMPI()
+    end
 end
 
 function _iterator_blocks(interval, rank, n_par)

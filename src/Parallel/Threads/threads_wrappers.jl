@@ -43,10 +43,10 @@ function sample!(s::MTBatchSampler)
     return data_1[1], data_prec
 end
 
-function compute_observables!(s::MTBatchSampler)
+function compute_observables(s::MTBatchSampler)
     data = Vector{Any}()
     Threads.@threads for i=1:Threads.nthreads()
-        res = compute_observables!(s.samplers[i])
+        res = compute_observables(s.samplers[i])
         Threads.threadid() == 1 && push!(data, res)
     end
     return data[1]
