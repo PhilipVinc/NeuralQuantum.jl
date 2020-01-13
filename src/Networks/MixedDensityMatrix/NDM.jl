@@ -41,6 +41,8 @@ Refs:
     https://arxiv.org/abs/1902.10104
 """
 NDM(args...) = NDM(STD_REAL_PREC, args...)
+NDM(T::Type{<:Complex}, args...) =
+    NDM(real(T), args...)
 NDM(T::Type{<:Real}, in, αh, αa, σ::Function=logℒ,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
     initb=(dims...)->rescaled_normal(T, 0.005, dims...),

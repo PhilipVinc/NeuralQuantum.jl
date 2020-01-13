@@ -15,5 +15,5 @@ worker_local_seed(seed, ::NotParallel) = seed
 worker_block(iter, ::NotParallel) = iter
 my_block(stuff, ::NotParallel) = stuff[1]
 
-Allgatherv!(data, intervals, ::NotParallel) =
+worker_allgatherv!(data, intervals, ::NotParallel) =
     data

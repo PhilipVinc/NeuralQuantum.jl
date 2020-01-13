@@ -86,3 +86,15 @@ function to_map(op::AbsLinearOperator)
 
     return LinearMap{ComplexF64}(op_v_prod!, N, N; ismutating=true)
 end
+
+QuantumOpticsBase.DenseOperator(op::AbsLinearOperator) =
+    DenseOperator(convert(CompositeBasis, basis(op)), to_matrix(op))
+
+QuantumOpticsBase.SparseOperator(op::AbsLinearOperator) =
+    DenseOperator(convert(CompositeBasis, basis(op)), to_sparse(op))
+
+QuantumOpticsBase.SparseSuperOperator(op::KLocalLiouvillian) =
+    DenseOperator(nq_to_qo_basis(basis(op)), to_matrix(op))
+
+QuantumOpticsBase.SparseSuperOperator(op::KLocalLiouvillian) =
+    DenseOperator(nq_to_qo_basis(basis(op)), to_sparse(op))
