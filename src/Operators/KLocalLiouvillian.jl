@@ -65,7 +65,9 @@ function map_connections(fun::Function, op::KLocalLiouvillian, v::ADoubleState)
     return nothing
 end
 
-
+Base.eltype(::T) where {T<:KLocalLiouvillian} = eltype(T)
+Base.eltype(t::Type{<:KLocalLiouvillian{H,T,A,B,C}}) where {H,T,A,B,C} =
+    eltype(A)
 
 Base.show(io::IO, m::MIME"text/plain", op::KLocalLiouvillian) = begin
     T    = eltype(op.HnH_l)
