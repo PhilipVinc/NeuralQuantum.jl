@@ -8,11 +8,13 @@ Allreduce!(dst::A, op, comm::Comm) where {T, A<:DenseArray{T}} =
     Allreduce!(dst, dst, op, comm)
 
 function Allreduce!(dst::A, src::A, op, comm::Comm) where {T, A<:DenseArray{T}}
+    id = Comm_rank(comm)
+
     sz = size(src)
 
-    if Threads.threadid() == 1
+    if id == 1
         # pass to the other threads the dst (reduced array)
-        comm.passthrough[Threads.threadid()] = convert(UInt, pointer(dst))
+        comm.passthrough[id] = convert(UInt, pointer(dst))
 
         dst !== src && copyto!(dst, src)
 
@@ -20,8 +22,8 @@ function Allreduce!(dst::A, src::A, op, comm::Comm) where {T, A<:DenseArray{T}}
         sync(comm.barrier)
 
         # sum everything in place
-        for (id, addr) in enumerate(comm.passthrough)
-            id == Threads.threadid() && continue
+        for (t_id, addr) in enumerate(comm.passthrough)
+            t_id == id && continue
 
             ptr = convert(Ptr{T}, addr)
             arr = UnsafeArray(ptr, sz)
@@ -31,7 +33,7 @@ function Allreduce!(dst::A, src::A, op, comm::Comm) where {T, A<:DenseArray{T}}
         sync(comm.barrier)
     else
         # pass to the master thread the src array
-        comm.passthrough[Threads.threadid()] = convert(UInt, pointer(src))
+        comm.passthrough[id] = convert(UInt, pointer(src))
 
         # report to thread 1 that you set the pointer
         sync(comm.barrier)
@@ -44,7 +46,7 @@ function Allreduce!(dst::A, src::A, op, comm::Comm) where {T, A<:DenseArray{T}}
         copyto!(dst, arr)
 
     end
-    
+
     sync(comm.barrier)
     return dst
 end
@@ -54,7 +56,7 @@ Allgatherv!(dst::A, counts, comm::Comm) where {T, A<:DenseArray{T}} =
 
 function Allgatherv!(dst::A, src::B, counts, comm::Comm) where {T, A<:DenseArray{T}, B<:DenseArray{T}}
     sz = length(dst)
-    id = Threads.threadid()
+    id = Comm_rank(comm)
 
     sum(counts) <= length(dst) || throw(error("Destination buffer too small"))
 
