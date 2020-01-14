@@ -4,16 +4,15 @@ mutable struct ThreadsCache{A, B, C}
     rank::C
 end
 
-function ThreadsCache()
-    return ThreadsCache(TPI.Comm(),
-    Threads.nthreads(),
-    Threads.threadid())
+function ThreadsCache(comm::TPI.Comm=TPI.Comm())
+    return ThreadsCache(comm,
+    TPI.Comm_size(comm),
+    TPI.Comm_rank(comm))
 end
 
-function ThreadsCache(comm::TPI.Comm)
-    return ThreadsCache(comm,
-    Threads.nthreads(),
-    Threads.threadid())
+function ThreadsCaches(n::Int)
+    cms = TPI.Comms(n)
+    return [ThreadsCache(c) for c=cms]
 end
 
 parallel_execution_cache(::ParallelThreaded) = ThreadsCache()

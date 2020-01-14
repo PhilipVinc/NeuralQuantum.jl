@@ -1,6 +1,6 @@
-abstract type Comm
+abstract type Comm end
 
-struct AllThreadComm{A,B,C,D}
+struct AllThreadComm{A,B,C,D} <: Comm
     status::A
     barrier::D
     passthrough::B
@@ -23,7 +23,7 @@ end
 Comm_size(t::AllThreadComm) = Threads.nthreads()
 Comm_rank(t::AllThreadComm) = Threads.threadid()
 
-struct SetThreadComm{A,B,C,D}
+struct SetThreadComm{A,B,C,D} <: Comm
     status::A
     barrier::D
     passthrough::B
@@ -31,13 +31,13 @@ struct SetThreadComm{A,B,C,D}
     thread_id::C
 end
 
-function Comm(i::Int, n::Int)
-    return AllThreadComm(
-        Threads.Atomic{Int}(-Threads.nthreads()),
-        Barrier(Threads.nthreads()),
-        zeros(UInt, Threads.nthreads()),
-        n,
-        i)
+function Comms(n::Int)
+    st  = Threads.Atomic{Int}(n)
+    bar = Barrier(n)
+    pas = zeros(UInt, n)
+    return tuple((SetThreadComm(
+        st, bar, pas,
+        n, i) for i=1:n)...)
 end
 
 Comm_size(t::SetThreadComm) = t.nthreads
