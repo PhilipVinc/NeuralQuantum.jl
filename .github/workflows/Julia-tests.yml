@@ -1,4 +1,4 @@
-name: Run tests
+name: Tests
 
 on: [push, pull_request]
 
@@ -18,7 +18,11 @@ jobs:
           version: ${{ matrix.julia-version }}
       - name: "Install MPI"
         run: sh ./conf/travis-install-mpi.sh mpich
-      - name: "Install dependencies"
+      - name: "Print"
+        run: which mpicc
+      - name: "Install Julia dependencies"
         run: julia --color=yes --project=@. -e 'using Pkg; Pkg.instantiate()'
+      - name: "Print2"
+        run: cat ~/.julia/packages/MPI/9zBr2/deps/build.log
       - name: "Run Tests"
         run: julia --color=yes --project=@. -e "using Pkg; Pkg.test(coverage=true)"
