@@ -17,7 +17,7 @@ jobs:
         with:
           version: ${{ matrix.julia-version }}
       - name: "Install MPI"
-        run: sh ./conf/travis-install-mpi.sh mpich
+        run: sh ./conf/travis-install-mpi.sh mpich && export JULIA_MPI_PATH=$HOME/mpich
       - name: "Print"
         run: echo $(which mpicc) &&  echo $(ls $HOME/mpich) && echo $(ls $HOME/mpich/bin)
       - name: "Install Julia dependencies"
