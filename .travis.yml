@@ -20,6 +20,11 @@ matrix:
 notifications:
     email: false
 
+cache:
+  directories:
+  - $HOME/.ccache
+  - $HOME/.julia/registries # can we cache all of .julia?
+
 before_install:
   - sh ./conf/travis-install-mpi.sh $MPI_IMPL
   - |
