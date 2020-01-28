@@ -11,15 +11,14 @@ jobs:
         os: [ubuntu-latest, macOS-latest]
 
     steps:
-      - uses: actions/checkout@v1.0.0
+      - uses: actions/checkout@v2
       - name: "Setup Julia environment ${{ matrix.julia-version }}"
-        uses: julia-actions/setup-julia@v1.0.1
+        uses: julia-actions/setup-julia@latest
         with:
           version: ${{ matrix.julia-version }}
+      - name: "Install MPI"
+        run: sh ./conf/travis-install-mpi.sh mpich
+      - name: "Install dependencies"
+        run: julia --color=yes --project=@. -e 'using Pkg; Pkg.instantiate()'
       - name: "Run Tests"
-        run: |
-            julia --color=yes --project=@. -e 'using Pkg;
-                            Pkg.activate();
-                            Pkg.instantiate();
-                            println("Instantiated");'
-            julia --color=yes --project=@. -e "using Pkg; Pkg.test(coverage=true)"
+        run: julia --color=yes --project=@. -e "using Pkg; Pkg.test(coverage=true)"
