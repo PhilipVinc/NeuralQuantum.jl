@@ -14,7 +14,8 @@ env:
 
 matrix:
     allow_failures:
-        - julia: [1.3 nightly]
+        - julia: 1.4
+        - julia: nightly
 
 notifications:
     email: false
@@ -37,7 +38,6 @@ before_install:
 #   https://github.com/open-mpi/ompi/issues/5798
   - export OMPI_MCA_btl=self,tcp
 
-
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
     - travis_wait 20 julia --project=@. --color=yes -e 'using Pkg;
@@ -47,10 +47,15 @@ script:
                             println("Instantiate");
                             Pkg.test(coverage=true)';
 after_success:
-    - julia -e 'using Pkg; cd(Pkg.dir("NeuralQuantum")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+    - julia -e 'using Pkg; cd(Pkg.dir("NeuralQuantum"));
+                            Pkg.add("Coverage");
+                            using Coverage;
+                            Codecov.submit(Codecov.process_folder())'
+
 
 jobs:
   include:
+    - stage: "Tests"
     - stage: "Documentation"
       julia: 1.3
       os: linux
@@ -62,3 +67,11 @@ jobs:
                                     Pkg.instantiate()'
         - julia --project=docs/ docs/make.jl
       after_success: skip
+    - stage: "Coverage"
+      julia: 1.3
+      os: linux
+      after_success:
+        - julia -e 'using Pkg; cd(Pkg.dir("NeuralQuantum"));
+                                Pkg.add("Coverage");
+                                using Coverage;
+                                Codecov.submit(Codecov.process_folder())'
