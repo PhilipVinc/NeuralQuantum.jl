@@ -19,7 +19,7 @@ jobs:
       - name: "Install MPI"
         run: sh ./conf/travis-install-mpi.sh mpich
       - name: "Print"
-        run: which mpicc
+        run: echo $(which mpicc) &&  echo $(ls $HOME/mpich) && echo $(ls $HOME/mpich/bin)
       - name: "Install Julia dependencies"
         run: julia --color=yes --project=@. -e 'using Pkg; Pkg.instantiate()'
       - name: "Print2"
