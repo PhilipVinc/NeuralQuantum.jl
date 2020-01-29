@@ -20,7 +20,6 @@ jobs:
         id: cache-mpi
         uses: actions/cache@v1
         with:
-          path: $HOME/mpich
           path: ~/mpich
           key: ${{ runner.os }}-mpi
       - name: Install MPI
