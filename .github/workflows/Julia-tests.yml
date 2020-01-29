@@ -18,7 +18,7 @@ jobs:
           version: ${{ matrix.julia-version }}
       - name: Cache MPI installation
         id: cache-mpi
-        uses: actions/cache@latest
+        uses: actions/cache@v1
         with:
           path: $HOME/mpich
           key: ${{ runner.os }}-mpi
