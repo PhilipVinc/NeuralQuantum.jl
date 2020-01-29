@@ -20,9 +20,9 @@ Internally uses the fact that R is a StridedView
 @inline function _batched_outer_prod!(R::StridedView, vb, wb)
     #@unsafe_strided R begin
         @inbounds @simd for i=1:size(R, 3)
-            for j=1:size(wb, 1)
-                for k=1:size(vb, 1)
-                    R[k,j,i] = vb[k,i]*conj(wb[j,i])
+            @inbounds for j=1:size(wb, 1)
+                @inbounds for k=1:size(vb, 1)
+                    @inbounds R[k,j,i] = vb[k,i]*conj(wb[j,i])
                 end
             end
         end
@@ -38,9 +38,9 @@ end
 
 @inline function _batched_outer_prod_noconj!(R::StridedView, vb, wb)
     @inbounds @simd for i=1:size(R, 3)
-        for j=1:size(wb, 1)
-            for k=1:size(vb, 1)
-                R[k,j,i] = vb[k,i]*wb[j,i]
+        @inbounds for j=1:size(wb, 1)
+            @inbounds for k=1:size(vb, 1)
+                @inbounds R[k,j,i] = vb[k,i]*wb[j,i]
             end
         end
     end
@@ -51,9 +51,9 @@ end
 @inline function _batched_outer_prod!(R::StridedView, α, vb, wb)
     #@unsafe_strided R begin
         @inbounds @simd for i=1:size(R, 3)
-            for j=1:size(wb, 1)
-                for k=1:size(vb, 1)
-                    R[k,j,i] = α * vb[k,i]*conj(wb[j,i])
+            @inbounds for j=1:size(wb, 1)
+                @inbounds for k=1:size(vb, 1)
+                    @inbounds R[k,j,i] = α * vb[k,i]*conj(wb[j,i])
                 end
             end
         end
@@ -69,9 +69,9 @@ end
 
 @inline function _batched_outer_prod_∑!(R::StridedView, α, vb, wb, vb2, wb2)
         @inbounds @simd for i=1:size(R, 3)
-            for j=1:size(wb, 1)
-                for k=1:size(vb, 1)
-                    R[k,j,i] = α * (vb[k,i]*conj(wb[j,i]) + vb2[k,i]*conj(wb2[j,i]))
+            @inbounds for j=1:size(wb, 1)
+                @inbounds for k=1:size(vb, 1)
+                    @inbounds R[k,j,i] = α * (vb[k,i]*conj(wb[j,i]) + vb2[k,i]*conj(wb2[j,i]))
                 end
             end
         end
@@ -80,9 +80,9 @@ end
 
 @inline function _batched_outer_prod_Δ!(R::StridedView, α, vb, wb, vb2, wb2)
         @inbounds @simd for i=1:size(R, 3)
-            for j=1:size(wb, 1)
-                for k=1:size(vb, 1)
-                    R[k,j,i] = α * (vb[k,i]*conj(wb[j,i]) - vb2[k,i]*conj(wb2[j,i]))
+            @inbounds for j=1:size(wb, 1)
+                @inbounds for k=1:size(vb, 1)
+                    @inbounds R[k,j,i] = α * (vb[k,i]*conj(wb[j,i]) - vb2[k,i]*conj(wb2[j,i]))
                 end
             end
         end

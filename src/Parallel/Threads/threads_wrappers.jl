@@ -31,12 +31,13 @@ macro MT(fun)
 end
 
 function sample!(s::MTBatchSampler)
+    N = length(s.samplers)
     data_1 = Vector{Any}()
-    data_prec = Vector{Any}(undef, Threads.nthreads())
-    Threads.@threads for i=1:Threads.nthreads()
-        L, prec = sample!(s.samplers[Threads.threadid()])
-        Threads.threadid() == 1 && push!(data_1, L)
-        data_prec[Threads.threadid()] = prec
+    data_prec = Vector{Any}(undef, N)
+    Threads.@threads for i=1:N
+        L, prec = sample!(s.samplers[i])
+        i == 1 && push!(data_1, L)
+        data_prec[i] = prec
     end
     T = typeof(first(data_prec))
     data_prec = Vector{T}(data_prec)
@@ -45,15 +46,15 @@ end
 
 function compute_observables(s::MTBatchSampler)
     data = Vector{Any}()
-    Threads.@threads for i=1:Threads.nthreads()
+    Threads.@threads for i=1:length(s.samplers)
         res = compute_observables(s.samplers[i])
-        Threads.threadid() == 1 && push!(data, res)
+        i == 1 && push!(data, res)
     end
     return data[1]
 end
 
 function add_observable!(s::MTBatchSampler, name, obs)
-    Threads.@threads for i=1:Threads.nthreads()
+    Threads.@threads for i=1:length(s.samplers)
         add_observable!(s.samplers[i], name, obs)
     end
     return s
@@ -79,9 +80,9 @@ end
 
 function _par_precondition!(data, params::SR, iter_n)
     res_data = Vector{Any}()
-    Threads.@threads for i=1:Threads.nthreads()
-        res = _precondition!(data[Threads.threadid()], params, iter_n)
-        Threads.threadid() == 1 && push!(res_data, res)
+    Threads.@threads for i=1:length(data)
+        res = _precondition!(data[i], params, iter_n)
+        i == 1 && push!(res_data, res)
     end
     return res_data[1]
 end
