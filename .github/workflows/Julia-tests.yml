@@ -21,7 +21,7 @@ jobs:
         uses: actions/cache@latest
         with:
           path: $HOME/mpich
-          key: ${{ runner-os }}-mpi
+          key: ${{ runner.os }}-mpi
       - name: Install MPI
         if: steps.cache-mpi.outputs.cache-hit != 'true'
         run: sh ./conf/travis-install-mpi.sh mpich
