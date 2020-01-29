@@ -16,9 +16,16 @@ jobs:
         uses: julia-actions/setup-julia@latest
         with:
           version: ${{ matrix.julia-version }}
-      - name: "Install MPI"
+      - name: Cache MPI installation
+        id: cache-mpi
+        uses: actions/cache@latest
+        with:
+          path: $HOME/mpich
+          key: ${{ runner-os }}-mpi
+      - name: Install MPI
+        if: steps.cache-mpi.outputs.cache-hit != 'true'
         run: sh ./conf/travis-install-mpi.sh mpich
-      - name: "Install Julia dependencies"
-        run: echo $JULIA_MPI_PATH && export JULIA_MPI_PATH=$HOME/mpich && julia --color=yes --project=@. -e 'using Pkg; Pkg.instantiate()'
-      - name: "Run Tests"
+      - name: Install Julia dependencies
+        run: export JULIA_MPI_PATH=$HOME/mpich && julia --color=yes --project=@. -e 'using Pkg; Pkg.instantiate()'
+      - name: Run Tests
         run: julia --color=yes --project=@. -e "using Pkg; Pkg.test(coverage=true)"
