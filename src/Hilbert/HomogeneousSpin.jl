@@ -1,8 +1,11 @@
 export HomogeneousSpin
 
-mutable struct HomogeneousSpin{D} <: AbstractHilbert
+mutable struct HomogeneousSpin{D,C} <: AbstractHilbert
     n_sites::Int
     shape::Vector{Int}
+
+    # Constrain on total spin number
+    Sz_total::Int
 end
 
 """
@@ -10,14 +13,27 @@ end
 
 Constructs the Hilbert space of `N` identical spins-S (by default 1//2).
 """
-function HomogeneousSpin(n_sites, S::Rational=1//2)
+function HomogeneousSpin(n_sites, S::Rational=1//2; total_Sz::Union{Nothing,Rational}=nothing)
     @assert S.den == 2 || S.den == 1
     if S.den == 2
         N = S.num +1
     elseif S.den == 1
         N = 2*S.num +1
     end
-    return HomogeneousSpin{N}(n_sites, fill(N, n_sites))
+
+    constrained = isnothing(total_Sz) ?  false : true
+    if constrained
+        sz_tot = 2*total_Sz
+        if sz_tot > N
+            throw(ErrorException("tota_Sz is too big"))
+        end
+        throw(ErrorException("Still not implemented!"))
+    else
+        total_Sz = 0
+    end
+
+    return HomogeneousSpin{N,constrained}(n_sites, fill(N, n_sites),
+                                          total_Sz)
 end
 
 @inline nsites(h::HomogeneousSpin) = h.n_sites
@@ -28,6 +44,9 @@ end
 @inline spacedimension(h::HomogeneousSpin) = local_dim(h)^nsites(h)
 @inline indexable(h::HomogeneousSpin) = spacedimension(h) != 0
 @inline is_homogeneous(h::HomogeneousSpin) = true
+
+@inline is_contrained(h::HomogeneousSpin{H,C}) where {H,C} = C
+@inline constraint_limit(h::HomogeneousSpin) = h.Sz_total
 
 state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousSpin{N}) where N =
     similar(arrT, T, nsites(h)) .= -(N-1)
@@ -90,6 +109,16 @@ function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::Homoge
     σ .= floor.(σ.*N).*2 .- (N-1)
     return σ
 end
+
+# Specialized for constrained fock spaces
+function Random.rand!(rng::AbstractRNG, σ::AStateBatch, h::HomogeneousSpin{N, true}) where N
+    for i=batch_size(σ)
+        rand!(rng, unsafe_get_batch(σ, i), h)
+    end
+
+    return σ
+end
+
 
 function toint(σ::AState, h::HomogeneousSpin{N}) where N
     tot = 0

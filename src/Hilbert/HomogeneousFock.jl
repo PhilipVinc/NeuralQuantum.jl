@@ -1,17 +1,32 @@
 export HomogeneousFock
 
-mutable struct HomogeneousFock{D} <: AbstractHilbert
+mutable struct HomogeneousFock{D,C} <: AbstractHilbert
     n_sites::Int
     shape::Vector{Int}
+
+    # Constrain on total number of excitations
+    n_exc::Int
 end
 
 """
-    HomogeneousFock(N, m)
+    HomogeneousFock(N, m; excitations=N*m)
 
 Constructs the Hilbert space of `N` identical modes with `m` levels.
+If "n_exc" is set, then the total number of excitations is bounded when
+generating a state.
+
+!!!note
+    If using a sampler that does not respect the symmetries of the system,
+    the n_exc will not be respected during sampling.
 """
-HomogeneousFock(n_sites, hilb_dim) =
-    HomogeneousFock{hilb_dim}(n_sites, fill(hilb_dim, n_sites))
+function HomogeneousFock(n_sites, hilb_dim; excitations = -1)
+    constrained = excitations >= 0 ? true : false
+    if constrained && excitations > n_sites*(hilb_dim-1)
+        throw(ErrorException("Constrain is useless: bigger than total number of allowed particles."))
+    end
+    HomogeneousFock{hilb_dim,constrained}(n_sites, fill(hilb_dim, n_sites),
+                                          excitations)
+end
 
 @inline nsites(h::HomogeneousFock) = h.n_sites
 @inline local_dim(h::HomogeneousFock{D}) where D = D
@@ -21,6 +36,9 @@ HomogeneousFock(n_sites, hilb_dim) =
 @inline spacedimension(h::HomogeneousFock) = local_dim(h)^nsites(h)
 @inline indexable(h::HomogeneousFock) = spacedimension(h) != 0
 @inline is_homogeneous(h::HomogeneousFock) = true
+
+@inline is_contrained(h::HomogeneousFock{H,C}) where {H,C} = C
+@inline constraint_limit(h::HomogeneousFock) = h.n_exc
 
 state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousFock) = similar(arrT, T, nsites(h)) .= 0.0
 
@@ -40,7 +58,7 @@ function flipat!(rng::AbstractRNG, σ::AState, h::HomogeneousFock{N}, i) where N
     new_val =  floor(rand(rng, T)*(N-1))
     new_val = new_val + (new_val >= old_val)
     σ[i]    = new_val
-    
+
     return old_val, new_val
 end
 
@@ -85,6 +103,36 @@ function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::Homoge
     σ .= floor.(σ)
     return σ
 end
+
+# Specialized for constrained fock spaces
+function Random.rand!(rng::AbstractRNG, σ::AStateBatch, h::HomogeneousFock{N, true}) where N
+    for i=batch_size(σ)
+        rand!(rng, unsafe_get_batch(σ, i), h)
+    end
+
+    return σ
+end
+
+function Random.rand!(rng::AbstractRNG, σ::AState, h::HomogeneousFock{N, true}) where N
+    T = eltype(σ)
+    n_max = constraint_limit(h)
+
+    σ .= zero(eltype(σ))
+
+    # add all constraints one by one
+    for i=1:constraint_limit(h)
+        # select a (non full) site to which it should be added
+        site = rand(rng, 1:nsites(h))
+        while σ[site] == N-1
+            site = rand(rng, 1:N)
+        end
+        println(site)
+        σ[site] += 1
+    end
+
+    return σ
+end
+
 
 function toint(σ::AState, h::HomogeneousFock{N}) where N
     tot = 0
