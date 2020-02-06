@@ -105,8 +105,7 @@ end
 
 
 function Base.transpose(ops::KLocalOperatorSum)
-    new_sites  = similar(ops.sites)
-    new_sites .= ops.sites
+    new_sites  = copy(ops.sites)
 
     new_ops    = eltype(operators(ops))[]
     for op = operators(ops)

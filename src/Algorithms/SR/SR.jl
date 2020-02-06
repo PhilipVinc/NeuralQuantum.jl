@@ -67,10 +67,10 @@ Base.show(io::IO, mm::MIME"text/plain", sr::SR) = begin
     end
 end
 
-function algorithm_cache(alg::SR, prob, net)
+function algorithm_cache(alg::SR, prob, net, par_cache)
     if is_iterative(alg)
-        _sr_iterative_cache(alg, prob, net)
+        _sr_iterative_cache(alg, prob, net, par_cache)
     else
-        _sr_direct_cache(alg, prob, net)
+        _sr_direct_cache(alg, prob, net, par_cache)
     end
 end

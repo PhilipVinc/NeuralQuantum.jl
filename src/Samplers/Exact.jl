@@ -23,20 +23,28 @@ ExactSampler(n_samples; seed=rand(UInt)) =
 ## Cache
 mutable struct ExactSamplerCache{H,A<:AbstractRNG,T} <: SamplerCache{ExactSampler}
     hilb::H
+    loc_samples_length::Int
 
     rng::A
     steps_done::Int
     pdf::Vector{T}
 end
 
-function _sampler_cache(s::ExactSampler, v, hilb, net, part)
+function _sampler_cache(s::ExactSampler, v, hilb, net, par_cache)
     if net isa CachedNet
         if net.cache isa NNBatchedCache
-            return _sampler_batched_cache(s, v, hilb, net, part)
+            return _sampler_batched_cache(s, v, hilb, net, par_cache)
         end
     end
+
+    loc_chain_length = Int(ceil(s.samples_length/num_workers(par_cache)))
+
+    loc_seed         = worker_local_seed(s.seed, par_cache)
+    rng              = build_rng_generator_T(prob, loc_seed)
+
     ExactSamplerCache(hilb,
-                      MersenneTwister(s.seed),
+                      loc_chain_length,
+                      rng,
                       0,
                       zeros(real(eltype(v)), spacedimension(hilb)))
 end
@@ -57,7 +65,7 @@ end
 
 chain_length(s::ExactSampler, c::ExactSamplerCache) = s.samples_length
 
-done(s::ExactSampler, σ, c) = c.steps_done >= s.samples_length
+done(s::ExactSampler, σ, c) = c.steps_done >= chain_length(s, c)
 
 function samplenext!(σ, s::ExactSampler, net::Union{MatrixNet,KetNet}, c)
     # Check termination condition, and return if verified
@@ -81,81 +89,47 @@ function sample_from_distr(number::Real, probs::Vector)
     end
 end
 
-
-######## Multithreaded
-function _mt_recompute_sampler_params!(samplers, s::ExactSampler)
-    nt = Threads.nthreads()
-    _n_samples = Int(ceil(s.samples_length / nt))
-    rng = MersenneTwister(s.seed)
-    for i=1:Threads.nthreads()
-        samplers[i] = ExactSampler(_n_samples, seed=rand(rng, UInt))
-    end
-end
-
-function _mt_sampler_cache(s::MTSampler{T}, v, net, ::ParallelThreaded) where T<:ExactSampler
-    pdf = zeros(real(eltype(v)), spacedimension(v))
-    rng = MersenneTwister(s.seed)
-    seeds = rand(UInt, Threads.nthreads())
-    scs = Vector{ExactSamplerCache{typeof(rng), eltype(pdf)}}()
-    for i=1:Threads.nthreads()
-        push!(scs, ExactSamplerCache(MersenneTwister(seeds[i]), 0, pdf))
-    end
-    return MTSamplerCache(s, scs, net, v)
-end
-
-function mt_init_sampler(s::MTSampler{T}, net::Union{MatrixNet,KetNet}, σ, c::MTSamplerCache) where T<:ExactSampler
-    np     = Threads.nthreads()
-
-    Threads.@threads for i=1:Threads.nthreads()
-        np     = Threads.nthreads()
-        rank   = i - 1
-        _σ = c.σs[i]
-        _c = c.caches[i]
-        _n = c.nets[i]
-        n_min, extra = divrem(spacedimension(_σ), np)
-        iter_length  = n_min + (rank < extra ? 1 : 0)
-        iter_start   = n_min * rank + min(rank, extra) + 1
-        iter_end     = iter_start + iter_length - 1
-
-        for j=iter_start:iter_end
-            set!(_σ, _c.hilb, j)
-            _c.pdf[j] = exp(log_prob_ψ(_n, _σ))
-        end
-    end
-
-    c.caches[1].pdf ./= sum(c.caches[1].pdf)
-    cumsum!(c.caches[1].pdf, c.caches[1].pdf)
-
-    Threads.@threads for i=1:np
-        _σ   = c.σs[i]
-        _c   = c.caches[i]
-        _net = c.nets[i]
-        _c.steps_done = 0
-
-        samplenext!(_σ, sampler_list(s)[i], _net, _c)
-    end
-    return c
-end
-
-
 ## Batched
 
-mutable struct ExactSamplerBatchedCache{H,A<:AbstractRNG,T,V} <: SamplerCache{ExactSampler}
+mutable struct ExactSamplerBatchedCache{H,A<:AbstractRNG,I,Ia,T,V,Pc} <: SamplerCache{ExactSampler}
     hilb::H
+    loc_samples_length::Int
+
+    loc_hilb_numbers::I
+    all_hilb_numbers::Ia
 
     rng::A
     steps_done::Int
     pdf::Vector{T}
 
     logψ::V
+
+    parallel_cache::Pc
 end
 
-_sampler_batched_cache(s::ExactSampler, v, hilb, net, part) =
+function _sampler_batched_cache(s::ExactSampler, v, hilb, net, par_cache)
+    loc_chain_length = Int(ceil(s.samples_length/num_workers(par_cache)))
+
+    loc_seed         = worker_local_seed(s.seed, par_cache)
+    rng              = build_rng_generator_T(out_similar(net), loc_seed)
+
+    # all blocks of iterations per worker
+    all_hilb_numbers = [_iterator_blocks(1:spacedimension(hilb),
+                        i,
+                        num_workers(par_cache)) for i=1:num_workers(par_cache)]
+    loc_hilb_iter    = my_block(all_hilb_numbers, par_cache)
+    all_hilb_numbers = Int32.(length.(all_hilb_numbers))
+
     ExactSamplerBatchedCache(hilb,
-                      MersenneTwister(s.seed),
-                      0,
-                      zeros(real(out_type(net)), spacedimension(hilb)),
-                      out_similar(net))
+                             loc_chain_length,
+                             loc_hilb_iter,
+                             all_hilb_numbers,
+                             rng,
+                             0,
+                             zeros(real(out_type(net)), spacedimension(hilb)),
+                             out_similar(net),
+                             par_cache)
+end
 
 ##
 function init_sampler!(sampler::ExactSampler,
@@ -163,16 +137,18 @@ function init_sampler!(sampler::ExactSampler,
                        σ, c::ExactSamplerBatchedCache)
     batch_sz = batch_size(net)
     # Compute the distribution
-    for batch_i=Iterators.partition(1:spacedimension(c.hilb), batch_sz)
+    for batch_i=Iterators.partition(c.loc_hilb_numbers, batch_sz)
         for (i, h_i)=enumerate(batch_i)
             set!(unsafe_get_batch(σ, i), c.hilb, h_i)
         end
         log_prob_ψ!(c.logψ, c.logψ, net, σ)
 
         for (i, h_i)=enumerate(batch_i)
-            c.pdf[h_i] = c.logψ[i]
+            c.pdf[h_i] = exp.(c.logψ[i])
         end
     end
+    worker_allgatherv!(c.pdf, c.all_hilb_numbers, c.parallel_cache)
+
     #c.pdf ./= sum(c.pdf)
     tot = sum(c.pdf)
     cumsum!(c.pdf, c.pdf)
@@ -184,7 +160,7 @@ function init_sampler!(sampler::ExactSampler,
     return c
 end
 
-chain_length(s::ExactSampler, c::ExactSamplerBatchedCache) = s.samples_length
+chain_length(s::ExactSampler, c::ExactSamplerBatchedCache) = c.loc_samples_length
 
 function samplenext!(σ_out::T, σ_in::T,
                      s::ExactSampler,

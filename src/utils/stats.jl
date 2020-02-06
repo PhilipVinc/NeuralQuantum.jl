@@ -7,7 +7,11 @@ struct Measurement
     R
 end
 
-function stat_analysis(vals::AbstractMatrix)
+stat_analysis(vals::AbstractMatrix, par_data::NotParallel) =
+    _single_stat_analysis(vals)
+
+
+function _single_stat_analysis(vals::AbstractMatrix)
     tmp = similar(vals, size(vals, 1))
     n    = size(vals, 1)
     L    = size(vals, 2)
@@ -16,6 +20,33 @@ function stat_analysis(vals::AbstractMatrix)
 
     μ_chains = mean!(tmp, vals)
     μ        = mean(μ_chains)
+
+    var_chains = var(vals, dims=2, mean=μ_chains)
+    var_μ_ch   = var(μ_chains)
+    var_μ      = var(vals, mean=μ)
+
+
+    μ_err = sqrt(var_μ_ch/n)
+    μ_var = mean(var_chains)
+
+    t = var_μ_ch/var_μ
+    corr = max(0.0, 0.5 * ( t * L - 1))
+    R = sqrt((L-1)/L + t)
+
+    return Measurement(μ,
+            μ_err, μ_var, corr, R)
+end
+
+function stat_analysis(vals::AbstractMatrix, par_data)
+    tmp = similar(vals, size(vals, 1))
+    n    = size(vals, 1)
+    L    = size(vals, 2)
+
+    tmp = similar(vals, size(vals, 1))
+    #println("Stat $(Threads.threadid())")
+
+    μ_chains = mean!(tmp, vals)
+    μ        = workers_mean(μ_chains, par_data)
 
     var_chains = var(vals, dims=2, mean=μ_chains)
     var_μ_ch   = var(μ_chains)

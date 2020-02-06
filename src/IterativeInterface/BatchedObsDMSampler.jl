@@ -1,6 +1,6 @@
 export BatchedSampler
 
-mutable struct BatchedObsDMSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, LC, Lv} <: AbstractIterativeSampler
+mutable struct BatchedObsDMSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, LC, Lv, Pd} <: AbstractIterativeSampler
     observables::Dict
 
     bnet::BN
@@ -19,18 +19,23 @@ mutable struct BatchedObsDMSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, LC, Lv} <: Abs
     local_vals::Lv
 
     results::Dict
+
+    parallel_cache::Pd
 end
 
 function BatchedObsDMSampler(bnet,
                         sampl,
                         hilb_doubled;
                         batch_sz=2^4,
-                        local_batch_sz=batch_sz)
+                        local_batch_sz=batch_sz,
+                        par_type=automatic_parallel_type())
     hilb_ph        = physical(hilb_doubled)
+
+    par_cache      = parallel_execution_cache(par_type)
 
     #bnet           = cached(net, batch_sz)
     v              = state(hilb_ph, bnet)
-    sampler_cache  = init_sampler!(sampl, bnet, hilb_ph, v)
+    sampler_cache  = init_sampler!(sampl, bnet, hilb_ph, v, par_cache)
 
     ch_len         = chain_length(sampl, sampler_cache)
 
@@ -45,7 +50,8 @@ function BatchedObsDMSampler(bnet,
             sampl, sampler_cache, samples,
             ψvals, ∇vals, ∇vec,
             local_acc, Llocal_vals,
-            Dict())
+            Dict(),
+            par_cache)
 
     return nq
 end
@@ -59,12 +65,7 @@ function compute_observables(is::BatchedObsDMSampler)
     batch_sz       = size(is.local_vals, 1)
 
     # Sample phase
-    init_sampler!(is.sampler, is.bnet, unsafe_get_el(is.samples, 1),
-                  is.sampler_cache)
-    for i=1:ch_len-1
-        !samplenext!(unsafe_get_el(is.samples, i+1), unsafe_get_el(is.samples, i),
-                        is.sampler, is.bnet, is.sampler_cache) && break
-    end
+    _sample_state!(is)
 
     # Compute logψ and ∇logψ
     logψ!(is.ψvals, is.bnet, is.samples)
@@ -80,7 +81,7 @@ function compute_observables(is::BatchedObsDMSampler)
                 is.local_vals[j, i] = O_loc
             end
         end
-        is.results[name] = stat_analysis(is.local_vals)
+        is.results[name] = stat_analysis(is.local_vals, is.parallel_cache)
     end
 
     return is.results

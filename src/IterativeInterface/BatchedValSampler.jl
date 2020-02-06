@@ -1,6 +1,6 @@
 export BatchedSampler
 
-mutable struct BatchedValSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Pc} <: AbstractIterativeSampler
+mutable struct BatchedValSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Pc, Pd} <: AbstractIterativeSampler
     bnet::BN
     Ĉ::P # the operator defining the observable to minimise
 
@@ -19,6 +19,8 @@ mutable struct BatchedValSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Pc}
     precond_cache::Pc
 
     observables_sampler
+
+    parallel_cache::Pd
 end
 
 function BatchedValSampler(net,
@@ -26,14 +28,17 @@ function BatchedValSampler(net,
                         prob,
                         algo=prob;
                         batch_sz=2^4,
-                        local_batch_sz=batch_sz)
+                        local_batch_sz=batch_sz,
+                        par_type=automatic_parallel_type())
     if net isa CachedNet
         throw("Only takes standard network.")
     end
 
+    par_cache      = parallel_execution_cache(par_type)
+
     bnet           = cached(net, batch_sz)
     v              = state(prob, bnet)
-    sampler_cache  = init_sampler!(sampl, bnet, basis(prob), v)
+    sampler_cache  = init_sampler!(sampl, bnet, basis(prob), v, par_cache)
 
     ch_len         = chain_length(sampl, sampler_cache)
 
@@ -45,35 +50,22 @@ function BatchedValSampler(net,
     local_acc      = AccumulatorObsScalar(net, basis(prob), v, local_batch_sz)
     Llocal_vals    = collect(similar(ψvals, size(ψvals)[2:end]...)) #ensure it's on cpu
 
-    precond        = algorithm_cache(algo, prob, net)
+    precond        = algorithm_cache(algo, prob, net, par_cache)
 
     obs            = BatchedObsKetSampler(samples, ψvals, local_acc)
 
     nq = BatchedValSampler(bnet, prob,
             sampl, sampler_cache, samples,
             ψvals, ∇vals, ∇vecs, ∇vec_avg,
-            local_acc, Llocal_vals, precond, obs)
+            local_acc, Llocal_vals, precond, obs,
+            par_cache)
 
     return nq
 end
 
-function sample!(is::BatchedValSampler)
+function _sample_compute_obs!(is::BatchedValSampler)
     ch_len         = chain_length(is.sampler, is.sampler_cache)
     batch_sz       = size(is.local_vals, 1)
-
-    # Monte-Carlo sampling
-    σ_old = unsafe_get_el(is.samples, 1)
-
-    init_sampler!(is.sampler, is.bnet, σ_old, is.sampler_cache)
-    for i=1:ch_len-1
-        σ_next = unsafe_get_el(is.samples, i+1)
-        !samplenext!(σ_next, σ_old,
-                        is.sampler, is.bnet, is.sampler_cache) && break
-        σ_old = σ_next
-    end
-
-    # Compute logψ and ∇logψ
-    logψ_and_∇logψ!(is.∇vals, is.ψvals, is.bnet, is.samples)
 
     # If we have gpu, this thing is indexed by value so better
     # to copy it to the cpu first in one go...
@@ -97,14 +89,14 @@ function sample!(is::BatchedValSampler)
     end
 
     # Perform some simple analysis to estimate error and autocorrelations
-    L_stat = stat_analysis(is.local_vals)
+    L_stat = stat_analysis(is.local_vals, is.parallel_cache)
 
-    # Center the gradient so that it has zero-average
-    # do it for every block of gradients / cogradients
-    for (∇vec_avg, ∇vals_vec)=zip(is.∇vec_avg, is.∇vals_vec)
-        mean!(∇vec_avg, ∇vals_vec) # MPI
-        ∇vals_vec .-= ∇vec_avg
-    end
+    return L_stat
+end
+
+function _compute_gradient!(is::BatchedValSampler)
+    ch_len         = chain_length(is.sampler, is.sampler_cache)
+    batch_sz       = size(is.local_vals, 1)
 
     # Flatten the batches and the iterations
     ∇vr = reshape(is.∇vals_vec[1], :, ch_len*batch_sz)
@@ -117,11 +109,31 @@ function sample!(is::BatchedValSampler)
     # Compute the gradient
     ∇C  = Ĉr*∇vr'
     ∇C ./= (ch_len*batch_sz) # MPI
+    workers_mean!(∇C, is.parallel_cache)
+
+    return ∇C, ∇vr
+end
+
+function sample!(is::BatchedValSampler; sample = true)
+    # Sample the new configurations
+    sample && _sample_state!(is)
+
+    # Compute logψ and ∇logψ
+    logψ_and_∇logψ!(is.∇vals, is.ψvals, is.bnet, is.samples)
+
+    # Compute the cost function
+    L_stat = _sample_compute_obs!(is)
+
+    # Center the gradient
+    _center_gradient!(is)
+
+    # Compute the cost-gradient for optimization
+    ∇C, ∇vr = _compute_gradient!(is)
 
     # Setup the algorithm.
     # IF we are doing gradient descent, this does nothing, otherwise initializes
     # the SR/Natural gradient structures.
-    setup_algorithm!(is.precond_cache, reshape(∇C,:), ∇vr)
+    setup_algorithm!(is.precond_cache, reshape(∇C,:), ∇vr, is.parallel_cache)
 
     return L_stat, is.precond_cache
 end

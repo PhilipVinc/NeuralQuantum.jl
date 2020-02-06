@@ -12,30 +12,33 @@ shift!(S::SrMat, α) = (S.shift = α; return S)
 Base.:+(S::SrMat, α::LinearAlgebra.UniformScaling) = add!(copy(S), α.λ)
 
 # Constructor
-SrMatrix(T, O::AbstractMatrix, α::Number=0) = begin
+SrMatrix(T, O::AbstractMatrix, α::Number, args...) = begin
     if T <: Real
-        S = SrMatrixR(O, α)
+        S = SrMatrixR(O, α, args...)
     else
-        S = SrMatrixC(O, α)
+        S = SrMatrixC(O, α, args...)
     end
     return S
 end
 
-mutable struct SrMatrixC{T,Tv<:AbstractMatrix{T},Ct,Cr} <: SrMat{T}
+mutable struct SrMatrixC{T,Tv<:AbstractMatrix{T},Ct,Cr,Pc} <: SrMat{T}
     O::Tv
     shift::T
 
     # cache
     ṽ::Ct
     res::Cr
+    parallel_cache::Pc
 end
 
-SrMatrixC(O::AbstractMatrix, α::Number=0) =
+SrMatrixC(O::AbstractMatrix, α::Number=0, par_cache=NotParallel()) =
     SrMatrixC(O, convert(eltype(O), α),
-              similar(O, size(O,2)), similar(O, size(O,1)))
+              similar(O, size(O,2)), similar(O, size(O,1)),
+              par_cache)
 
 Base.copy(S::SrMatrixC) = SrMatrixC(S.O, S.shift,
-                                    S.ṽ, S.res)
+                                    S.ṽ, S.res,
+                                    S.parallel_cache)
 
 Base.size(S::SrMatrixC) = (size(S.O,1), size(S.O,1))
 Base.isreal(S::SrMatrixC) = isreal(S.O)
@@ -64,7 +67,9 @@ function LinearAlgebra.mul!(C::AbstractVector, S::SrMatrixC{T}, F::AbstractVecto
     # calculation
     mul!(ṽ, O', F)
     mul!(res, O, ṽ)
-    N = size(O,2)
+    workers_sum!(res, S.parallel_cache)
+
+    N = size(O,2) * num_workers(S.parallel_cache)
 
     if β == 0
         C .= α .* (F .* shift .+ res ./ N)
@@ -76,7 +81,7 @@ end
 
 
 ##
-mutable struct SrMatrixR{T,Tv<:AbstractMatrix{T},Ct,Cr} <: SrMat{T}
+mutable struct SrMatrixR{T,Tv<:AbstractMatrix{T},Ct,Cr,Pc} <: SrMat{T}
     Oᵣ::Tv
     Oᵢ::Tv
     shift::T
@@ -84,17 +89,19 @@ mutable struct SrMatrixR{T,Tv<:AbstractMatrix{T},Ct,Cr} <: SrMat{T}
     # cache
     ṽ::Ct
     res::Cr
+    parallel_cache::Pc
 end
 
-SrMatrixR(O::AbstractMatrix, α::Number=0) =
+SrMatrixR(O::AbstractMatrix, α::Number=0, par_cache=NotParallel()) =
     SrMatrixR(real(O),
               imag(O),
               convert(eltype(O), α),
               similar(O, real(eltype(O)), size(O,2)),
-              similar(O, size(O,1)))
+              similar(O, size(O,1)),
+              par_cache)
 
 Base.copy(S::SrMatrixR) = SrMatrixR(S.Oᵣ, S.Oᵢ, S.shift,
-                                    S.ṽ, S.res)
+                                    S.ṽ, S.res, S.parallel_cache)
 
 Base.size(S::SrMatrixR) = (size(S.Oᵣ,1), size(S.Oᵣ,1))
 
@@ -129,8 +136,9 @@ function LinearAlgebra.mul!(C::AbstractVector, S::SrMatrixR{T}, F::AbstractVecto
     # calculation imaginary part
     mul!(ṽ, Oᵢ', F)
     mul!(res, Oᵢ, ṽ, one(eltype(ṽ)), one(eltype(ṽ)))
+    workers_sum!(res, S.parallel_cache)
 
-    N = size(Oᵣ,2)
+    N = size(Oᵣ,2) * num_workers(S.parallel_cache)
 
     if β == 0
         C .= α .* (F .* shift .+ res ./ N)

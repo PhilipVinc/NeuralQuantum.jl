@@ -42,6 +42,7 @@ end
 ## Cache
 mutable struct MetropolisSamplerCache{A<:AbstractRNG,RC,H,S,RV,V,M} <: SamplerCache{MetropolisSampler}
     rng::A
+    loc_chain_length::Int
     steps_done::Int
     steps_accepted::Int
     rule_cache::RC
@@ -56,24 +57,27 @@ mutable struct MetropolisSamplerCache{A<:AbstractRNG,RC,H,S,RV,V,M} <: SamplerCa
     mask::M
 end
 
-function _sampler_cache(s::MetropolisSampler, v, hilb, net, part)
+function _sampler_cache(s::MetropolisSampler, v, hilb, net, par_cache)
+    loc_chain_length = Int(ceil(s.chain_length/num_workers(par_cache)))
+    loc_seed         = worker_local_seed(s.seed, par_cache)
+
     logψ_σ  = real(out_similar(net))
     logψ_σp = real(out_similar(net))
     out     = out_similar(net)
     prob    = logψ_σp - logψ_σ
     mask    = similar(logψ_σ, Bool)
 
-    rng     = build_rng_generator_T(prob, s.seed)
+    rng     = build_rng_generator_T(prob, loc_seed)
 
-    MetropolisSamplerCache(rng, 0, 0,
-                      RuleSamplerCache(s.rule, s, v, net, part),
+    MetropolisSamplerCache(rng, loc_chain_length, 0, 0,
+                      RuleSamplerCache(s.rule, s, v, net, par_cache),
                       hilb, deepcopy(v),
                       logψ_σ, logψ_σp, out, prob, mask)
 end
 
 # Construct the cache of a specific rule.
 # By default rules have no cache.
-RuleSamplerCache(r::MCMCRule, s, v, net, part) = nothing
+RuleSamplerCache(r::MCMCRule, s, v, net, par_cache) = nothing
 rule(s::MetropolisSampler) = s.rule
 rule_cache(sc::MetropolisSamplerCache) = sc.rule_cache
 
@@ -95,9 +99,9 @@ end
 init_sampler_rule_cache!(rc, s, net, σ, c) =
     nothing
 
-chain_length(s::MetropolisSampler, c::MetropolisSamplerCache) = s.chain_length
+chain_length(s::MetropolisSampler, c::MetropolisSamplerCache) = c.loc_chain_length
 
-done(s::MetropolisSampler, σ, c) = c.steps_done >= s.chain_length-1
+done(s::MetropolisSampler, σ, c) = c.steps_done >= chain_length(s, c)-1
 
 function samplenext!(σ_out::T, σ_in::T, s::MetropolisSampler,
                      net::Union{MatrixNet,KetNet}, c) where {T<:Union{AStateBatch, ADoubleStateBatch}}

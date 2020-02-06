@@ -1,4 +1,4 @@
-mutable struct BatchedObsKetSampler{S,V,O,A,R}
+mutable struct BatchedObsKetSampler{S,V,O,A,R,Pd}
     observables::Dict
 
     samples::S
@@ -8,19 +8,24 @@ mutable struct BatchedObsKetSampler{S,V,O,A,R}
     accum::A
 
     results::R
+
+    parallel_cache::Pd
 end
 
-function BatchedObsKetSampler(samples, ψvals, accum)
+function BatchedObsKetSampler(samples, ψvals, accum;
+                              par_type=automatic_parallel_type())
 
     Oloc_vals    = similar(ψvals, size(ψvals)[2:end]...)
+
+    par_cache    = parallel_execution_cache(par_type)
 
     is = BatchedObsKetSampler(Dict(),
                               samples,
                               ψvals,
                               Oloc_vals,
                               accum,
-                              Dict()
-                              )
+                              Dict(),
+                              par_cache)
     return is
 end
 
@@ -50,5 +55,5 @@ function compute_observable(is::BatchedObsKetSampler, Ô::AbsLinearOperator)
         end
     end
 
-    return stat_analysis(is.Oloc_vals)
+    return stat_analysis(is.Oloc_vals, is.parallel_cache)
 end

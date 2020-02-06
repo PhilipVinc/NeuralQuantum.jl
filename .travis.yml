@@ -6,14 +6,42 @@ os:
 
 julia:
     - 1.3
+    - 1.4
     - nightly
+
+env:
+  - MPI_IMPL=mpich
 
 matrix:
     allow_failures:
+        - julia: 1.4
         - julia: nightly
-        
+
 notifications:
     email: false
+
+cache:
+  directories:
+  - $HOME/.ccache
+  - $HOME/.julia/registries # can we cache all of .julia?
+
+before_install:
+  - sh ./conf/travis-install-mpi.sh $MPI_IMPL
+  - |
+    if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+      if [ "$MPI_IMPL" == "intelmpi" ]; then
+        source $HOME/intel/compilers_and_libraries/linux/mpi/intel64/bin/mpivars.sh release
+      else
+        export JULIA_MPI_PATH=$HOME/$MPI_IMPL;
+      fi
+    fi
+# Work around OpenMPI attempting to create overly long temporary
+# file names - and erroring as a result
+  - export TMPDIR=/tmp
+# Work around MacOS/OpenMPI issue:
+#   https://github.com/open-mpi/ompi/issues/6518
+#   https://github.com/open-mpi/ompi/issues/5798
+  - export OMPI_MCA_btl=self,tcp
 
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
@@ -21,13 +49,18 @@ script:
                             Pkg.activate();
                             println("Activate");
                             Pkg.instantiate();
-                            println("Instantiate");                            
+                            println("Instantiate");
                             Pkg.test(coverage=true)';
 after_success:
-    - julia -e 'using Pkg; cd(Pkg.dir("NeuralQuantum")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+    - julia -e 'using Pkg; cd(Pkg.dir("NeuralQuantum"));
+                            Pkg.add("Coverage");
+                            using Coverage;
+                            Codecov.submit(Codecov.process_folder())'
+
 
 jobs:
   include:
+    - stage: "Tests"
     - stage: "Documentation"
       julia: 1.3
       os: linux
@@ -39,3 +72,11 @@ jobs:
                                     Pkg.instantiate()'
         - julia --project=docs/ docs/make.jl
       after_success: skip
+    - stage: "Coverage"
+      julia: 1.3
+      os: linux
+      after_success:
+        - julia -e 'using Pkg; cd(Pkg.dir("NeuralQuantum"));
+                                Pkg.add("Coverage");
+                                using Coverage;
+                                Codecov.submit(Codecov.process_folder())'

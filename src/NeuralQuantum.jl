@@ -8,6 +8,10 @@ using GPUArrays
 using CuArrays
 const use_cuda = Ref(false)
 
+using MPI
+include("External/TPI/TPI.jl")
+using .TPI
+
 # Standard Precision used
 const STD_REAL_PREC = Float32
 
@@ -54,7 +58,12 @@ abstract type AbstractAccumulator end
 abstract type ParallelType end
 struct NotParallel <: ParallelType end
 struct ParallelThreaded <: ParallelType end
+struct ParallelMPI <: ParallelType end
 export NotParallel, ParallelThreaded
+
+# Prallelization
+include("Parallel/base_parallel.jl")
+include("Parallel/not_parallel.jl")
 
 # Various utility functions
 include("utils/math.jl")
@@ -166,7 +175,6 @@ include("Algorithms/Gradient/Gradient_batched.jl")
 
 # Sampling
 include("Samplers/base_samplers.jl")
-include("Samplers/base_samplers_parallel.jl")
 export cache, init_sampler!, done, samplenext!
 export get_sampler, sampler_list, multithread
 
@@ -203,6 +211,11 @@ include("IterativeInterface/build_Batched.jl")
 export sample!, add_observable!, compute_observables
 
 include("utils/num_grad.jl")
+
+# Parallelization types
+include("Parallel/MPI/mpi.jl")
+include("Parallel/Threads/threads_base.jl")
+include("Parallel/Threads/threads_wrappers.jl")
 
 # gpu stuff
 include("GPU/gpustates.jl")

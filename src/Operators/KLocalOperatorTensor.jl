@@ -201,3 +201,11 @@ is_same_operator(l::KLocalOperatorTensor, r::KLocalOperatorTensor) =
 
 is_same_operator(::Nothing, ::Nothing) = true
 is_same_operator(l,r) = false
+
+Base.eltype(::T) where {T<:KLocalOperatorTensor} = eltype(T)
+Base.eltype(T::Type{<:KLocalOperatorTensor{A,B,C}}) where {A,B,C<:KLocalOperator} =
+    eltype(C)
+Base.eltype(T::Type{<:KLocalOperatorTensor{A,B,C,D}}) where {A,B,C,D<:KLocalOperator} =
+    eltype(D)
+Base.eltype(T::Type{<:KLocalOperatorTensor{A,B,C,D}}) where {A,B,C<:KLocalOperator,D<:KLocalOperator} =
+    eltype(C)

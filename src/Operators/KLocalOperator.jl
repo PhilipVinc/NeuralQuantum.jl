@@ -137,12 +137,12 @@ conn_type(op::KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}) where {H, SV, M, Vel, V
     OpConnection{Vel, eltype(Vtc), eltype(Vtv)}
 
 # Copy
-function duplicate(op::KLocalOperator)
+duplicate(op::KLocalOperator) = copy(op)
+Base.copy(op::KLocalOperator) =
     KLocalOperator(basis(op), deepcopy(op.sites), deepcopy(op.hilb_dims), deepcopy(op.mat),
                     deepcopy(op.mel), deepcopy(op.to_change),
                     deepcopy(op.new_values), deepcopy(op.op_conns),
                     deepcopy(op.new_indices))
-end
 
 ##
 function row_valdiff!(conn::OpConnection, op::KLocalOperator, v::AState)
