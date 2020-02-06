@@ -112,7 +112,7 @@ end
 
 # Specialized for constrained fock spaces
 function Random.rand!(rng::AbstractRNG, σ::AStateBatch, h::HomogeneousSpin{N, true}) where N
-    for i=batch_size(σ)
+    for i=1:batch_size(σ)
         rand!(rng, unsafe_get_batch(σ, i), h)
     end
 
