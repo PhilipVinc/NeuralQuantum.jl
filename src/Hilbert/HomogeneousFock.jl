@@ -126,7 +126,6 @@ function Random.rand!(rng::AbstractRNG, σ::AState, h::HomogeneousFock{N, true})
         while σ[site] == N-1
             site = rand(rng, 1:N)
         end
-        println(site)
         σ[site] += 1
     end
 
