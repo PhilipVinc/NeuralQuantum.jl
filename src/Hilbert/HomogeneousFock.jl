@@ -116,15 +116,18 @@ end
 function Random.rand!(rng::AbstractRNG, σ::AState, h::HomogeneousFock{N, true}) where N
     T = eltype(σ)
     n_max = constraint_limit(h)
+    n_sites = nsites(h)
 
     σ .= zero(eltype(σ))
 
     # add all constraints one by one
     for i=1:constraint_limit(h)
         # select a (non full) site to which it should be added
-        site = rand(rng, 1:nsites(h))
+        site = rand(rng, 1:n_sites)
+        i = 0
         while σ[site] == N-1
-            site = rand(rng, 1:N)
+            i += 1
+            site = rand(rng, 1:n_sites)
         end
         σ[site] += 1
     end
