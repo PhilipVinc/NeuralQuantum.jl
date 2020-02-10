@@ -52,6 +52,8 @@ mutable struct MetropolisSamplerCache{A<:AbstractRNG,RC,H,S,RV,V,M} <: SamplerCa
 
     logψ_σ::RV
     logψ_σp::RV
+    log_prob_bias::RV
+
     ψtmp::V
     prob::RV
     mask::M
@@ -61,18 +63,21 @@ function _sampler_cache(s::MetropolisSampler, v, hilb, net, par_cache)
     loc_chain_length = Int(ceil(s.chain_length/num_workers(par_cache)))
     loc_seed         = worker_local_seed(s.seed, par_cache)
 
-    logψ_σ  = real(out_similar(net))
-    logψ_σp = real(out_similar(net))
-    out     = out_similar(net)
-    prob    = logψ_σp - logψ_σ
-    mask    = similar(logψ_σ, Bool)
+    logψ_σ   = real(out_similar(net))
+    logψ_σp  = real(out_similar(net))
+    log_bias = real(out_similar(net)) .= 0.0
 
-    rng     = build_rng_generator_T(prob, loc_seed)
+    out      = out_similar(net)
+    prob     = logψ_σp - logψ_σ
+    mask     = similar(logψ_σ, Bool)
+
+    rng      = build_rng_generator_T(prob, loc_seed)
 
     MetropolisSamplerCache(rng, loc_chain_length, 0, 0,
                       RuleSamplerCache(s.rule, s, v, net, par_cache),
                       hilb, deepcopy(v),
-                      logψ_σ, logψ_σp, out, prob, mask)
+                      logψ_σ, logψ_σp, log_bias,
+                      out, prob, mask)
 end
 
 # Construct the cache of a specific rule.
@@ -87,11 +92,11 @@ function init_sampler!(s::MetropolisSampler, net, σ,
     c.steps_accepted = 0
     rand!(c.rng, σ, c.hilb)
     init_sampler_rule_cache!(rule_cache(c), s, net, σ, c)
+    c.log_prob_bias .= 0
 
     while c.steps_done < 0
         samplenext!(σ, σ, s, net, c)
     end
-    #c.steps_done = 0
 
     return c
 end
@@ -127,7 +132,7 @@ function samplenext!(σ_out::T, σ_in::T, s::MetropolisSampler,
         ψtmp     = log_prob_ψ!(logψ_σp, c.ψtmp, net, σ_out)
 
         rand!(c.rng, c.prob)
-        c.prob .-= exp.(logψ_σp .- logψ_σ)
+        c.prob .-= exp.(logψ_σp .- logψ_σ .+ c.log_prob_bias)
 
         # the mask encodes the non-switched states
         # when rand >= prob

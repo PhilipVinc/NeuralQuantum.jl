@@ -182,6 +182,7 @@ include("Samplers/Exact.jl")
 include("Samplers/Metropolis.jl")
 include("Samplers/MCMCRules/LocalRule.jl")
 include("Samplers/MCMCRules/ExchangeRule.jl")
+include("Samplers/MCMCRules/OperatorRule.jl")
 include("Samplers/MCMCRules/Nagy.jl")
 
 # other

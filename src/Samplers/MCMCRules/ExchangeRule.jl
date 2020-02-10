@@ -1,4 +1,3 @@
-## LocalRule
 export ExchangeRule
 
 """
