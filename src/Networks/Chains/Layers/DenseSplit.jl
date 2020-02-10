@@ -6,7 +6,7 @@ struct DenseSplit{VT,MT,C}
     b::VT
     σ::C
 end
-functor(d::DenseSplit) = (Wr=d.Wr, Wc=d.Wc, b=d.b), (Wr,Wc,b) -> DenseSplit(Wr,Wc,b,d.σ)
+functor(d::DenseSplit) = (Wr=d.Wr, Wc=d.Wc, b=d.b), t -> DenseSplit(t.Wr,t.Wc,t.b,d.σ)
 (l::DenseSplit)((σr, σc)) = l.σ.(l.Wr*σr .+ l.Wc*σc .+ l.b)
 
 DenseSplit(in::Integer, args...;kwargs...) =

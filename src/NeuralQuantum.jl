@@ -81,6 +81,7 @@ include("Hilbert/base_basis.jl")
 include("base_networks.jl")
 include("base_cached_networks.jl")
 include("treelike.jl") # from flux
+include("structuring.jl")
 include("tuple_logic.jl")
 
 #AD

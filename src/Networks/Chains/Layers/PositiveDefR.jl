@@ -6,7 +6,7 @@ struct PositiveDefR{VT,MT,C}
     b::VT
     σ::C
 end
-functor(d::PositiveDefR) = (Wr=d.Wr, Wi=d.Wi, b=d.b), (Wr,Wi,b) -> PositiveDefR(Wr,Wi,b, d.σ)
+functor(d::PositiveDefR) = (Wr=d.Wr, Wi=d.Wi, b=d.b), t -> PositiveDefR(t.Wr, t.Wi, t.b, d.σ)
 
 # NOTE This is based upon the fact that σr/c are real so that conj(W*σc) == conj(W)*σc
 (l::PositiveDefR)((σr, σc)) = l.σ.(       l.Wr * (σr .+ σc) .+
