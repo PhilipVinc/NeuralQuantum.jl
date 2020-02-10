@@ -36,9 +36,9 @@ function duplicate(op::KLocalOperatorSum)
 end
 
 #
-function row_valdiff!(conn::OpConnection, op::KLocalOperatorSum, v)
+function _row_valdiff!(conn::OpConnection, op::KLocalOperatorSum, v)
     for _op=operators(op)
-        row_valdiff!(conn, _op, v)
+        _row_valdiff!(conn, _op, v)
     end
     return conn
 end

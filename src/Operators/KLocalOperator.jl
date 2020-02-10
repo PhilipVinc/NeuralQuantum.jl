@@ -145,7 +145,7 @@ Base.copy(op::KLocalOperator) =
                     deepcopy(op.new_indices))
 
 ##
-function row_valdiff!(conn::OpConnection, op::KLocalOperator, v::AState)
+function _row_valdiff!(conn::OpConnection, op::KLocalOperator, v::AState)
     # Find row index
     r = local_index(v, basis(op), sites(op))
 

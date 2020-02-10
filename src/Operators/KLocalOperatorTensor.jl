@@ -68,7 +68,7 @@ function duplicate(op::KLocalOperatorTensor)
     KLocalOperatorTensor(duplicate(op.op_l), duplicate(op.op_r))
 end
 
-function row_valdiff!(conn::OpConnection, op::KLocalOperatorTensor, v::ADoubleState)
+function _row_valdiff!(conn::OpConnection, op::KLocalOperatorTensor, v::ADoubleState)
     op_r = op.op_r
     op_l = op.op_l
     if op_r === nothing

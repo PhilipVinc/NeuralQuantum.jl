@@ -51,10 +51,10 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian
     return acc
 end
 
-function row_valdiff!(conn::OpConnection, op::KLocalLiouvillian, v::ADoubleState)
-    row_valdiff!(conn, op.HnH_l, v)
-    row_valdiff!(conn, op.HnH_r, v)
-    row_valdiff!(conn, op.LLdag, v)
+function _row_valdiff!(conn::OpConnection, op::KLocalLiouvillian, v::ADoubleState)
+    _row_valdiff!(conn, op.HnH_l, v)
+    _row_valdiff!(conn, op.HnH_r, v)
+    _row_valdiff!(conn, op.LLdag, v)
     return conn
 end
 
