@@ -192,20 +192,20 @@ include("utils/translational_symm.jl")
 include("utils/loading.jl")
 
 # interface
-include("IterativeInterface/BaseIterativeSampler.jl")
+include("IterativeInterface/Samplers/BaseIterativeSampler.jl")
 #include("IterativeInterface/IterativeSampler.jl")
 #include("IterativeInterface/MTIterativeSampler.jl")
 
-include("IterativeInterface/Batched/base_accumulators.jl")
-include("IterativeInterface/Batched/AccumulatorLogPsi.jl")
-include("IterativeInterface/Batched/AccumulatorLogGradPsi.jl")
-include("IterativeInterface/Batched/AccumulatorObsScalar.jl")
-include("IterativeInterface/Batched/AccumulatorObsGrad.jl")
+include("IterativeInterface/Accumulators/base_accumulators.jl")
+include("IterativeInterface/Accumulators/AccumulatorLogPsi.jl")
+include("IterativeInterface/Accumulators/AccumulatorLogGradPsi.jl")
+include("IterativeInterface/Accumulators/AccumulatorObsScalar.jl")
+include("IterativeInterface/Accumulators/AccumulatorObsGrad.jl")
 
-include("IterativeInterface/BatchedGradSampler.jl")
-include("IterativeInterface/BatchedValSampler.jl")
-include("IterativeInterface/BatchedObsDMSampler.jl")
-include("IterativeInterface/BatchedObsKetSampler.jl")
+include("IterativeInterface/Samplers/CostFun/BatchedGradSampler.jl")
+include("IterativeInterface/Samplers/CostFun/BatchedValSampler.jl")
+include("IterativeInterface/Samplers/Obs/BatchedObsDMSampler.jl")
+include("IterativeInterface/Samplers/Obs/BatchedObsKetSampler.jl")
 include("IterativeInterface/build_Batched.jl")
 
 export sample!, add_observable!, compute_observables
