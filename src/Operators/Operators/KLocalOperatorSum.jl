@@ -22,6 +22,7 @@ KLocalOperatorSum(op::KLocalOperatorSum) = duplicate(op)
 QuantumOpticsBase.basis(op::KLocalOperatorSum) = op.hilb
 operators(op::KLocalOperatorSum) = op.operators
 conn_type(op::KLocalOperatorSum) = conn_type(eltype(operators(op)))
+conn_type(op::Type{KLocalOperatorSum{H,Vs,VOp}}) where {H,Vs,VOp} = conn_type(eltype(VOp))
 sites(op::KLocalOperatorSum) = op.sites
 
 # Copy
@@ -36,7 +37,7 @@ function duplicate(op::KLocalOperatorSum)
 end
 
 #
-function _row_valdiff!(conn::OpConnection, op::KLocalOperatorSum, v)
+function _row_valdiff!(conn::AbsOpConnection, op::KLocalOperatorSum, v)
     for _op=operators(op)
         _row_valdiff!(conn, _op, v)
     end

@@ -98,13 +98,19 @@ include("base_batched_networks.jl")
 
 # Linear Operators
 include("Operators/BaseOperators.jl")
-include("Operators/OpConnection.jl")
+# Connections
+include("Operators/OpConnections/OpConnection.jl")
+include("Operators/OpConnections/OpConnectionTensor.jl")
+include("Operators/OpConnections/OpConnectionIdentity.jl")
+include("Operators/OpConnections/SuperOpConnection.jl")
+
 include("Operators/OpConnectionIndex.jl")
-include("Operators/KLocalOperator.jl")
-include("Operators/KLocalOperatorSum.jl")
-include("Operators/KLocalOperatorTensor.jl")
-include("Operators/KLocalZero.jl")
-include("Operators/KLocalLiouvillian.jl")
+
+include("Operators/Operators/KLocalOperator.jl")
+include("Operators/Operators/KLocalOperatorSum.jl")
+include("Operators/Operators/KLocalOperatorTensor.jl")
+include("Operators/Operators/KLocalZero.jl")
+include("Operators/Operators/KLocalLiouvillian.jl")
 
 include("Operators/SimpleOperators.jl")
 include("Operators/OpConversion.jl")
@@ -117,6 +123,7 @@ export duplicate
 
 # Neural Networks
 include("Networks/utils.jl")
+include("Networks/activation.jl")
 
 # Mixed Density Matrices
 include("Networks/MixedDensityMatrix/NDM.jl")
@@ -171,7 +178,8 @@ include("Algorithms/Gradient/Gradient.jl")
 
 include("Algorithms/batched_algorithms.jl")
 include("Algorithms/SR/SR_notfull.jl")
-include("Algorithms/SR/SR_batched.jl")
+include("Algorithms/SR/SRDirect.jl")
+include("Algorithms/SR/SRIterative.jl")
 include("Algorithms/Gradient/Gradient_batched.jl")
 
 # Sampling
@@ -192,11 +200,8 @@ include("utils/densitymatrix.jl")
 include("utils/translational_symm.jl")
 #include("utils/logging.jl")
 include("utils/loading.jl")
-
 # interface
 include("IterativeInterface/Samplers/BaseIterativeSampler.jl")
-#include("IterativeInterface/IterativeSampler.jl")
-#include("IterativeInterface/MTIterativeSampler.jl")
 
 include("IterativeInterface/Accumulators/base_accumulators.jl")
 include("IterativeInterface/Accumulators/AccumulatorLogPsi.jl")

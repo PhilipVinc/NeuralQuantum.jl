@@ -97,12 +97,12 @@ Optionally the two elements of the tuple can be passed separately.
 If the state is double but there is only 1 element of changes,
 it's applied to the rows.
 """
-function apply!(σ::ADoubleState, cngs_l::Union{StateChanges,Nothing}) 
+@inline function apply!(σ::ADoubleState, cngs_l::Union{StateChanges,Nothing}) 
     apply!(row(σ), cngs_l)
     return σ
 end
 
-function apply!(σ::ADoubleState, (cngs_l, cngs_r)) 
+@inline function apply!(σ::ADoubleState, (cngs_l, cngs_r)) 
     apply!(row(σ), cngs_l)
     apply!(col(σ), cngs_r)
     return σ

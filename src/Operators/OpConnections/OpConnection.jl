@@ -1,4 +1,4 @@
-struct OpConnection{A<:AbstractArray,B<:AbstractArray,C<:AbstractArray}
+struct OpConnection{A<:AbstractArray,B<:AbstractArray,C<:AbstractArray} <: AbsOpConnection
     mel::A
     changes::Vector{StateChanges{B,C}}
 
@@ -34,8 +34,8 @@ Base.length(c::OpConnection) = c.length[]
 Base.size(c::OpConnection) = (length(c), )
 capacity(c::OpConnection) = length(c.mel)
 
-Base.:(==)(a::OpConnection, b::OpConnection) = (a.to_change == b.to_change &&
-                                              a.new_values == b.new_values)
+Base.:(==)(a::OpConnection, b::OpConnection) = (a.mel == b.mel &&
+                                              a.changes == b.changes)
 
 @inline Base.push!(c::OpConnection, (m_els, to_change, new_values)) =
     push!(c, (m_els, StateChanges(to_change, new_values)))
@@ -126,3 +126,11 @@ function clear_duplicates(c::OpConnection)
     end
     return OpConnection(u_mel, u_cngs)
 end
+
+#showing
+#function Base.show(io::IO, c::OpConnection{A}) where {A}
+#    T = eltype(A)
+#    print(io, "OpConnection{$(eltype(A))} : [")
+#    for el=c
+#        en
+#end

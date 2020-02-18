@@ -54,13 +54,17 @@ sites(op::KLocalOperatorTensor) = op.sites
 
 ## Accessors
 operators(op::KLocalOperatorTensor) = (op,)
-conn_type(op::KLocalOperatorTensor{H,T,O1,O2}) where {H,T,O1,O2} = conn_type(op.op_l)
-conn_type(op::KLocalOperatorTensor{H,T,Nothing,O2}) where {H,T,O2} =
-  conn_type(op.op_r)
-conn_type(::Type{KLocalOperatorTensor{H,T,O1,O2}}) where {H,T,O1,O2} =
-  conn_type(O1)
-conn_type(::Type{KLocalOperatorTensor{H,T,Nothing,O2}}) where{H,T,O2} =
-  conn_type(O2)
+
+conn_type(op::KLocalOperatorTensor{H,T,O1,O2}) where {H,T,O1,O2}      = conn_type(op)
+#conn_type(op::KLocalOperatorTensor{H,T,O1,Nothing}) where {H,T,O1}    = conn_type(op.op_l)
+#conn_type(op::KLocalOperatorTensor{H,T,Nothing,O2}) where {H,T,O2}    = conn_type(op.op_r)
+
+conn_type(::Type{KLocalOperatorTensor{H,T,O1,O2}}) where {H,T,O1,O2}  =
+    OpConnectionTensor{conn_type(O1), conn_type(O2)}
+conn_type(::Type{KLocalOperatorTensor{H,T,O1,Nothing}}) where{H,T,O1} = #conn_type(O1)
+    OpConnectionTensor{conn_type(O1), eye_conn_type(O1)}
+conn_type(::Type{KLocalOperatorTensor{H,T,Nothing,O2}}) where{H,T,O2} = #conn_type(O2)
+    OpConnectionTensor{eye_conn_type(O2), conn_type(O2)}
 
 duplicate(::Nothing) = nothing
 
@@ -68,20 +72,19 @@ function duplicate(op::KLocalOperatorTensor)
     KLocalOperatorTensor(duplicate(op.op_l), duplicate(op.op_r))
 end
 
-function _row_valdiff!(conn::OpConnection, op::KLocalOperatorTensor, v::ADoubleState)
+function _row_valdiff!(conn::AbsOpConnection, op::KLocalOperatorTensor, v::ADoubleState)
     op_r = op.op_r
     op_l = op.op_l
     if op_r === nothing
         r_r = local_index(row(v), basis(op_l), sites(op_l))
-        append!(conn, op_l.op_conns[r_r])
+        append!(conn, (op_l.op_conns[r_r], nothing))
     elseif op_l === nothing
         r_c = local_index(col(v), basis(op_r), sites(op_r))
-        append!(conn, op_r.op_conns[r_c])
+        append!(conn, (nothing, op_r.op_conns[r_c]))
     else
         r_r = local_index(row(v), basis(op_l), sites(op_l))
         r_c = local_index(col(v), basis(op_r), sites(op_r))
-        #append!(conn, op.op_conns[r])
-        throw("Not implemented")
+        append!(conn, (op_l.op_conns[r_r], op_r.op_conns[r_c]))
     end
     return conn
 end

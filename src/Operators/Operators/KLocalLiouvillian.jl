@@ -39,7 +39,9 @@ end
 sites(op::KLocalLiouvillian) = op.sites
 QuantumOpticsBase.basis(op::KLocalLiouvillian) = op.hilb
 
-conn_type(op::KLocalLiouvillian) = conn_type(op.HnH_l)
+conn_type(op::KLocalLiouvillian) = conn_type(typeof(op))
+conn_type(::Type{KLocalLiouvillian{H,T,A,B,C}}) where {H,T,A,B,C}  =
+    SuperOpConnection{conn_type(A), conn_type(B), conn_type(C)}
 
 accumulate_connections!(a, b::Vector, c) = nothing
 
@@ -51,10 +53,11 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian
     return acc
 end
 
-function _row_valdiff!(conn::OpConnection, op::KLocalLiouvillian, v::ADoubleState)
-    _row_valdiff!(conn, op.HnH_l, v)
-    _row_valdiff!(conn, op.HnH_r, v)
-    _row_valdiff!(conn, op.LLdag, v)
+function row_valdiff!(conn::SuperOpConnection, op::KLocalLiouvillian, v::ADoubleState; init=true)
+    row_valdiff!(conn.op_conn_l_id, op.HnH_l, v; init=init)
+    row_valdiff!(conn.op_conn_r_id, op.HnH_r, v; init=init)
+    row_valdiff!(conn.op_conn_l_r,  op.LLdag, v; init=init)
+
     return conn
 end
 

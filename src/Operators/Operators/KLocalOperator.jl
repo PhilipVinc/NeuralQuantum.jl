@@ -136,6 +136,9 @@ conn_type(top::Type{KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {H, SV, M,
 conn_type(op::KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}) where {H, SV, M, Vel, Vti, Vtc, Vtv, OC} =
     OpConnection{Vel, eltype(Vtc), eltype(Vtv)}
 
+eye_conn_type(top::Type{KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {H, SV, M, Vel, Vti, Vtc, Vtv, OC} =
+    OpConnectionIdentity{eltype(Vtc), eltype(Vtv)}
+
 # Copy
 duplicate(op::KLocalOperator) = copy(op)
 Base.copy(op::KLocalOperator) =
