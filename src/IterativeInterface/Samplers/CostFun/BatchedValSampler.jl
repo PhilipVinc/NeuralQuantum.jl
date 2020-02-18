@@ -38,7 +38,7 @@ function BatchedValSampler(net,
 
     bnet           = cached(net, batch_sz)
     v              = state(prob, bnet)
-    sampler_cache  = init_sampler!(sampl, bnet, basis(prob), v, par_cache)
+    sampler_cache  = cache(sampl, basis(prob), bnet, par_cache)
 
     ch_len         = chain_length(sampl, sampler_cache)
 
