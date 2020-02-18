@@ -39,11 +39,6 @@ out_similar(net::CachedNet{N,C}) where{N,C<:NNBatchedCache} =
 
 # Definition for allocating evaluation of batched cached networks
 # Shadowing things at ~80 of base_cached_networks.jl
-@inline logψ(net::CachedNet{NN,NC}, σ::NTuple{N,<:AbstractArray}) where {N,NN,NC<:NNBatchedCache} = begin
-    b_sz = last(size(first(σ)))
-    out = similar(trainable_first(net), out_type(net), 1, b_sz)
-    logψ!(out, net.net, net.cache, σ...)
-end
 @inline logψ(net::CachedNet{NN,NC}, σr::AStateBatch, σc::AStateBatch) where {N,T,NN,NC<:NNBatchedCache} = begin
     logψ(net, (σr, σc))
 end
@@ -258,6 +253,12 @@ function logψ_and_∇logψ(net::Union{NeuralNetwork, CachedNet},
     out = similar(out_similar(net), batch_size(σ), chain_length(σ))
     logψ_and_∇logψ!(∇vals, out, net, σ)
     return ∇vals, out
+end
+
+function logψ(net::Union{NeuralNetwork, CachedNet},
+               σ::Union{AStateBatch, ADoubleStateBatch}) where {T}
+    out = similar(out_similar(net), 1, batch_size(σ))
+    logψ!(out, net, σ)
 end
 
 function logψ(net::Union{NeuralNetwork, CachedNet},
