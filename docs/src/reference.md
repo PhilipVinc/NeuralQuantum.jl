@@ -53,17 +53,3 @@ KLocalOperator
 NeuralQuantum.KLocalOperatorRow
 NeuralQuantum.liouvillian
 ```
-
-## Samplers
-
-```@docs
-ExactSampler
-MetropolisSampler
-```
-
-### Transition Rules
-
-```@docs
-LocalRule
-ExchangeRule
-```

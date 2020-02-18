@@ -88,7 +88,7 @@ julia> init_random_pars!(net, sigma=0.01)
 
 ## Chosing a sampler
 The sampler is the algorithm that selects the states in the hilbert space to be
-summed over. Options are [`Exact`](@ref), which computes the whole probability distribution and samples exactly, but is very expensive and only works for relatively small (N<10) systems.
+summed over. Options are [`ExactSampler`](@ref), which computes the whole probability distribution and samples exactly, but is very expensive and only works for relatively small (N<10) systems.
 
 In general, you will be using a [`MetropolisSampler`](@ref), which uses a Metropolis-Hastings Markov Chain with a specific transition rule.
 Currently only a simple switching rule and an exchange rule are implemented.

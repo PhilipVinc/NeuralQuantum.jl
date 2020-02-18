@@ -16,6 +16,7 @@ makedocs(
                 "Basics"        => "basics.md",
                 "Liouvillian"   => "liouvillian.md",
                 "Networks"      => "networks.md",
+                "Samplers"      => "samplers.md",
                 "SR"            => "algorithms.md",
                 "Optimizers"    => "optimizers.md"
             ],

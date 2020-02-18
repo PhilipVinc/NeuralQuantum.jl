@@ -31,9 +31,3 @@ Here you can find a very short, commented example. For a more in-depth walkthrou
 ## Table Of Contents
 ```@contents
 ```
-
-
-
-## Index
-```@index
-```

@@ -1,3 +1,7 @@
+# Neural Network Quantum states
+
+---
+
 ## Pure State Networks
 
 ### Neural Quantum State
@@ -8,6 +12,7 @@ Please note that you can chose the activation function (the third argument, `f`)
 RBM
 ```
 
+---
 ## Mixed State Networks
 In general, given an Hilbert space ``\mathcal{H}`` with basis ``\vec\sigma\in\mathcal{H}``, a density matrix defined on this space lives in the space of the Bounded Operators ``\mathcal{B}`` with (overcomplete) basis ``(\sigma, \tilde{\sigma} ) \in \mathcal{H}\otimes\mathcal{H}``.  A network is a (high-dimensional non-linear) function
 
@@ -26,7 +31,7 @@ NDM
 ```
 
 ### RBM Density Matrix
-A simple state that does not preserve positivity, which is a simple RBM.
+A simple state that does not preserve positivity, but which is hermitian.
 
 ```@docs
 RBMSplit
