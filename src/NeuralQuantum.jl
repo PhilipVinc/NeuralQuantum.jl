@@ -16,6 +16,7 @@ using .TPI
 const STD_REAL_PREC = Float32
 
 using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!, randn!
+using Random: shuffle!
 using LinearAlgebra
 using SparseArrays
 using LinearMaps
@@ -130,6 +131,7 @@ include("Networks/MixedDensityMatrix/NDM.jl")
 include("Networks/MixedDensityMatrix/NDMBatched.jl")
 include("Networks/MixedDensityMatrix/NDMComplex.jl")
 include("Networks/MixedDensityMatrix/NDMSymm.jl")
+include("Networks/MixedDensityMatrix/NDMSymmBatched.jl")
 include("Networks/MixedDensityMatrix/RBMSplit.jl")
 include("Networks/MixedDensityMatrix/RBMSplitBatched.jl")
 
@@ -209,6 +211,7 @@ include("IterativeInterface/Accumulators/AccumulatorLogGradPsi.jl")
 include("IterativeInterface/Accumulators/AccumulatorObsScalar.jl")
 include("IterativeInterface/Accumulators/AccumulatorObsGrad.jl")
 
+include("IterativeInterface/Samplers/SimpleIterativeSampler.jl")
 include("IterativeInterface/Samplers/CostFun/BatchedGradSampler.jl")
 include("IterativeInterface/Samplers/CostFun/BatchedValSampler.jl")
 include("IterativeInterface/Samplers/Obs/BatchedObsDMSampler.jl")
