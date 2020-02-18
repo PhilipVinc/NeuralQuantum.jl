@@ -6,6 +6,8 @@ struct StateChanges{A<:AbstractArray,B<:AbstractArray} <: AbstractStateChanges
     new_values::B
 end
 
+StateChanges{A,B}() where {A,B} = StateChanges{A,B}(A(), B()) 
+
 function StateChanges(state::AbstractArray)
     return StateChanges(Int[], eltype(state)[])
 end
