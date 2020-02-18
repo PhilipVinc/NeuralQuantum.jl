@@ -8,7 +8,6 @@ couple of sites i,j is switched.
 
 Couples of sites are generated from the graph `graph` (or operator), where all
 sites that are connected (or coupled by a 2-body term) are considered for switches.
-
 """
 struct ExchangeRule{T<:Vector} <: MCMCRule
     distances::T

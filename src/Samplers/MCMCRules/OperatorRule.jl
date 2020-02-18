@@ -5,10 +5,6 @@ export OperatorRule
 
 Transition rule for Metropolis-Hastings sampling where at every step a move is
 drawn from those allowed by the Operator `Ô`.
-
-Couples of sites are generated from the graph `graph` (or operator), where all
-sites that are connected (or coupled by a 2-body term) are considered for switches.
-
 """
 struct OperatorRule{O} <: MCMCRule
     operator::O
