@@ -27,7 +27,7 @@ function HomogeneousSpin(n_sites, S::Rational=1//2; total_Sz::Union{Nothing,Rati
         if sz_tot > N
             throw(ErrorException("tota_Sz is too big"))
         end
-        throw(ErrorException("Still not implemented!"))
+        #throw(ErrorException("Still not implemented!"))
     else
         total_Sz = 0
     end
@@ -103,7 +103,7 @@ end
 add!(σ::AState, h::HomogeneousSpin, val::Integer) =
     set!(σ, h, val+toint(σ, h))
 
-function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::HomogeneousSpin{N}) where N
+function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::HomogeneousSpin{N,false}) where N
     T = eltype(σ)
     rand!(rng, σ)
     σ .= floor.(σ.*N).*2 .- (N-1)
@@ -111,6 +111,24 @@ function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::Homoge
 end
 
 # Specialized for constrained fock spaces
+function Random.rand!(rng::AbstractRNG, σ::AState, hilb::HomogeneousSpin{N,true}) where N
+    T = eltype(σ)
+
+    if N == 2
+        m = 2 * constraint_limit(hilb)
+        nup   = (nsites(hilb) + m) ÷ 2
+        ndown = (nsites(hilb) - m) ÷ 2
+
+        uview(σ, 1:nup) .= one(T)
+        uview(σ, nup+1:ndown) .= -one(T)
+        shuffle!(rng, σ)
+    else
+        throw(ErrorException("not implemented!"))
+    end
+
+    return σ
+end
+
 function Random.rand!(rng::AbstractRNG, σ::AStateBatch, h::HomogeneousSpin{N, true}) where N
     for i=1:batch_size(σ)
         rand!(rng, unsafe_get_batch(σ, i), h)
