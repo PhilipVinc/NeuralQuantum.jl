@@ -9,11 +9,17 @@ OpConnectionTensor{L,R}() where {L,R} = OpConnectionTensor(L(), R())
 @inline length_r(c::OpConnectionTensor) = length(c.conn_r)
 @inline Base.length(c::OpConnectionTensor) = length_l(c) * length_r(c)
 @inline Base.size(c::OpConnectionTensor) = (length(c), )
+function Base.eltype(c::OpConnectionTensor)
+    T1, SC1 = eltype(c.conn_l).parameters
+    T2, SC2 = eltype(c.conn_r).parameters
+    T = promote_type(T1, T2)
 
+    return Tuple{T, Tuple{SC1,SC2}}
+end
 
 Base.:(==)(a::OpConnectionTensor, b::OpConnectionTensor) = (a.conn_l == b.conn_l &&
                                                             a.conn_r == b.conn_r)
-#a
+
 function Base.resize!(c::OpConnectionTensor, i)
     resize!(c.conn_l, i)
     resize!(c.conn_r, i)
@@ -47,4 +53,14 @@ end
 function Base.getindex(c::OpConnectionTensor, i)
     l,r = divrem(i-1, length_r(c))
     return first(iterate(c, (l+1, r+1)))
+end
+
+# showing
+function Base.show(io::IO, c::OpConnectionTensor{L,R}) where {L,R}
+    opstr_l = c.conn_l isa OpConnectionIdentity ? "I" : "Ô"
+    opstr_r = c.conn_r isa OpConnectionIdentity ? "I" : "Ô"
+    opstr = opstr_l * " ⊗ " * opstr_r
+    print(io, "$(length(c))-elements - ($opstr)OpConnectionTensor{...}:\n")
+    Base.print_matrix(IOContext(io, :compact=>true), collect(c))
+    return io
 end

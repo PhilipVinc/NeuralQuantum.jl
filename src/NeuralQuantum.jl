@@ -101,8 +101,8 @@ include("base_batched_networks.jl")
 include("Operators/BaseOperators.jl")
 # Connections
 include("Operators/OpConnections/OpConnection.jl")
-include("Operators/OpConnections/OpConnectionTensor.jl")
 include("Operators/OpConnections/OpConnectionIdentity.jl")
+include("Operators/OpConnections/OpConnectionTensor.jl")
 include("Operators/OpConnections/SuperOpConnection.jl")
 
 include("Operators/OpConnectionIndex.jl")

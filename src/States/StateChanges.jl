@@ -6,7 +6,7 @@ struct StateChanges{A<:AbstractArray,B<:AbstractArray} <: AbstractStateChanges
     new_values::B
 end
 
-StateChanges{A,B}() where {A,B} = StateChanges{A,B}(A(), B()) 
+StateChanges{A,B}() where {A,B} = StateChanges{A,B}(A(), B())
 
 function StateChanges(state::AbstractArray)
     return StateChanges(Int[], eltype(state)[])
@@ -51,10 +51,16 @@ function Base.iterate(iter::StateChanges, state=1)
 end
 
 function Base.show(io::IO, ch::StateChanges)
-    print(io, "StateChanges{$(eltype(ch))} : [")
-    content = ""
+    if !haskey(io, :compact)
+        print(io, "StateChanges{$(eltype(ch))} : ")
+    end
+
+    content = "["
     for (id, val)=ch
         content *= "$id->$val, "
     end
+    
+    length(ch) == 0 && print(io, content)
+
     print(io, content[1:end-2]*"]")
 end

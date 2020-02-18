@@ -2,9 +2,9 @@
     OpConnectionIdentity
 
 An OpConnection to store the operatorial identity.
-It always returns one entry with value `true` and no changes. 
+It always returns one entry with value `true` and no changes.
 """
-struct OpConnectionIdentity{B,C}
+struct OpConnectionIdentity{B,C} <: AbsOpConnection
     c::StateChanges{B,C}
 end
 
@@ -22,6 +22,10 @@ end
 @inline Base.length(c::OpConnectionIdentity) = true
 @inline Base.resize!(c::OpConnectionIdentity, i) = c
 @inline Base.append!(c::OpConnectionIdentity, a::Nothing) = c
+@inline Base.eltype(c::OpConnectionIdentity{B,C}) where {B,C} =
+    Tuple{Bool, StateChanges{B,C}}
+
+Base.:(==)(::OpConnectionIdentity, ::OpConnectionIdentity) = true
 
 @inline function Base.iterate(iter::OpConnectionIdentity, state=(1))
     if state == 1
@@ -34,4 +38,11 @@ end
 @inline function Base.getindex(c::OpConnectionIdentity, i)
     @assert i == 1
     return (true, c.c)
+end
+
+#showing
+function Base.show(io::IO, c::OpConnectionIdentity{B,C}) where {B,C}
+    print(io, "$(length(c))-elements - Identity-OpConnection{bool,StateChanges{$B,$C}}:\n")
+    print(io, " (true, [])")
+    return io
 end

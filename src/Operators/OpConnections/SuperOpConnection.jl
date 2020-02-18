@@ -1,4 +1,4 @@
-struct SuperOpConnection{A,B,C}
+struct SuperOpConnection{A,B,C} <: AbsOpConnection
     op_conn_l_id::A
     op_conn_r_id::B
 
@@ -7,15 +7,19 @@ end
 
 SuperOpConnection{A,B,C}() where {A,B,C} = SuperOpConnection(A(), B(), C())
 
-#SuperOpConnection(op::KLocalLiouvillian) =SuperOpConnection(conn_type(op.HnH_l),
-#                                                            conn_type(op.HnH_r),
-#                                                            conn_type(op.LLdag))
-
 @inline length_l_id(c::SuperOpConnection) = length(c.op_conn_l_id)
 @inline length_r_id(c::SuperOpConnection) = length(c.op_conn_r_id)
 @inline length_l_r(c::SuperOpConnection)  = length(c.op_conn_l_r)
 @inline Base.length(c::SuperOpConnection) = length_l_id(c) + length_r_id(c) + length_l_r(c)
 @inline Base.size(c::SuperOpConnection) = (length(c), )
+function Base.eltype(c::SuperOpConnection)
+    T1, SC1 = eltype(c.op_conn_l_id).parameters
+    T2, SC2 = eltype(c.op_conn_r_id).parameters
+    T3, SC3 = eltype(c.op_conn_l_r).parameters
+    T = promote_type(T1, T2, T3)
+
+    return Tuple{T, SC1}
+end
 
 Base.:(==)(a::SuperOpConnection, b::SuperOpConnection) = (a.op_conn_l_id == b.to_change &&
                                                           a.op_conn_r_id == b.op_conn_r_id &&
@@ -74,4 +78,11 @@ end
     else
         return getindex(c.op_conn_l_r, i - length_l_id(c) - length_r_id(c))
     end
+end
+
+# showing
+function Base.show(io::IO, c::SuperOpConnection)
+    print(io, "$(length(c))-elements - SuperOpConnection{...}:\n")
+    Base.print_matrix(IOContext(io, :compact=>true), collect(c))
+    return io
 end

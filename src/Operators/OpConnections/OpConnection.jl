@@ -1,3 +1,10 @@
+"""
+    OpConnectionIdentity
+
+An iterable structure containing all the changes from one state to another, and
+an associated value.
+This effectively encodes a full row of an operator.
+"""
 struct OpConnection{A<:AbstractArray,B<:AbstractArray,C<:AbstractArray} <: AbsOpConnection
     mel::A
     changes::Vector{StateChanges{B,C}}
@@ -29,10 +36,11 @@ function Base.resize!(c::OpConnection, n)
     return c
 end
 
-Base.eltype(c::OpConnection{A,B,C}) where {A,B,C} = (eltype(A), eltype(B), eltype(C))
+Base.eltype(c::OpConnection{A,B,C}) where {A,B,C} = Tuple{eltype(A), StateChanges{B,C}}
 Base.length(c::OpConnection) = c.length[]
 Base.size(c::OpConnection) = (length(c), )
 capacity(c::OpConnection) = length(c.mel)
+
 
 Base.:(==)(a::OpConnection, b::OpConnection) = (a.mel == b.mel &&
                                               a.changes == b.changes)
@@ -128,9 +136,8 @@ function clear_duplicates(c::OpConnection)
 end
 
 #showing
-#function Base.show(io::IO, c::OpConnection{A}) where {A}
-#    T = eltype(A)
-#    print(io, "OpConnection{$(eltype(A))} : [")
-#    for el=c
-#        en
-#end
+function Base.show(io::IO, c::OpConnection{A,B,C}) where {A,B,C}
+    print(io, "$(length(c))-elements - OpConnection{$(eltype(A)),StateChanges{$B,$C}}:\n")
+    Base.print_matrix(IOContext(io, :compact=>true), collect(c))
+    return io
+end
