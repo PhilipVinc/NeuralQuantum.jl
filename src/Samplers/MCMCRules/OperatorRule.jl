@@ -29,7 +29,8 @@ function propose_step!(σp::Union{AState,ADoubleState}, s::MetropolisSampler{<:O
     n_forward = length(conns)
 
     i = rand(1:n_forward)
-    apply!(σp, conns[i])
+    mel, cngs = conns[i]
+    apply!(σp, cngs)
 
     row_valdiff!(conns, Ô, σp, init=true)
     n_back = length(conns)
@@ -37,6 +38,8 @@ function propose_step!(σp::Union{AState,ADoubleState}, s::MetropolisSampler{<:O
     c.log_prob_bias = log(n_forward/n_back)
 end
 
+
+# Don't implement the batched version and use default fallback
 function propose_step!(σp::Union{AStateBatch,ADoubleStateBatch}, s::MetropolisSampler{<:OperatorRule},
                        net::Union{MatrixNet,KetNet}, c, rc)
     Ô     = s.rule.operator
