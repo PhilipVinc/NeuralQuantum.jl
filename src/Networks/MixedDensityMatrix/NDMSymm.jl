@@ -1,53 +1,76 @@
 export NDMSymm
 
-struct NDMSymm{T,T2,T3} <: MatrixNeuralNetwork
+struct NDMSymm{T,T2,T4} <: MatrixNeuralNetwork
     bare_net::T
     symm_net::T
+
     ∇b_mat::T2
     ∇h_mat::T2
     ∇d_mat::T2
     ∇w_mat::T2
     ∇u_mat::T2
 
-    bare_der::T3
-    symm_map
+    symm_map::T4
 end
 @functor NDMSymm
 
-NDMSymm(n_in::Int, αh, αa, permutations) = NDMSymm(STD_REAL_PREC, n_in, αh, αa, permutations)
-function NDMSymm(T::Type{<:Real}, n_in, αh, αa, permutations)
+NDMSymm(n_in::Int, αh, αa, args...) = NDMSymm(STD_REAL_PREC, n_in, αh, αa, args...)
+function NDMSymm(T::Type{<:Real}, n_in, αh, αa, permutations, σ::Function=logℒ)
     n_symm = length(permutations)
     @assert length(first(permutations)) == n_in
 
-    symm_net = NDM(T, n_in, αh//n_in,αa//n_in)
-    bare_net = NDM(T, n_in, αh//n_in*n_symm, αa//n_in*n_symm)
+    symm_net = NDM(T, n_in, αh//n_in, αa//n_in, σ)
+    bare_net = NDM(T, n_in, αh//n_in*n_symm, αa//n_in*n_symm, σ)
     set_bare_params!(bare_net, symm_net, permutations)
     ∇b_mat, ∇h_mat, ∇d_mat, ∇w_mat, ∇u_mat = construct_∇matrices(bare_net, symm_net, n_in, αh, αa, permutations)
-    bare_der = grad_cache(bare_net)
 
-    NDMSymm(bare_net, symm_net, ∇b_mat, ∇h_mat, ∇d_mat, ∇w_mat, ∇u_mat, bare_der, permutations)
+    NDMSymm(bare_net, symm_net, ∇b_mat, ∇h_mat, ∇d_mat, ∇w_mat, ∇u_mat, permutations)
 end
 
 out_type(net::NDMSymm)           = out_type(net.bare_net)
 is_analytic(net::NDMSymm)        = is_analytic(net.bare_net)
 #weights(cnet::NDMSymm)           = cnet.symm_net
 
-cache(net::NDMSymm)              = cache(net.bare_net)
 grad_cache(net::NDMSymm)         = grad_cache(net.symm_net)
 trainable(net::NDMSymm)          = trainable(net.symm_net)
-#weight_tuple(net::NDMSymm, args...) = weight_tuple(weights(net), args...)
 update!(opt, cnet::NDMSymm, Δ, state=nothing) = (res = update!(opt, weights(cnet), weights(Δ), state);
                                             set_bare_params!(cnet.bare_net, cnet.symm_net, cnet.symm_map);
                                             res)
 
+Base.show(io::IO, m::NDMSymm) = print(io,
+    "NDMSymm{$(eltype(m.bare_net.b_μ))}, n=$(length(m.symm_net.b_μ)), αₕ=$(length(m.symm_net.h_μ)), αₐ=$(length(m.symm_net.d_λ)), f=$(m.symm_net.f))")
+
+
 @inline (net::NDMSymm)(args...) = net.bare_net(args...)
 function logψ_and_∇logψ!(∇lnψ_symm, net::NDMSymm, args...)
-    lnψ, ∇lnψ = logψ_and_∇logψ!(net.bare_der, net.bare_net, args...)
+    lnψ, ∇lnψ = logψ_and_∇logψ(net.bare_net, args...)
 
     symmetrize_∇logψ_NDM!(∇lnψ_symm, ∇lnψ, net)
     lnψ, ∇lnψ_symm
 end
 
+struct NDMSymmCache{BC,BD} <: NNCache{NDMSymm}
+    bare_cache::BC
+    bare_∇logψ::BD
+end
+
+cache(net::NDMSymm)              =
+    NDMSymmCache(cache(net.bare_net),
+                 grad_cache(net.bare_net))
+
+@inline (net::NDMSymm)(c::NDMSymmCache, args...) = net.bare_net(c.bare_cache, args...)
+
+function logψ_and_∇logψ!(∇lnψ_symm, net::NDMSymm, c::NDMSymmCache, args...)
+    lnψ = logψ_and_∇logψ!(c.bare_∇logψ, net.bare_net, c.bare_cache, args...)
+
+    symmetrize_∇logψ_NDM!(∇lnψ_symm, c.bare_∇logψ, net)
+    lnψ, ∇lnψ_symm
+end
+
+
+
+
+#
 function symmetrize_∇logψ_NDM!(∇lnψ_symm, ∇lnψ, net)
     mul!(∇lnψ_symm.b_μ, net.∇b_mat, ∇lnψ.b_μ)
     mul!(∇lnψ_symm.b_λ, net.∇b_mat, ∇lnψ.b_λ)

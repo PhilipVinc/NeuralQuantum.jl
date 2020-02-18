@@ -62,10 +62,10 @@ out_type(net::NDM{VT}) where {VT} = Complex{eltype(VT)}
 is_analytic(net::NDM) = true
 
 Base.show(io::IO, m::NDM{VT,MT,F}) where {VT,MT,F} = print(io,
-    "NDM($VT), n=$(length(m.b_μ)), αₕ=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)), f=($F))")
+    "NDM($VT), n=$(length(m.b_μ)), αₕ=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)), f=$(m.f))")
 
 Base.show(io::IO, ::MIME"text/plain", m::NDM{VT,MT,F}) where {VT,MT,F} = print(io,
-    "NDM($VT), n=$(length(m.b_μ)), α=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)), f=($F))")
+    "NDM($VT), n=$(length(m.b_μ)), α=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)), f=$(m.f))")
 
 
 @inline (net::NDM)(σ::Tuple) = net(σ...)
