@@ -259,6 +259,11 @@ function __init__()
       @warn "CuArrays.jl did not find libcudnn. Some functionality will not be available."
     end
   end
+
+  @require TensorBoardLogger="899adc3e-224a-11e9-021f-63837185c80f" begin
+    include("utils/logging.jl")
+  end
+
 end
 
 end # module
