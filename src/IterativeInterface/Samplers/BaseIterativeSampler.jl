@@ -2,7 +2,7 @@ abstract type AbstractIterativeSampler end
 
 function _sample_state!(is::AbstractIterativeSampler)
     ch_len         = chain_length(is.sampler, is.sampler_cache)
-    batch_sz       = size(is.local_vals, 1)
+    batch_sz       = batch_size(is.samples)
 
     # Monte-Carlo sampling
     σ_old = unsafe_get_el(is.samples, 1)

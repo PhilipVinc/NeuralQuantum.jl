@@ -30,6 +30,7 @@ function BatchedGradSampler(net,
                         algo=prob;
                         batch_sz=2^4,
                         local_batch_sz=batch_sz,
+                        obs_sampler=sampl,
                         par_type=automatic_parallel_type())
     if net isa CachedNet
         throw("Only takes standard network.")
@@ -55,7 +56,7 @@ function BatchedGradSampler(net,
     precond        = algorithm_cache(algo, prob, net, par_cache)
 
     if prob isa KLocalLiouvillian
-        obs        = BatchedObsDMSampler(bnet, sampl, basis(prob), batch_sz=batch_sz)
+        obs        = BatchedObsDMSampler(bnet, obs_sampler, basis(prob), batch_sz=batch_sz)
     else
         obs        = BatchedObsKetSampler(samples, ψvals, local_acc)
     end
