@@ -18,12 +18,17 @@ function SimpleIterativeSampler(net,
     if net isa CachedNet
         throw("Only takes standard network.")
     end
+    
+    if hilb isa AbstractOperator
+        hilb = basis(hilb)
+    end
 
     par_cache      = parallel_execution_cache(par_type)
 
     bnet           = cached(net, batch_sz)
     v              = state(hilb, bnet)
     sampler_cache  = init_sampler!(sampl, bnet, hilb, v, par_cache)
+    sampler_cache  = cache(sampl, hilb, bnet, par_cache)
 
     ch_len         = chain_length(sampl, sampler_cache)
 

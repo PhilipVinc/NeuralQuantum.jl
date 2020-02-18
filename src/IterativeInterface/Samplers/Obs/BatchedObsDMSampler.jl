@@ -35,7 +35,7 @@ function BatchedObsDMSampler(bnet,
 
     #bnet           = cached(net, batch_sz)
     v              = state(hilb_ph, bnet)
-    sampler_cache  = init_sampler!(sampl, bnet, hilb_ph, v, par_cache)
+    sampler_cache  = cache(sampl, hilb_ph, bnet, par_cache)
 
     ch_len         = chain_length(sampl, sampler_cache)
 
