@@ -39,12 +39,24 @@ function MetropolisSampler(rule, chain_length, passes; burn=0, seed=rand(UInt))
     MetropolisSampler{typeof(rule)}(chain_length, burn, passes, seed, rule)
 end
 
+## Show method
+function Base.show(io::IO, s::MetropolisSampler)
+    burn_time = @sprintf "%2.2f" (s.burn_length/s.chain_length)*100
+
+    println(io, "Metropolis Sampler:")
+    println(io, "\t- chain_length     : $(s.chain_length)")
+    println(io, "\t- burn_length      : $(s.burn_length) ($burn_time% warmup time)")
+    println(io, "\t- passes           : $(s.passes)")
+    print(io,   "\t- seed             : $(s.seed)")
+end
+
 ## Cache
 mutable struct MetropolisSamplerCache{A<:AbstractRNG,RC,H,S,RV,V,M} <: SamplerCache{MetropolisSampler}
     rng::A
     loc_chain_length::Int
     steps_done::Int
-    steps_accepted::Int
+    passes_done::Int
+    passes_accepted::Int
     rule_cache::RC
 
     hilb::H
@@ -73,7 +85,7 @@ function _sampler_cache(s::MetropolisSampler, v, hilb, net, par_cache)
 
     rng      = build_rng_generator_T(prob, loc_seed)
 
-    MetropolisSamplerCache(rng, loc_chain_length, 0, 0,
+    MetropolisSamplerCache(rng, loc_chain_length, 0, 0, 0,
                       RuleSamplerCache(s.rule, s, v, net, par_cache),
                       hilb, deepcopy(v),
                       logψ_σ, logψ_σp, log_bias,
@@ -88,13 +100,14 @@ rule_cache(sc::MetropolisSamplerCache) = sc.rule_cache
 
 function init_sampler!(s::MetropolisSampler, net, σ,
                        c::MetropolisSamplerCache)
-    c.steps_done = - s.burn_length
-    c.steps_accepted = 0
+    c.steps_done = - s.burn_length + 1
+    c.passes_done = 0
+    c.passes_accepted = 0
     rand!(c.rng, σ, c.hilb)
     init_sampler_rule_cache!(rule_cache(c), s, net, σ, c)
     c.log_prob_bias .= 0
 
-    while c.steps_done < 0
+    while c.steps_done <= 0
         samplenext!(σ, σ, s, net, c)
     end
 
@@ -106,7 +119,7 @@ init_sampler_rule_cache!(rc, s, net, σ, c) =
 
 chain_length(s::MetropolisSampler, c::MetropolisSamplerCache) = c.loc_chain_length
 
-done(s::MetropolisSampler, σ, c) = c.steps_done >= chain_length(s, c)-1
+done(s::MetropolisSampler, σ, c) = c.steps_done >= chain_length(s, c)
 
 function samplenext!(σ_out::T, σ_in::T, s::MetropolisSampler,
                      net::Union{MatrixNet,KetNet}, c) where {T<:Union{AStateBatch, ADoubleStateBatch}}
@@ -143,32 +156,35 @@ function samplenext!(σ_out::T, σ_in::T, s::MetropolisSampler,
         statecopy!(σ_out, c.σ_old, c.mask)
         # Copy the new log_σ values for states that switched
         statecopy_invertmask!(logψ_σ, logψ_σp, c.mask)
+
+        # Store number of accepted moves
+        c.passes_accepted += length(c.prob) - sum(c.mask)
+        c.passes_done     += length(c.prob)
     end
     c.steps_done += 1
     return true
 end
 
-
-
-"""
-    markov_chain_step!(state, sampler, net, sampler_cache)
-
-performs one step of markov chain
-"""
-function markov_chain_step!(σ, s::MetropolisSampler, net, c)
-    throw("markov_chain_step! undefined for this type")
+# General implementation of Rule-step proposal on a batch, serially applying
+# the rule on all batches.
+@inline function propose_step!(
+                       σp::Union{AStateBatch,ADoubleStateBatch},
+                       s::MetropolisSampler,
+                       net::Union{MatrixNet,KetNet}, c, rc)
+    for i=1:num_batches(σp)
+        propose_step!(unsafe_get_batch(σp, i), s, net, c, rc)
+    end
 end
 
-## Mulithreading
-function _mt_recompute_sampler_params!(samplers, s::MetropolisSampler)
-    nt = Threads.nthreads()
-    _chain_length = Int(ceil(s.chain_length / nt))
-    rng = MersenneTwister(s.seed)
 
-    for i=1:Threads.nthreads()
-        samplers[i] = MetropolisSampler(s.rule,
-                                   _chain_length,
-                                   burn=s.burn_length,
-                                   seed=rand(rng, UInt))
-    end
+## Show method
+function Base.show(io::IO, c::MetropolisSamplerCache)
+    println(io, "MetropolisSamplerCache{...}:")
+    println(io, "\t- Space                 : $(c.hilb)")
+    println(io, "\t- Stored chain length   : $(c.loc_chain_length)")
+    println(io, "\t- MCMC steps done       : $(c.steps_done)")
+    println(io, "\t- Passes done           : $(c.passes_done)")
+
+    acceptance_ratio = @sprintf "%2.2f" (c.passes_accepted/c.passes_done)*100
+    print(io, "\t- Passes accepted       : $(c.passes_accepted) ($acceptance_ratio %)")
 end
