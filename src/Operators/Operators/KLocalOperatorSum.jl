@@ -158,6 +158,9 @@ end
 Base.show(io::IO, ::MIME"text/plain", op::KLocalOperatorSum) = print(io,
     "KLocalOperatorSum: \n\t -sites: $(op.sites)")
 
+Base.show(io::IO, op::KLocalOperatorSum) = print(io,
+    "KLocalOperatorSum: on sites: $(op.sites)")
+
 Base.eltype(::T) where {T<:KLocalOperatorSum} = eltype(T)
 Base.eltype(T::Type{KLocalOperatorSum{H,Vec,VOp}}) where {H,Vec,VOp} =
     eltype(eltype(VOp))

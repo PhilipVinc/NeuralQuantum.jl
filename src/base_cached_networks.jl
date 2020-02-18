@@ -127,9 +127,21 @@ num_params(cnet::CachedNet) = num_params(cnet.net)
 # Visualization
 function Base.show(io::IO, m::CachedNet)
     print(io, "CachedNet{$(m.net)}")
+    try
+        bsz = batch_size(m)
+        print(io, ": batch_size = $bsz")
+    catch
+    end
 end
 
-Base.show(io::IO, ::MIME"text/plain", m::CachedNet) = print(io, "CachedNet{$(m.net)}")
+function Base.show(io::IO, ::MIME"text/plain", m::CachedNet)
+    print(io, "CachedNet{$(m.net)}")
+    try
+        bsz = batch_size(m)
+        print(io, ": batch_size = $bsz")
+    catch
+    end
+end
 
 ## Particoular kinds of networks
 # Thing for Matrix Neural Network

@@ -90,5 +90,4 @@ end
 Base.show(io::IO, is::BatchedObsDMSampler) = print(io,
     "BatchedObsDMSampler for :"*
     "\n\tnet\t\t: $(is.bnet)"*
-    "\n\tproblem\t: $(is.problem)"*
     "\n\tsampler\t: $(is.sampler)")

@@ -72,9 +72,16 @@ Base.eltype(::T) where {T<:KLocalLiouvillian} = eltype(T)
 Base.eltype(t::Type{<:KLocalLiouvillian{H,T,A,B,C}}) where {H,T,A,B,C} =
     eltype(A)
 
-Base.show(io::IO, m::MIME"text/plain", op::KLocalLiouvillian) = begin
+function Base.show(io::IO, m::MIME"text/plain", op::KLocalLiouvillian)
     T    = eltype(op.HnH_l)
     h    = basis(op)
 
-    print(io, "KLocalLiouvillian($T)\n  Hilb: $h")
+    print(io, "KLocalLiouvillian($T)\n\t- Hilb: $h")
+end
+
+function Base.show(io::IO, op::KLocalLiouvillian)
+    T    = eltype(op.HnH_l)
+    h    = basis(op)
+
+    print(io, "KLocalLiouvillian($T) on Hilb: $h")
 end
