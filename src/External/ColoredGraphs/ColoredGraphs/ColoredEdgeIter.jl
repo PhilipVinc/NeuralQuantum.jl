@@ -11,16 +11,16 @@ one pass over the edges, and is invalidated by changes to the graph.
 ```jldoctest
 julia> using LightGraphs
 
-julia> g = PathGraph(3);
+julia> g = path_graph(3);
 
 julia> es = edges(g)
 SimpleEdgeIter 2
 
 julia> e_it = iterate(es)
-(Edge 1 => 2, SimpleEdgeIterState [2, 2])
+(Edge 1 => 2, (1, 2))
 
 julia> iterate(es, e_it[2])
-(Edge 2 => 3, SimpleEdgeIterState [0, 1])
+(Edge 2 => 3, (2, 3))
 ```
 """
 struct ColoredEdgeIter{G} <: AbstractEdgeIter
@@ -43,7 +43,7 @@ function iterate(eit::ColoredEdgeIter{G}, state=((one(eltype(eit.g)), 1),1)) whe
         return col_edge, (state_uncolored, col_id +1)
     end
 
-    #otherwise iterate edges and reset to color # 1
+    # otherwise iterate edges and reset to color # 1
     return col_edge, (state_uncolored_next, 1)
 end
 

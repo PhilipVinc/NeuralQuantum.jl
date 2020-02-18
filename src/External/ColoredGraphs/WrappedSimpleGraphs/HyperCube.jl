@@ -8,16 +8,22 @@ mutable struct HyperCube{T,SG<:AbstractGraph{T}} <: AbstractWrappedSimpleGraph{T
 end
 
 """
-    HyperCube([dims::Int], periodic=true) -> HyperCube
+    HyperCube([dims::Int]; periodic=true, neighbours_distances=[1]) -> HyperCube
 
 Creates a HyperCube graph with spatial dimensions specified by dims. If `periodic==true`
 then every dimension is periodic. You can also pass `periodic=[true, false, false]`
-and only the specified dimensions will be periodic
+and only the specified dimensions will be periodic.
+
+`neighbours_distances` is a list of the distances to be encoded in the lattice.
+A standard nearest-neighbour coupling lattice is obtained with the default
+of `[1]`, if you want nearest-neighbour and next-nearest neighbour you need
+`[1,2]` and so on and so forth.
+The ordering is important and determines the coloring of the graph.
 
 The returned graph holds the lattice coordinates of every vertex in the underlying
 graph, useful when computing correlation functions.
 """
-function HyperCube(dims, periodic=true, neighbours_distances=[1])
+function HyperCube(dims; periodic=true, neighbours_distances=[1])
     T=Int
 
     nv = prod(dims)
