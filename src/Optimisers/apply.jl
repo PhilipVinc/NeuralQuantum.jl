@@ -6,8 +6,8 @@ _apply(opt, x, x̄, state) = apply(opt, x, x̄, state)
 _apply(opt, x, x̄, ::Nothing) = apply(opt, x, x̄)
 
 # Immutable updates
-update!(opt, x, xb, state=nothing) = _update!(opt, x, xb, state)
-update(opt, x, xb, state=nothing)  = _update(opt, x, xb, state)
+update!(opt, x, xb, state=state_init(opt, x)) = _update!(opt, x, xb, state)
+update(opt, x, xb, state=state_init(opt, x))  = _update(opt, x, xb, state)
 
 function _update(opt, x::Param, x̄::Param, state = nothing)
   Δ, state = _apply(opt, x, x̄, state)
@@ -38,6 +38,7 @@ function _update!(opt, x, x̄::Tuple, state=nothing)
 
     f̄ === nothing || _update!(opt, getindex(x, f), f̄, state)
   end
+  return state
 end
 
 function _update!(opt, x, x̄::NamedTuple, state=nothing)
@@ -47,6 +48,7 @@ function _update!(opt, x, x̄::NamedTuple, state=nothing)
 
     f̄ === nothing || _update!(opt, getfield(x, f), f̄, state)
   end
+  return state
 end
 
 function _update!(opt, x, x̄, state=nothing)
@@ -59,4 +61,5 @@ function _update!(opt, x, x̄, state=nothing)
       f̄ === nothing || _update!(opt, getfield(x, f), f̄, state)
     end
   end
+  return state
 end

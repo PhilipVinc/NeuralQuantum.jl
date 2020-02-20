@@ -1,5 +1,7 @@
 # Code taken from FluxML/Optimisers.jl
 
+state_init(opti, args...) = nothing
+
 """
     Descent(η)
 
@@ -31,9 +33,14 @@ mutable struct Nesterov
   gclip::AbstractFloat
 end
 
-function apply(o::Nesterov, x, Δ, v=zero(x)) # v = old speed
+state_init(o::Nesterov, x) = IdDict()
+
+function apply(o::Nesterov, x, Δ, state)
   lr = o.lr
   μ  = o.μ
+
+  # get old velocity, and if not present, set it to zero.
+  v = get!(state, x, zero(x))
 
   d = @. μ^2 * v - (1+μ) * lr * Δ
   @. v = μ*v - lr*Δ
