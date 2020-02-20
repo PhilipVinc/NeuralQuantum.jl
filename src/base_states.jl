@@ -44,7 +44,17 @@ See also @ref(apply!)
 apply(σ::Union{AState, ADoubleState}, cngs) = apply!(deepcopy(σ), cngs)
 
 
-# Logic to copy states
+# statesimilar
+state_similar(σ) = similar(σ)
+
+state_similar(σ::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec}) =
+    (state_similar(row(σ)), state_similar(col(σ)))
+
+# Allocating
+statecopy(σ) = statecopy!(state_similar(σ), σ)
+statecopy(σ, σp, mask) = statecopy!(statecopy(σ), σp, mask)
+statecopy_invertmask(σ, σp, mask) = statecopy_invertmask(statecopy(σ), σp, mask)
+
 """
     statecopy!(σp, σ, [mask=nothing])
 
@@ -71,12 +81,12 @@ end
     statecopy!(σp, (σ, σ))
 @inline statecopy!(σp::ADoubleStateBatchVec{T}, σ::AStateBatch{T}) where T =
     statecopy!(σp, (σ, σ))
-@inline function statecopy!(σp::Union{AState, AStateBatch}, σ::Union{AState, AStateBatch}, mask)
+@inline function statecopy!(σp::Union{AState, AStateBatch, AStateBatchVec}, σ::Union{AState, AStateBatch, AStateBatchVec}, mask)
     σp .= σ .* mask .+ σp .* .! mask
     return σp
 end
-function statecopy!(σp::Union{ADoubleState, ADoubleStateBatch},
-           σ::Union{ADoubleState, ADoubleStateBatch}, mask)
+function statecopy!(σp::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec},
+           σ::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec}, mask)
     statecopy!(row(σp), row(σ), mask)
     statecopy!(col(σp), col(σ), mask)
     return σp
@@ -90,14 +100,14 @@ end
 Copies the state `σ` onto `σp`, but only the elements where `mask` has 0s.
 Equivalent to `statecopy!(σp, σ, !mask)`.
 """
-@inline function statecopy_invertmask!(σp::Union{AState, AStateBatch}, σ::Union{AState, AStateBatch},
+@inline function statecopy_invertmask!(σp::Union{AState, AStateBatch, AStateBatchVec}, σ::Union{AState, AStateBatch},
                    mask)
     σp .= σ .* .! mask .+ σp .* mask
     return σp
 end
 
-function statecopy_invertmask!(σp::Union{ADoubleState, ADoubleStateBatch},
-           σ::Union{ADoubleState, ADoubleStateBatch}, mask)
+function statecopy_invertmask!(σp::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec},
+           σ::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec}, mask)
     statecopy_invertmask!(row(σp), row(σ), mask)
     statecopy_invertmask!(col(σp), col(σ), mask)
     return σp

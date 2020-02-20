@@ -69,6 +69,7 @@ include("Parallel/not_parallel.jl")
 
 # Various utility functions
 include("utils/math.jl")
+include("utils/views.jl")
 include("utils/stats.jl")
 include("utils/rng.jl")
 
