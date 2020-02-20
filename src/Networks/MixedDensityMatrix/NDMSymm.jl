@@ -64,7 +64,7 @@ function logψ_and_∇logψ!(∇lnψ_symm, net::NDMSymm, c::NDMSymmCache, args..
     lnψ = logψ_and_∇logψ!(c.bare_∇logψ, net.bare_net, c.bare_cache, args...)
 
     symmetrize_∇logψ_NDM!(∇lnψ_symm, c.bare_∇logψ, net)
-    lnψ, ∇lnψ_symm
+    return lnψ
 end
 
 

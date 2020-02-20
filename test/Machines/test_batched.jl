@@ -14,6 +14,11 @@ machines["NDM_softplus"] = ma
 ma = (T, N) -> NDM(T, N, 2, 3, NeuralQuantum.logℒ2)
 machines["NDM_cosh"] = ma
 
+graph = HyperCube([N], periodic=true)
+symm  = translational_symm_table(graph)
+ma = (T, N) -> NDMSymm(T, N, 1, 2, symm, NeuralQuantum.logℒ2)
+machines["NDMSymm_cosh"] = ma
+
 ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ)
 machines["RBM_softplus"] = ma
 
