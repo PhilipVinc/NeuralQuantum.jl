@@ -75,7 +75,7 @@ weights(net) = trainable(net)
 
 @inline (cnet::CachedNet)(σ...) = logψ(cnet, σ...)
 # When you call logψ on a cached net use the cache to compute the net
-@inline logψ(cnet::CachedNet, σ::NTuple{N,<:AbstractArray}) where N =
+@inline logψ(cnet::CachedNet, σ::NTuple{N,<:AbstractVector}) where N =
     cnet.net(cnet.cache, σ...)
 @inline logψ(cnet::CachedNet, σ::ADoubleState) where {N,V} =
     cnet.net(cnet.cache, σ...)

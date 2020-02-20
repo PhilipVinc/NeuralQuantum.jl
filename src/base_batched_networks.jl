@@ -32,8 +32,8 @@ out_similar(net::CachedNet{N,C}) where{N,C<:NNBatchedCache} =
 # Definition for inplace evaluation of batched cached networks
 @inline logψ!(out::AbstractMatrix, net::CachedNet, σ::Vararg{T,N}) where {N,T<:AbstractVecOrMat} =
     logψ!(out, net.net, net.cache, σ...)
-@inline logψ!(out::AbstractMatrix, net::CachedNet, σ::ADoubleStateBatch) where N =
-    logψ!(out, net.net, net.cache, σ...)
+@inline logψ!(out::AbstractMatrix, net::CachedNet, σ::ADoubleStateBatch) =
+    logψ!(out, net.net, net.cache, row(σ), col(σ))
 @inline logψ!(out::AbstractMatrix, cnet::CachedNet, σ::AStateBatch) =
     logψ!(out, cnet.net, cnet.cache, σ)
 
