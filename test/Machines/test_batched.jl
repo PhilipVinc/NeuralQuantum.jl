@@ -165,6 +165,8 @@ end
 
 
 @testset "test batched ∇ψ: $name" for name=keys(machines)
+    name == "NDMSymm_cosh" && continue
+
     net = machines[name](T,N)
 
     cnet = cached(net)

@@ -20,9 +20,7 @@ re_machines["NDM_softplus"] = ma
 ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ2)
 re_machines["NDM_cosh"] = ma
 
-graph = HyperCube([N], periodic=true)
-symm  = translational_symm_table(graph)
-ma = (T, N) -> NDMSymm(T, N, 1, 2, symm, NeuralQuantum.logℒ2)
+ma = (T, N) -> NDMSymm(T, N, 1, 2, translational_symm_table(HyperCube([N], periodic=true)), NeuralQuantum.logℒ2)
 re_machines["NDMSymm_cosh"] = ma
 
 ma = (T, N) -> PureStateAnsatz(Chain(Dense(T, N, N*2), Dense(T, N*2, N*3), WSum(T, N*3)), N)
