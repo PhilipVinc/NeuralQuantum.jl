@@ -20,6 +20,11 @@ re_machines["NDM_softplus"] = ma
 ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ2)
 re_machines["NDM_cosh"] = ma
 
+graph = HyperCube([N], periodic=true)
+symm  = translational_symm_table(graph)
+ma = (T, N) -> NDMSymm(T, N, 1, 2, symm, NeuralQuantum.logℒ2)
+re_machines["NDMSymm_cosh"] = ma
+
 ma = (T, N) -> PureStateAnsatz(Chain(Dense(T, N, N*2), Dense(T, N*2, N*3), WSum(T, N*3)), N)
 re_machines["ChainKet"] = ma
 
@@ -97,6 +102,7 @@ end
 @testset "Test cached gradient $name" for name=keys(all_machines)
     for T=num_types
         name == "ChainKet" && T != Float32 && continue
+        name == "NDMSymm_cosh" && continue
 
         net = all_machines[name](T,N)
         cnet = cached(net)

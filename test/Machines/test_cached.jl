@@ -22,7 +22,7 @@ machines["NDM_cosh"] = ma
 graph = HyperCube([N], periodic=true)
 symm  = translational_symm_table(graph)
 ma = (T, N) -> NDMSymm(T, N, 1, 2, symm, NeuralQuantum.logℒ2)
-re_machines["NDMSymm_cosh"] = ma
+machines["NDMSymm_cosh"] = ma
 
 ma = (T, N) -> begin
     ch = Chain(Dense(T, N, 2*N, af_softplus), sum_autobatch)

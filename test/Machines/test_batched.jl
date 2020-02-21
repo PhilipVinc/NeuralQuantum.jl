@@ -54,6 +54,8 @@ T = Float32
 b_sz = 3
 
 @testset "test batched dispatch - values: $name" for name=keys(machines)
+    name == "NDMSymm_cosh" && continue
+
     net = machines[name](T,N)
     hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
