@@ -199,11 +199,11 @@ function _op_alpha_prod(op::KLocalOperatorTensor, a::Number)
     end
 end
 
-is_same_operator(l::KLocalOperatorTensor, r::KLocalOperatorTensor) =
-    is_same_operator(l.op_l, r.op_l) && is_same_operator(l.op_r, r.op_r)
+Base.isapprox(l::KLocalOperatorTensor, r::KLocalOperatorTensor; kwargs...) =
+    isapprox(l.op_l, r.op_l; kwargs...) && isapprox(l.op_r, r.op_r; kwargs...)
 
-is_same_operator(::Nothing, ::Nothing) = true
-is_same_operator(l,r) = false
+Base.:(==)(l::KLocalOperatorTensor, r::KLocalOperatorTensor) =
+    l.op_l == r.op_l && l.op_r == r.op_r
 
 Base.eltype(::T) where {T<:KLocalOperatorTensor} = eltype(T)
 Base.eltype(T::Type{<:KLocalOperatorTensor{A,B,C}}) where {A,B,C<:KLocalOperator} =

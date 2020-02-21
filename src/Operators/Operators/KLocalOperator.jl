@@ -190,8 +190,11 @@ function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperator, v
     return acc
 end
 
-is_same_operator(l::KLocalOperator, r::KLocalOperator) =
+Base.:(==)(l::KLocalOperator, r::KLocalOperator) =
     l.mat == r.mat && l.hilb_dims == r.hilb_dims
+
+Base.isapprox(l::KLocalOperator, r::KLocalOperator; kwargs...) =
+    l.hilb_dims == r.hilb_dims && isapprox(l.mat, r.mat; kwargs...)
 
 Base.:-(op::KLocalOperator) = KLocalOperator(op, -op.mat)
 

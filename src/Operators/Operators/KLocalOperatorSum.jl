@@ -172,3 +172,27 @@ function _op_alpha_prod(ops::KLocalOperatorSum, a::Number)
     op_all = [a*op for op=operators(ops)]
     return sum(op_all)
 end
+
+function Base.:(==)(l::KLocalOperatorSum, r::KLocalOperatorSum)
+    p_l = sortperm(sites(l))
+    p_r = sortperm(sites(r))
+
+    sites(l)[p_l] == sites(r)[p_r] || return false
+
+    for (op_l,op_r)=zip(operators(l)[p_l], operators(r)[p_r])
+        op_l == op_r || return false
+    end
+    return true
+end
+
+function Base.isapprox(l::KLocalOperatorSum, r::KLocalOperatorSum; kwargs...)
+    p_l = sortperm(sites(l))
+    p_r = sortperm(sites(r))
+
+    sites(l)[p_l] == sites(r)[p_r] || return false
+
+    for (op_l,op_r)=zip(operators(l)[p_l], operators(r)[p_r])
+        isapprox(op_l, op_r; kwargs...) || return false
+    end
+    return true
+end

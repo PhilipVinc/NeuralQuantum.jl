@@ -48,6 +48,12 @@ Base.:*(opl::KLocalOperatorZero, opr::KLocalOperator) =
 Base.:*(opl::KLocalOperator, opr::KLocalOperatorZero) =
     return opr
 
+Base.:(==)(l::KLocalOperatorZero, r::KLocalOperatorZero) =
+    l.hilb == r.hilb
+
+Base.isapprox(l::KLocalOperatorZero, r::KLocalOperatorZero; kwargs...) =
+    l.hilb == r.hilb
+
 Base.show(io::IO, op::KLocalOperatorZero) = begin
     hilb   = basis(op)
 

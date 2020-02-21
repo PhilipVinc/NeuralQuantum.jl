@@ -34,7 +34,7 @@ S --> S+ϵ*identity
 If `precondition_type=sr_multiplicative` then a diagonal multiplicative shift is added to S
 S --> S + max(λ0*b^n,λmin)*Diagonal(diag(S)) where n is the number of the iteration.
 """
-struct SR{T1,T2,T3,TP} <: Algorithm
+mutable struct SR{T1,T2,T3,TP,TT} <: Algorithm
     sr_diag_shift::T1  # cutoff
     sr_diag_mult::T2
     sr_precision::T3   #cutoff
@@ -44,13 +44,17 @@ struct SR{T1,T2,T3,TP} <: Algorithm
     λ0::TP
     b::TP
     λmin::TP
+    time_evo::TT
 end
 
-SR(T::Type=STD_REAL_PREC; ϵ=0.001, precision=10e-5,
-   precondition_type=sr_shift, full_matrix=true, algorithm=sr_cholesky,
-   λ0=100.0, b=0.95, λmin=1e-4) = SR(T(ϵ), T(1.0), T(precision),
-                                          precondition_type, algorithm, full_matrix,
-                                          T(λ0), T(b), T(λmin))
+function SR(T::Type=STD_REAL_PREC; ϵ=0.001, precision=10e-5,
+            precondition_type=sr_shift, full_matrix=true, algorithm=sr_cholesky,
+            λ0=100.0, b=0.95, λmin=1e-4, time_evo=false)
+    return SR(T(ϵ), T(1.0), T(precision), precondition_type,
+              algorithm, full_matrix,
+              T(λ0), T(b), T(λmin),
+              Val(time_evo))
+end
 
 is_iterative(alg::SR) = is_iterative(algorithm(alg))
 algorithm(alg::SR) = alg.algorithm
