@@ -7,6 +7,17 @@ struct Measurement
     R
 end
 
+value(x::Measurement)       = x.mean
+uncertainty(x::Measurement) = x.error
+Base.real(x::Measurement) = Measurement(real(x.mean), x.error, x.variance, x.tau, x.R)
+Base.imag(x::Measurement) = Measurement(imag(x.mean), x.error, x.variance, x.tau, x.R)
+
+Measurement(x::Measurement) = copy(x)
+
+Base.copy(x::Measurement) =
+    Measurement(x.mean, x.error, x.variance, x.tau, x.R)
+
+
 stat_analysis(vals::AbstractMatrix, par_data::NotParallel) =
     _single_stat_analysis(vals)
 
