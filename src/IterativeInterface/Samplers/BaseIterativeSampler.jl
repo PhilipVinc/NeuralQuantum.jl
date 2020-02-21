@@ -1,5 +1,7 @@
 abstract type AbstractIterativeSampler end
 
+export gradient
+
 function _sample_state!(is::AbstractIterativeSampler)
     ch_len         = chain_length(is.sampler, is.sampler_cache)
     batch_sz       = batch_size(is.samples)
@@ -23,4 +25,10 @@ function _center_gradient!(is::AbstractIterativeSampler)
         workers_mean!(∇vec_avg, ∇vals_vec, is.parallel_cache) # MPI
         ∇vals_vec .-= ∇vec_avg
     end
+end
+
+function gradient(is::AbstractIterativeSampler, iter; kwargs...)
+    loss, grad_before_precond = sample!(is; kwargs...)
+    grad = precondition!(grad_before_precond, is.precond_algo, iter)
+    return loss, grad
 end

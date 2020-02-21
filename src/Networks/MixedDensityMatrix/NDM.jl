@@ -14,7 +14,9 @@ struct NDM{VT,MT,F} <: MatrixNeuralNetwork
 
     f::F
 end
-@functor NDM
+functor(d::NDM) = (b_μ=d.b_μ, h_μ=d.h_μ, w_μ=d.w_μ, u_μ=d.u_μ,
+                   b_λ=d.b_λ, h_λ=d.h_λ, d_λ=d.d_λ, w_λ=d.w_λ, u_λ=d.u_λ),
+                  t -> NDM(b_μ, h_μ, w_μ, u_μ, b_λ, h_λ, d_λ, w_λ, u_λ, d.f)
 
 """
     NDM([T=STD_REAL_PREC], N, αₕ, αₐ, f=af_softplus, [initW, initb, inita])

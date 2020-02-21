@@ -20,6 +20,8 @@ generating a state.
     the n_exc will not be respected during sampling.
 """
 function HomogeneousFock(n_sites, hilb_dim; excitations = -1)
+    n_sites = n_sites isa AbstractGraph ? nv(n_sites) : n_sites
+
     constrained = excitations >= 0 ? true : false
     if constrained && excitations > n_sites*(hilb_dim-1)
         throw(ErrorException("Constrain is useless: bigger than total number of allowed particles."))

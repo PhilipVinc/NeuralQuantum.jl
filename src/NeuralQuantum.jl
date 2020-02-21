@@ -237,6 +237,9 @@ include("GPU/AccumulatorObsScalar.jl")
 
 include("GPU/gpuarrays.jl")
 
+# Extra
+include("Extra/RecipesBase.jl")
+include("Extra/ValueHistories.jl")
 function __init__()
 
   # cuda stuff
@@ -262,7 +265,11 @@ function __init__()
   end
 
   @require TensorBoardLogger="899adc3e-224a-11e9-021f-63837185c80f" begin
-    include("utils/logging.jl")
+    include("Extra/Optionals/TensorBoardLogger.jl")
+  end
+
+  @require Measurements="eff96d63-e80a-5855-80a2-b1b0885c5ab7" begin
+    include("Extra/Optionals/Measurements.jl")
   end
 
 end

@@ -1,6 +1,6 @@
 export BatchedSampler
 
-mutable struct BatchedGradSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Lgv, Pc, Pd} <: AbstractIterativeSampler
+mutable struct BatchedGradSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Lgv, Pa, Pc, Pd} <: AbstractIterativeSampler
     bnet::BN
     Ĉ::P
 
@@ -17,6 +17,8 @@ mutable struct BatchedGradSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Lg
 
     local_vals::Lv
     ∇local_vals::Lgv
+
+    precond_algo::Pa
     precond_cache::Pc
 
     observables_sampler
@@ -27,7 +29,7 @@ end
 function BatchedGradSampler(net,
                         sampl,
                         prob,
-                        algo=prob;
+                        algo=Gradient();
                         batch_sz=2^4,
                         local_batch_sz=batch_sz,
                         obs_sampler=sampl,
@@ -64,7 +66,9 @@ function BatchedGradSampler(net,
     nq = BatchedGradSampler(bnet, prob,
             sampl, sampler_cache, samples,
             ψvals, ∇vals, ∇vec, ∇vec_avg,
-            local_acc, Llocal_vals, ∇Llocal_vals, precond, obs,
+            local_acc, Llocal_vals, ∇Llocal_vals,
+            algo, precond,
+            obs,
             par_cache)
 
     return nq

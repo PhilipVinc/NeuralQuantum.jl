@@ -1,6 +1,6 @@
 export BatchedSampler
 
-mutable struct BatchedValSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Pc, Pd} <: AbstractIterativeSampler
+mutable struct BatchedValSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Pa, Pc, Pd} <: AbstractIterativeSampler
     bnet::BN
     Ĉ::P # the operator defining the observable to minimise
 
@@ -16,6 +16,8 @@ mutable struct BatchedValSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Pc,
     accum::LC
 
     local_vals::Lv
+
+    precond_alg::Pa
     precond_cache::Pc
 
     observables_sampler
@@ -26,7 +28,7 @@ end
 function BatchedValSampler(net,
                         sampl,
                         prob,
-                        algo=prob;
+                        algo=Gradient();
                         batch_sz=2^4,
                         local_batch_sz=batch_sz,
                         par_type=automatic_parallel_type())
@@ -57,7 +59,9 @@ function BatchedValSampler(net,
     nq = BatchedValSampler(bnet, prob,
             sampl, sampler_cache, samples,
             ψvals, ∇vals, ∇vecs, ∇vec_avg,
-            local_acc, Llocal_vals, precond, obs,
+            local_acc, Llocal_vals,
+            algo, precond,
+            obs,
             par_cache)
 
     return nq

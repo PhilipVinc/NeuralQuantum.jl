@@ -1,11 +1,13 @@
 export BatchedSampler
 
-mutable struct SimpleIterativeSampler{BN, S, Sc, Sv, Pd} <: AbstractIterativeSampler
+mutable struct SimpleIterativeSampler{BN, S, Sc, Sv, H, Pd} <: AbstractIterativeSampler
     bnet::BN
 
     sampler::S
     sampler_cache::Sc
     samples::Sv
+
+    hilb::H
 
     parallel_cache::Pd
 end
@@ -18,7 +20,7 @@ function SimpleIterativeSampler(net,
     if net isa CachedNet
         throw("Only takes standard network.")
     end
-    
+
     if hilb isa AbstractOperator
         hilb = basis(hilb)
     end
@@ -36,6 +38,7 @@ function SimpleIterativeSampler(net,
 
     sis = SimpleIterativeSampler(bnet,
             sampl, sampler_cache, samples,
+            hilb,
             par_cache)
 
     return sis
