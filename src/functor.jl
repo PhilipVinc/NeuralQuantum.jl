@@ -71,16 +71,8 @@ function loadparams!(m, xs)
 end
 
 # CPU/GPU movement conveniences
-
 cpu(m) = fmap(x -> adapt(Array, x), m)
-
-#const gpu_adaptor = if has_cuarrays()
-#  CuArrays.cu
-#else
-#  identity
-#end
-
-#gpu(x) = fmap(gpu_adaptor, x)
+gpu(x) = use_cuda[] ? fmap(CuArrays.cu, x) : x
 
 # Precision
 
