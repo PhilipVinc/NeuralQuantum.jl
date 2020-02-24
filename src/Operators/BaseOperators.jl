@@ -20,6 +20,22 @@ function row_valdiff!(opconn, op, v; init=true)
     _row_valdiff!(opconn, op, v)
 end
 
+function row_valstate(op::AbsLinearOperator, v)
+    conns = row_valdiff(op, v)
+
+    vp    = state_similar(v, length(conns))
+    statecopy!(vp, v)
+
+    T     = eltype(conns).parameters[1]
+    mels  = zeros(T, length(conns))
+
+    for (i,(mel, cngs)) = enumerate(conns)
+        mels[i] = mel
+        apply!(unsafe_get_batch(vp,i), cngs)
+    end
+    return mels, vp
+end
+
 row_valdiff_index(op::AbsLinearOperator, v) = row_valdiff_index!(OpConnectionIndex(op), op, v)
 function row_valdiff_index! end
 
