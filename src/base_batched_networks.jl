@@ -27,6 +27,8 @@ batch_size(cache::NNBatchedCache) = throw("Not Implemented")
 
 out_similar(net::CachedNet{N,C}) where{N,C<:NNBatchedCache} =
     similar(trainable_first(net), out_type(net), 1, batch_size(net))
+out_similar(net::CachedNet{N,C}, dims::Vararg{T,I}) where{T<:Integer, I, N,C<:NNBatchedCache} =
+    similar(trainable_first(net), out_type(net), 1, dims...)
 
 
 # Definition for inplace evaluation of batched cached networks
@@ -257,7 +259,7 @@ end
 
 function logψ(net::Union{NeuralNetwork, CachedNet},
                σ::Union{AStateBatch, ADoubleStateBatch}) where {T}
-    out = similar(out_similar(net), 1, batch_size(σ))
+    out = out_similar(net, batch_size(σ))
     logψ!(out, net, σ)
 end
 
@@ -274,7 +276,7 @@ logψ!(out::AbstractArray, net::MatrixNeuralNetwork, cache::NNCache, σ::AStateB
 log_prob_ψ!(prob::AbstractArray, net::NeuralNetwork, σ) =
     log_prob_ψ!(prob, prob, net, σ)
 
-function log_prob_ψ!(prob::AbstractArray, out_tmp::AbstractArray, net::MatrixNeuralNetwork, σ::AStateOrBatchOrVec)
+function log_prob_ψ!(prob::AbstractArray, out_tmp::AbstractArray, net::MatrixNet, σ::AStateOrBatchOrVec)
     logψ!(out_tmp, net, σ, σ)
     prob .= abs.(out_tmp)
     return prob

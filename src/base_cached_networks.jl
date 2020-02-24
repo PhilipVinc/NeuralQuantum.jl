@@ -73,7 +73,7 @@ the wrapped data structure.
 """
 weights(net) = trainable(net)
 
-@inline (cnet::CachedNet)(σ...) = logψ(cnet, σ...)
+@specialize_vararg 5 @inline (cnet::CachedNet)(σ...) = logψ(cnet, σ...)
 # When you call logψ on a cached net use the cache to compute the net
 @inline logψ(cnet::CachedNet, σ::NTuple{N,<:AbstractVector}) where N =
     cnet.net(cnet.cache, σ...)
@@ -83,7 +83,6 @@ weights(net) = trainable(net)
     cnet.net(cnet.cache, σ)
 @inline logψ(cnet::CachedNet, σr::T, σc::T) where {T<:Union{AState}} =
     cnet.net(cnet.cache, σr, σc)
-
 
 function logψ_and_∇logψ(n::CachedNet, σ::Vararg{N,V}) where {N,V}
     #@warn "Inefficient calling logψ_and_∇logψ for cachedNet"
@@ -107,6 +106,24 @@ end
 @inline function logψ_and_∇logψ!(der, n::CachedNet, σ::AbstractArray)
     lψ = logψ_and_∇logψ!(der, n.net, n.cache, σ);
     return (lψ, der)
+end
+
+## Inplace stuff
+function logψ!(out::AbstractArray, net::NeuralNetwork, cache::NNCache, vv::Union{AStateBatch,ADoubleStateBatch})
+    for i=1:num_batches(vv)
+        v = unsafe_get_el(vv, i)
+        out[i] = logψ(net, cache, v)
+    end
+    return out
+end
+
+function logψ!(out::AbstractArray, net::NeuralNetwork, cache::NNCache, vvl::AStateBatch, vvr::AStateBatch)
+    for i=1:num_batches(vvr)
+        vl = unsafe_get_el(vvl, i)
+        vr = unsafe_get_el(vvr, i)
+        out[i] = logψ(net, cache, vl, vr)
+    end
+    return out
 end
 
 ## Optimisation of cachednet
@@ -147,21 +164,23 @@ end
 # Thing for Matrix Neural Network
 # A MatrixNeuralNetwork is a network for a state that has a bi-partite state,
 # representing row and column of a density matrix in the same space.
-abstract type MatrixNeuralNetwork <: NeuralNetwork end
 const MatrixNet   = Union{MatrixNeuralNetwork, CachedNet{<:MatrixNeuralNetwork}}
-log_prob_ψ(net::MatrixNeuralNetwork, σ::AStateOrBatchOrVec) =
-    abs(net(σ, σ))
+# Diagonal
+@inline (net::MatrixNeuralNetwork)(cache::NNCache, σ::AState) = net(cache, σ, σ)
+@inline log_prob_ψ(net::CachedNet{<:MatrixNeuralNetwork},
+                    σ::ADoubleStateOrBatchOrVec) = 2.0*real(net(σ))
+# For Matrix network evaluated on diagonal
+@inline log_prob_ψ(net::CachedNet{<:MatrixNeuralNetwork},
+                        σ::AStateOrBatchOrVec) = real(net(σ))
 
 # Thing for Pure Neural Network
 # A MatrixNeuralNetwork is a network for a state that has a bi-partite state,
 # representing row and column of a density matrix in the same space.
-abstract type PureNeuralNetwork <: NeuralNetwork end
 const PureNet   = Union{PureNeuralNetwork, CachedNet{<:PureNeuralNetwork}}
 
 # Thing for Pure-state (Closed system) Neural Network
 # A MatrixNeuralNetwork is a network for a state that has a bi-partite state,
 # representing row and column of a density matrix in the same space.
-abstract type KetNeuralNetwork <: NeuralNetwork end
 const KetNet   = Union{KetNeuralNetwork, CachedNet{<:KetNeuralNetwork}}
 
 # This overrides the standard behaviour of net(σ...) because Vector unpacking

@@ -31,11 +31,12 @@ with minimal allocations.
 """
 function logψ end
 
-@specialize_vararg 5 @inline logψ(net::NeuralNetwork, σ...) = net(σ)
+@specialize_vararg 5 @inline logψ(net::NeuralNetwork, σ...) = net(σ...)
+# Standard probability
 @inline log_prob_ψ(net, σ)          = 2.0*real(net(σ))
 
-@specialize_vararg 5 @inline ∇logψ(args...)  = logψ_and_∇logψ(args...)[2]
-@specialize_vararg 5 @inline ∇logψ!(args...)             = logψ_and_∇logψ!(args...)[2]
+@specialize_vararg 5 @inline ∇logψ(args...)   = logψ_and_∇logψ(args...)[2]
+@specialize_vararg 5 @inline ∇logψ!(args...)  = logψ_and_∇logψ!(args...)[2]
 
 """
     logψ_and_∇logψ(net, σ)
@@ -144,3 +145,14 @@ num_params(net::NeuralNetwork) = trainable_length(net)
 # the idea was that a shallow-copy of the weights of the net is not
 # even a copy....
 Base.copy(net::NeuralNetwork) = net
+
+## For Matrix networks evaluated squared
+abstract type MatrixNeuralNetwork <: NeuralNetwork end
+abstract type PureNeuralNetwork <: NeuralNetwork end
+abstract type KetNeuralNetwork <: NeuralNetwork end
+
+@inline log_prob_ψ(net::MatrixNeuralNetwork,
+                        σ::ADoubleStateOrBatchOrVec) = 2.0*real(net(σ))
+# For Matrix network evaluated on diagonal
+@inline log_prob_ψ(net::MatrixNeuralNetwork,
+                        σ::AStateOrBatchOrVec) = real(net(σ))
