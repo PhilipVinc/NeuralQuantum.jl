@@ -7,6 +7,10 @@ Returns the Density matrix encoded by the neural network `net`, and normalizes
 it if `norm==true`.
 """
 function densitymatrix(net::NeuralNetwork, hilb::AbstractSuperOpBasis, norm=true)
+    if !(net isa CachedNet)
+        net = cached(net)
+    end
+    
     v = state(hilb, net)
 
     p_hilb = physical(hilb)

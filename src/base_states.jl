@@ -45,11 +45,14 @@ apply(σ::Union{AState, ADoubleState}, cngs) = apply!(deepcopy(σ), cngs)
 
 
 # statesimilar
+state_similar(σ, batches, N) = similar(σ, size(σ, 1), batches, N)
+state_similar(σ, batches) = similar(σ, size(σ, 1), batches)
 state_similar(σ) = similar(σ)
 
-state_similar(σ::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec}) =
+@specialize_vararg 3 state_similar(σ::ADoubleStateOrBatchOrVec, args...) =
+    (state_similar(row(σ), args...), state_similar(col(σ), args...))
+state_similar(σ::ADoubleStateOrBatchOrVec) =
     (state_similar(row(σ)), state_similar(col(σ)))
-
 # Allocating
 statecopy(σ) = statecopy!(state_similar(σ), σ)
 statecopy(σ, σp, mask) = statecopy!(statecopy(σ), σp, mask)
@@ -85,8 +88,8 @@ end
     σp .= σ .* mask .+ σp .* .! mask
     return σp
 end
-function statecopy!(σp::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec},
-           σ::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec}, mask)
+function statecopy!(σp::ADoubleStateOrBatchOrVec,
+           σ::ADoubleStateOrBatchOrVec, mask)
     statecopy!(row(σp), row(σ), mask)
     statecopy!(col(σp), col(σ), mask)
     return σp
@@ -128,9 +131,11 @@ take the batch group `el`, and if specified also selects one single batch.
 It's somewhat equivalent to a `view`, but handles tuples of states for density
 matrices correctly and uses unsafe views to prevent allocation on CPU.
 """
+@inline unsafe_get_el(σ::AStateBatch, i)    = uview(σ, :, i)
 @inline unsafe_get_el(σ::AStateBatchVec, i) = uview(σ, :, :, i)
 @inline unsafe_get_el(σ::AStateBatchVec, batch, el) = uview(σ, :, batch, el)
 
+@inline unsafe_get_el(σ::ADoubleStateBatch, i) = (unsafe_get_el(row(σ), i), unsafe_get_el(col(σ), i))
 @inline unsafe_get_el(σ::ADoubleStateBatchVec, i) = (unsafe_get_el(row(σ), i), unsafe_get_el(col(σ), i))
 @inline unsafe_get_el(σ::ADoubleStateBatchVec, batch, el) = (unsafe_get_el(row(σ), batch, el), unsafe_get_el(col(σ), batch, el))
 
@@ -139,3 +144,7 @@ batch_size(σ::Union{ADoubleStateBatch,ADoubleStateBatchVec}) = batch_size(row(�
 
 chain_length(σ::Union{AStateBatchVec}) = size(σ, 3)
 chain_length(σ::Union{ADoubleStateBatchVec}) = chain_length(row(σ))
+
+state_size(σ::Union{AState, ADoubleState}) = (1,)
+state_size(σ::Union{AStateBatch, ADoubleStateBatch}) = (batch_size(σ),)
+state_size(σ::Union{AStateBatchVec, ADoubleStateBatchVec}) = (batch_size(σ),chain_length(σ))

@@ -110,12 +110,14 @@ Returns the numerical `eltype` of the output of the network.
 out_type(net::NeuralNetwork) = error("Not Implemented")
 
 """
-    out_similar(net) -> Array
+    out_similar(net) -> zero(T)
+    out_similar(net, dims...) -> zeros(T, dims...)
 
 Returns the result of similar for the output of the network.
 This is either a scalar or a row vector.
 """
-out_similar(net::NeuralNetwork) = zero(out_type(net))
+@inline out_similar(net::NeuralNetwork) = zero(out_type(net))
+@inline out_similar(net::NeuralNetwork, dims::Vararg{T,N}) where {T<:Integer,N} = zeros(out_type(net), 1, dims...)
 
 """
     is_analytic(net) -> Bool
