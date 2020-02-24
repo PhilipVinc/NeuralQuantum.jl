@@ -72,7 +72,7 @@ Constructs a state for the `hilbert` space with precision `T` and array type
 `arrT`.
 """
 state(h::AbstractHilbert) = state(STD_REAL_PREC, h)
-state(T::Type{<:Number}, h::AbstractHilbert) = state(zeros(1), STD_REAL_PREC, h)
+state(T::Type{<:Number}, h::AbstractHilbert) = state(zeros(1), T, h)
 state(arrT::AbstractArray, h::AbstractHilbert) = state(arrT, STD_REAL_PREC, h)
 
 function state(h::AbstractHilbert, i::Int)
@@ -170,10 +170,11 @@ end
 
 Returns an iterator to iterate all states in the hilbert space
 """
-states(h::AbstractHilbert) = StateIterator(h, state(h))
+states(T::Type{<:Number}, h::AbstractHilbert) = StateIterator(h, state(T, h))
+states(h::AbstractHilbert) = states(STD_REAL_PREC, h)
 
 Base.length(iter::StateIterator) = spacedimension(iter.basis)
-Base.eltype(iter::StateIterator) = eltype(iter.state)
+Base.eltype(iter::StateIterator) = typeof(iter.state)
 function Base.getindex(iter::StateIterator, i::Int)
     @assert i > 0 && i <= length(iter)
     state!(iter.state, iter.basis, i)
@@ -181,7 +182,7 @@ end
 
 function Base.iterate(iter::StateIterator)
     σ = set!(iter.state, iter.basis, 1)
-    return (σ, 1)
+    return (statecopy(σ), 1)
 end
 
 function Base.iterate(iter::StateIterator, idx)
@@ -191,5 +192,5 @@ function Base.iterate(iter::StateIterator, idx)
 
     σ = iter.state
     set!(σ, iter.basis, idx + 1)
-    return (σ, idx + 1)
+    return (statecopy(σ), idx + 1)
 end
