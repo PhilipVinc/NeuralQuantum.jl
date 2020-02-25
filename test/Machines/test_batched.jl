@@ -2,6 +2,7 @@ using NeuralQuantum, Test
 using NeuralQuantum: set_index!, trainable_first, preallocate_state_batch, state_batch
 using NeuralQuantum: out_similar, unsafe_get_batch
 num_types = [Float32, Float64]
+atol_types  = [1e-5, 1e-8]
 
 machines = Dict()
 
@@ -14,9 +15,7 @@ machines["NDM_softplus"] = ma
 ma = (T, N) -> NDM(T, N, 2, 3, NeuralQuantum.logℒ2)
 machines["NDM_cosh"] = ma
 
-graph = HyperCube([N], periodic=true)
-symm  = translational_symm_table(graph)
-ma = (T, N) -> NDMSymm(T, N, 1, 2, symm, NeuralQuantum.logℒ2)
+ma = (T, N) -> NDMSymm(T, N, 1, 2, translational_symm_table(HyperCube([N], periodic=true)), NeuralQuantum.logℒ2)
 machines["NDMSymm_cosh"] = ma
 
 ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ)

@@ -1,6 +1,7 @@
 using NeuralQuantum, Test
 using NeuralQuantum: set_index!
-num_types = [Float32, Float64]
+num_types   = [Float32, Float64]
+atol_types  = [1e-5, 1e-8]
 
 re_machines = Dict()
 im_machines = Dict()
@@ -98,7 +99,7 @@ end
 
 
 @testset "Test cached gradient $name" for name=keys(all_machines)
-    for T=num_types
+    for (T,  atol)=zip(num_types, atol_types)
         name == "ChainKet" && T != Float32 && continue
         name == "NDMSymm_cosh" && continue
 
@@ -124,7 +125,9 @@ end
                 c∇ = getproperty(cder, f)
                 push!(grads, ∇ ≈ c∇)
             end=#
-            push!(grads, der_ad ≈ cder)
+            isgood = isapprox(der_ad, cder, atol=atol)
+            push!(grads, isgood)
+
         end
         @test all(grads)
     end

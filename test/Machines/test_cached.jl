@@ -1,6 +1,7 @@
 using NeuralQuantum, Test
 using NeuralQuantum: set_index!
 num_types = [Float32, Float64]
+atol_types  = [1e-5, 1e-8]
 
 machines = Dict()
 
