@@ -34,7 +34,7 @@ function Base.show(io::IO, m::RBMBatchedCache)
 end
 
 
-function logψ!(out::AbstractArray, net::RBM, c::RBMBatchedCache, σ_r::AbstractArray)
+function logψ!(out::AbstractArray, net::RBM, c::RBMBatchedCache, σ_r::AStateBatch)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
@@ -55,7 +55,7 @@ function logψ!(out::AbstractArray, net::RBM, c::RBMBatchedCache, σ_r::Abstract
     return out
 end
 
-function logψ_and_∇logψ!(∇logψ, out, net::RBM, c::RBMBatchedCache, σ_r)
+function logψ_and_∇logψ!(∇logψ, out, net::RBM, c::RBMBatchedCache, σ_r::AStateBatch)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ
