@@ -76,7 +76,7 @@ cache(psa::MixedStateAnsatz, batch_sz::Int) =
 @inline (c::MixedStateAnsatz)(cache::NNCache, σ) = ansatz(c)(cache, σ)
 @inline (c::MixedStateAnsatz)(cache::NNCache, σr::AStateOrBatch, σc::AStateOrBatch) = ansatz(c)(cache, (σr, σc))
 
-logψ!(out, net::MixedStateAnsatz, c::NNBatchedCache, σr::AStateOrBatch, σc::AStateOrBatch) =
+logψ!(out, net::MixedStateAnsatz, c::NNBatchedCache, σr::AStateBatch, σc::AStateBatch) =
     logψ!(out, ansatz(net), c, (σr, σc))
 
 logψ_and_∇logψ!(∇logψ, out::AbstractMatrix, net::MixedStateAnsatz, c::NNBatchedCache, σr::AStateOrBatch, σc::AStateOrBatch) =

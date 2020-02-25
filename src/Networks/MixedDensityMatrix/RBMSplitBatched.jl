@@ -32,7 +32,7 @@ end
 
 batch_size(c::RBMSplitBatchedCache) = size(c.σr, 2)
 
-function logψ!(out::AbstractArray, net::RBMSplit, c::RBMSplitBatchedCache, σr_r, σc_r)
+function logψ!(out::AbstractArray, net::RBMSplit, c::RBMSplitBatchedCache, σr_r::AStateBatch, σc_r::AStateBatch)
     θ = c.θ
     θ_tmp = c.θ_tmp
     logℒθ = c.logℒθ

@@ -70,7 +70,7 @@ Base.show(io::IO, ::MIME"text/plain", m::NDM{VT,MT,F}) where {VT,MT,F} = print(i
     "NDM($VT), n=$(length(m.b_μ)), α=$(length(m.h_μ)/length(m.b_μ)), αₐ=$(length(m.d_λ)/length(m.b_μ)), f=$(m.f))")
 
 
-@inline (net::NDM)(σ::Tuple) = net(σ...)
+@inline (net::NDM)(σ::ADoubleStateOrBatch) = net(σ...)
 function (W::NDM)(σr, σc)
     T=eltype(W.u_λ)
     ∑logℒ_λ_σ = sum_autobatch(W.f.(W.h_λ .+ W.w_λ*σr))
@@ -158,7 +158,7 @@ cache(net::NDM) =
 
 
 (net::NDM)(c::NDMCache, (σr, σc)::Tuple{AbstractArray,AbstractArray}) = net(c, σr, σc)
-function (W::NDM)(c::NDMCache, σr, σc)
+function (W::NDM)(c::NDMCache, σr::AState, σc::AState)
     ∑σ      = c.∑σ
     Δσ      = c.Δσ
     θλ_σ    = c.θλ_σ
@@ -235,7 +235,7 @@ function (W::NDM)(c::NDMCache, σr, σc)
     return logψ
 end
 
-function logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, σr,σc)
+function logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, σr, σc)
     ∑σ      = c.∑σ
     Δσ      = c.Δσ
     θλ_σ    = c.θλ_σ
