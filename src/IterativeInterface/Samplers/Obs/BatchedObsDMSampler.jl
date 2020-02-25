@@ -1,6 +1,6 @@
 export BatchedSampler
 
-mutable struct BatchedObsDMSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, LC, Lv, Pd} <: AbstractIterativeSampler
+mutable struct BatchedObsDMSampler{BN, P, S, Sc, Sv, Pv, LC, Lv, Pd} <: AbstractIterativeSampler
     observables::Dict
 
     bnet::BN
@@ -11,8 +11,6 @@ mutable struct BatchedObsDMSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, LC, Lv, Pd} <:
     samples::Sv
 
     ψvals::Pv
-    ∇vals::Gv
-    ∇vals_vec::Gvv
 
     accum::LC
 
@@ -41,14 +39,13 @@ function BatchedObsDMSampler(bnet,
 
     samples        = NeuralQuantum.vec_of_batches(v, ch_len)
     ψvals          = similar(trainable_first(bnet), out_type(bnet), 1, batch_sz, ch_len)
-    ∇vals, ∇vec    = grad_cache(bnet, batch_sz, ch_len)
 
     local_acc      = AccumulatorObsScalar(bnet, hilb_doubled, v, local_batch_sz)
     Llocal_vals    = similar(ψvals, size(ψvals)[2:end]...)
 
     nq = BatchedObsDMSampler(Dict(), bnet, hilb_doubled,
             sampl, sampler_cache, samples,
-            ψvals, ∇vals, ∇vec,
+            ψvals,
             local_acc, Llocal_vals,
             Dict(),
             par_cache)
@@ -64,6 +61,9 @@ function compute_observables(is::BatchedObsDMSampler)
     ch_len         = chain_length(is.sampler, is.sampler_cache)
     batch_sz       = size(is.local_vals, 1)
 
+    # skip if no observables
+    isempty(is.observables) && return nothing
+
     # Sample phase
     _sample_state!(is)
 
@@ -72,19 +72,37 @@ function compute_observables(is::BatchedObsDMSampler)
 
     # Compute LdagL
     for (name, Ô) = is.observables
-        for i=1:ch_len
-            for j = 1:batch_sz
-                σv = unsafe_get_el(is.samples, j, i)
-                init!(is.accum, σv, is.ψvals[1,j,i], vec_data(is.∇vals[i])[1][:,j] )
-                accumulate_connections!(is.accum, Ô, σv)
-                O_loc = NeuralQuantum.finalize!(is.accum)
-                is.local_vals[j, i] = O_loc
-            end
-        end
-        is.results[name] = stat_analysis(is.local_vals, is.parallel_cache)
+        is.results[name] = _local_obs_eval(is, Ô)
     end
 
     return is.results
+end
+
+function compute_observable(is::BatchedObsDMSampler, Ô)
+    # Sample phase
+    _sample_state!(is)
+
+    # Compute logψ and ∇logψ
+    logψ!(is.ψvals, is.bnet, is.samples)
+
+    return _local_obs_eval(is, Ô)
+end
+
+function _local_obs_eval(is::BatchedObsDMSampler, Ô)
+    ch_len         = chain_length(is.sampler, is.sampler_cache)
+    batch_sz       = size(is.local_vals, 1)
+
+    for i=1:ch_len
+        for j = 1:batch_sz
+            σv = unsafe_get_el(is.samples, j, i)
+            init!(is.accum, σv, is.ψvals[1,j,i])
+            accumulate_connections!(is.accum, Ô, σv)
+            O_loc = NeuralQuantum.finalize!(is.accum)
+            is.local_vals[j, i] = O_loc
+        end
+    end
+
+    return stat_analysis(is.local_vals, is.parallel_cache)
 end
 
 Base.show(io::IO, is::BatchedObsDMSampler) = print(io,
