@@ -23,6 +23,7 @@ notifications:
 cache:
   directories:
   - $HOME/.ccache
+  - $HOME/.julia/artifacts 
   - $HOME/.julia/registries # can we cache all of .julia?
 
 before_install:

@@ -17,6 +17,11 @@ using Test
         include("Machines/test_ndmcomplex.jl")
     end
 
+    println("Testing samplers...")
+    @testset "Samplers" begin
+        include("Samplers/test_samplers.jl")
+    end
+
     #=
     println("Testing algorithm caches...")
     @testset "Algorithm" begin
