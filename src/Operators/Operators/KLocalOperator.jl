@@ -7,7 +7,7 @@ basis as `mat`. For every row of `mat` there are several non-zero values contain
 in `mel`, and to each of those, `to_change` contains the sites that must change the basis
 new value, contained in `new_value`
 """
-struct KLocalOperator{H<:AbstractHilbert,SV,M,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOperator
+struct KLocalOperator{H<:AbstractHilbert,T,SV,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOperator
     hilb::H
 
     # list of sites on which this operator acts
@@ -17,7 +17,7 @@ struct KLocalOperator{H<:AbstractHilbert,SV,M,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOp
     hilb_dims::SV
 
     # Operator (as a matrix) represented
-    mat::M
+    mat::Matrix{T}
 
     # Matrix elements, per row
     mel::Vector{Vel}
@@ -131,12 +131,12 @@ operators(op::KLocalOperator) = (op,)
 
 densemat(op::KLocalOperator) = op.mat
 
-conn_type(top::Type{KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {H, SV, M, Vel, Vti, Vtc, Vtv, OC} =
+conn_type(top::Type{KLocalOperator{H,T,SV,Vel,Vti,Vtc,Vtv,OC}}) where {H, T, SV, Vel, Vti, Vtc, Vtv, OC} =
     OpConnection{Vel, eltype(Vtc), eltype(Vtv)}
-conn_type(op::KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}) where {H, SV, M, Vel, Vti, Vtc, Vtv, OC} =
+conn_type(op::KLocalOperator{H,T,SV,Vel,Vti,Vtc,Vtv,OC}) where {H, T, SV, Vel, Vti, Vtc, Vtv, OC} =
     OpConnection{Vel, eltype(Vtc), eltype(Vtv)}
 
-eye_conn_type(top::Type{KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {H, SV, M, Vel, Vti, Vtc, Vtv, OC} =
+eye_conn_type(top::Type{KLocalOperator{H,T,SV,Vel,Vti,Vtc,Vtv,OC}}) where {H, T, SV, Vel, Vti, Vtc, Vtv, OC} =
     OpConnectionIdentity{eltype(Vtc), eltype(Vtv)}
 
 # Copy
@@ -347,7 +347,7 @@ function permutesystems(a::AbstractMatrix, h_dims::Vector, perm::Vector{Int})
 end
 
 Base.eltype(::T) where {T<:KLocalOperator} = eltype(T)
-Base.eltype(T::Type{KLocalOperator{H,SV,M,Vel,Vti,Vtc,Vtv,OC}}) where {H,SV,M,Vel,Vti,Vtc,Vtv,OC} =
+Base.eltype(::Type{KLocalOperator{H,T,SV,Vel,Vti,Vtc,Vtv,OC}}) where {H,T,SV,Vel,Vti,Vtc,Vtv,OC} =
     eltype(eltype(Vel))
 
 Base.show(io::IO, op::KLocalOperator) = begin
