@@ -29,11 +29,11 @@ function SimpleIterativeSampler(net,
 
     bnet           = cached(net, batch_sz)
     v              = state(hilb, bnet)
-    sampler_cache  = cache(sampl, hilb, bnet, par_cache)
+    sampler_cache  = cache(sampl, v, hilb, bnet, par_cache)
 
     ch_len         = chain_length(sampl, sampler_cache)
 
-    samples        = NeuralQuantum.vec_of_batches(v, ch_len)
+    samples        = state(hilb, bnet, ch_len)
 
     sis = SimpleIterativeSampler(bnet,
             sampl, sampler_cache, samples,

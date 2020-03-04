@@ -31,13 +31,12 @@ function BatchedObsDMSampler(bnet,
 
     par_cache      = parallel_execution_cache(par_type)
 
-    #bnet           = cached(net, batch_sz)
     v              = state(hilb_ph, bnet)
     sampler_cache  = cache(sampl, hilb_ph, bnet, par_cache)
 
     ch_len         = chain_length(sampl, sampler_cache)
 
-    samples        = NeuralQuantum.vec_of_batches(v, ch_len)
+    samples        = state(hilb_ph, bnet, ch_len)
     ψvals          = similar(trainable_first(bnet), out_type(bnet), 1, batch_sz, ch_len)
 
     local_acc      = AccumulatorObsScalar(bnet, hilb_doubled, v, local_batch_sz)

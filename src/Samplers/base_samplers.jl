@@ -10,8 +10,11 @@ abstract type SamplerCache{T}  end
 
 Creates a `SamplerCache` for this sampler and state.
 """
-cache(s::Sampler, hilb, net, par=NotParallel()) =
+cache(s::Sampler, hilb::AbstractHilbert, net, par=NotParallel()) =
     _sampler_cache(s, state(hilb, net), hilb, net, par)
+
+cache(s::Sampler, σ, hilb::AbstractHilbert, net, par=NotParallel()) =
+    _sampler_cache(s, σ, hilb, net, par)
 
 """
     init_sampler!(sampler, net, σ, [c=cache(sampler, σ, net)]) -> c

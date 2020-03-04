@@ -145,36 +145,6 @@ function grad_cache(T::Type{<:Number}, net::NeuralNetwork, batch_sz, vec_len)
 end
 
 
-## Things for batched states
-preallocate_state_batch(arrT::Array,
-                        T::Type{<:Real},
-                        v::AState,
-                        batch_sz) =
-    _std_state_batch(arrT, T, v, batch_sz)
-
-preallocate_state_batch(arrT::Array,
-                        T::Type{<:Real},
-                        v::ADoubleState,
-                        batch_sz) =
-    _std_state_batch(arrT, T, v, batch_sz)
-
-
-_std_state_batch(arrT::AbstractArray,
-                 T::Type{<:Number},
-                 v::AState,
-                 batch_sz) =
-    similar(arrT, T, length(v), batch_sz)
-
-_std_state_batch(arrT::AbstractArray,
-                 T::Type{<:Number},
-                 v::ADoubleState,
-                 batch_sz) = begin
-    vl = similar(arrT, T, length(row(v)), batch_sz)
-    vr = similar(arrT, T, length(col(v)), batch_sz)
-    return (vl, vr)
-end
-
-
 @inline store_state!(cache::Array,
              v::AbstractVector,
              i::Integer) = begin

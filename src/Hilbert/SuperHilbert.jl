@@ -9,7 +9,8 @@ abstract type AbstractSuperOpBasis <: AbstractHilbert end
 @inline indexable(h::AbstractSuperOpBasis) = spacedimension(h) != 0
 @inline is_homogeneous(h::AbstractSuperOpBasis) = is_homogeneous(physical(h))
 
-state(arrT::AbstractArray, T::Type{<:Number}, h::AbstractSuperOpBasis) = (state(arrT, T, physical(h)), state(arrT, T, physical(h)))#DoubleState(state(physical(h)))
+state(arrT::AbstractArray, T::Type{<:Number}, h::AbstractSuperOpBasis, dims::Vararg{Int,n}) where n =
+    (state(arrT, T, physical(h), dims...), state(arrT, T, physical(h), dims...))#DoubleState(state(physical(h)))
 
 @inline nsites_physical(h::AbstractSuperOpBasis)         = nsites(physical(h))
 @inline spacedimension_physical(h::AbstractSuperOpBasis) = spacedimension(physical(h))

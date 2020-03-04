@@ -50,8 +50,8 @@ end
 @inline is_contrained(h::HomogeneousSpin{H,C}) where {H,C} = C
 @inline constraint_limit(h::HomogeneousSpin) = h.Sz_total
 
-state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousSpin{N}) where N =
-    similar(arrT, T, nsites(h)) .= -(N-1)
+state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousSpin{N}, dims::Vararg{Int,n}) where {n,N} =
+    similar(arrT, T, nsites(h), dims...) .= -(N-1)
 
 Base.show(io::IO, ::MIME"text/plain", h::HomogeneousSpin{N}) where N =
     print(io, "Hilbert Space with $(nsites(h)) identical spins $(N-1)/2 of dimension $(local_dim(h))")

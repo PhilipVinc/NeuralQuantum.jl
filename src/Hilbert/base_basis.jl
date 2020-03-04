@@ -1,5 +1,6 @@
 export local_dimension, spacedimension
 export nsites, toint, index, shape
+export state_i
 
 """
     nsites(hilbert) -> Int
@@ -65,20 +66,36 @@ assuming it's indexable.
 """
 @inline index(h::AbstractHilbert, s) = toint(s, h)
 
+function index(h::AbstractHilbert, s::Union{AStateBatch, AStateBatchVec,ADoubleStateBatch, ADoubleStateBatchVec})
+    sz = state_size(s)
+    out = zeros(Int, sz...)
+    if out isa AbstractVector
+        for i=1:length(out)
+            out[i] = index(h, unsafe_get_el(s, i))
+        end
+    else
+        for i=1:size(out,2)
+            for j=1:size(out,1)
+                out[j,i] = index(h, unsafe_get_el(s, j,i))
+            end
+        end
+    end
+    return out
+end
+
 """
-    state([arrT=Vector], [T=STD_REAL_PREC], hilbert)
+    state([arrT=Vector], [T=STD_REAL_PREC], hilbert, [i=0])
 
 Constructs a state for the `hilbert` space with precision `T` and array type
-`arrT`.
+`arrT`. By default that's the lowest state, otherwise if the hilbert space it's
+indexable you can specify with a second argument.
 """
-state(h::AbstractHilbert) = state(STD_REAL_PREC, h)
-state(T::Type{<:Number}, h::AbstractHilbert) = state(zeros(1), T, h)
-state(arrT::AbstractArray, h::AbstractHilbert) = state(arrT, STD_REAL_PREC, h)
+state(h::AbstractHilbert, dims...) = state(STD_REAL_PREC, h, dims...)
+state(T::Type{<:Number}, h::AbstractHilbert, dims...) = state(zeros(1), T, h, dims...)
+state(arrT::AbstractArray, h::AbstractHilbert, dims...) = state(arrT, STD_REAL_PREC, h, dims...)
 
-function state(h::AbstractHilbert, i::Int)
-    σ = state(h)
-    return set!(σ, h, i)
-end
+state_i(h::AbstractHilbert, i::Int) = state_i(STD_REAL_PREC, h, i)
+state_i(T::Type{<:Number}, h::AbstractHilbert, i::Int) = set!(state(T, h), h, i)
 
 function apply!(σ::ADoubleState, h::AbstractHilbert, cngs_l, cngs_r) 
     apply!(row(σ), h, cngs_l)
@@ -160,9 +177,8 @@ Optionally you can pass the rng.
 
 An iterator for enumerating all the states in a basis
 """
-struct StateIterator{H,S}
+struct StateIterator{T,H}
     basis::H
-    state::S
 end
 
 """
@@ -170,27 +186,21 @@ end
 
 Returns an iterator to iterate all states in the hilbert space
 """
-states(T::Type{<:Number}, h::AbstractHilbert) = StateIterator(h, state(T, h))
+states(T::Type{<:Number}, h::AbstractHilbert) = StateIterator{T, typeof(h)}(h)
 states(h::AbstractHilbert) = states(STD_REAL_PREC, h)
 
 Base.length(iter::StateIterator) = spacedimension(iter.basis)
 Base.eltype(iter::StateIterator) = typeof(iter.state)
-function Base.getindex(iter::StateIterator, i::Int)
+function Base.getindex(iter::StateIterator{T}, i::Int) where T
     @assert i > 0 && i <= length(iter)
-    state!(iter.state, iter.basis, i)
+    state_i(T, iter.basis, i)
 end
 
-function Base.iterate(iter::StateIterator)
-    σ = set!(iter.state, iter.basis, 1)
-    return (statecopy(σ), 1)
-end
-
-function Base.iterate(iter::StateIterator, idx)
+function Base.iterate(iter::StateIterator{T}, idx = 1) where T
     if idx >= spacedimension(iter.basis)
         return nothing
     end
 
-    σ = iter.state
-    set!(σ, iter.basis, idx + 1)
-    return (statecopy(σ), idx + 1)
+    σ = state_i(T, iter.basis, idx)
+    return (σ, idx + 1)
 end

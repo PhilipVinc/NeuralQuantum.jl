@@ -44,7 +44,7 @@ function BatchedValSampler(net,
 
     ch_len         = chain_length(sampl, sampler_cache)
 
-    samples        = NeuralQuantum.vec_of_batches(v, ch_len)
+    samples        = state(prob, bnet, ch_len)
     ψvals          = similar(trainable_first(bnet), out_type(bnet), 1, batch_sz, ch_len)
     ∇vals, ∇vecs   = grad_cache(bnet, batch_sz, ch_len)
     ∇vec_avg       = tuple([similar(∇vec, size(∇vec, 1)) for ∇vec=∇vecs ]...)

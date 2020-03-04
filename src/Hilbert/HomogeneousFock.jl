@@ -42,7 +42,8 @@ end
 @inline is_contrained(h::HomogeneousFock{H,C}) where {H,C} = C
 @inline constraint_limit(h::HomogeneousFock) = h.n_exc
 
-state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousFock) = similar(arrT, T, nsites(h)) .= 0.0
+state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousFock, dims::Vararg{Int,n}) where n =
+    similar(arrT, T, nsites(h), dims...) .= 0.0
 
 Base.show(io::IO, ::MIME"text/plain", h::HomogeneousFock) =
     print(io, "Hilbert Space with $(nsites(h)) identical sites of dimension $(local_dim(h))")

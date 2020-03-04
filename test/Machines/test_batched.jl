@@ -1,5 +1,5 @@
 using NeuralQuantum, Test
-using NeuralQuantum: set_index!, trainable_first, preallocate_state_batch, state_batch
+using NeuralQuantum: set_index!, trainable_first
 using NeuralQuantum: out_similar, unsafe_get_batch
 num_types = [Float32, Float64]
 atol_types  = [1e-5, 1e-8]
@@ -61,9 +61,9 @@ b_sz = 3
         hilb = SuperOpSpace(hilb)
     end
     cnet = cached(net, b_sz)
-    v = state(T, hilb, net)
-    vb = preallocate_state_batch(trainable_first(net), T,
-                             v, b_sz)
+    v  = state(T, hilb, net)
+    vb = state(T, hilb, net, b_sz)
+
     if vb isa Tuple
         rand!.(vb)
     else
@@ -96,13 +96,14 @@ end
     end
 
     v  = state(T, hilb, net)
-    vb = preallocate_state_batch(trainable_first(net), T,
-                             v, b_sz)
+    vb = state(T, hilb, net, b_sz)
+
     if vb isa Tuple
         rand!.(vb)
     else
         rand!(vb)
     end
+
     g1 = grad_cache(net, b_sz)
     g2 = grad_cache(net, b_sz)
     g3 = grad_cache(net, b_sz)
@@ -141,7 +142,7 @@ end
     end
 
     v  = state(T, hilb, net)
-    vb = state_batch(T, hilb, net, b_sz)
+    vb = state(T, hilb, net, b_sz)
 
     vals   = out_similar(bnet)
     vals_2 = out_similar(bnet)
@@ -176,7 +177,7 @@ end
     end
 
     v  = state(T, hilb, net)
-    vb = state_batch(T, hilb, net, b_sz)
+    vb = state(T, hilb, net, b_sz)
 
     vals   = out_similar(bnet)
     vals_2 = out_similar(bnet)
