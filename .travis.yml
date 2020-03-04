@@ -60,7 +60,6 @@ jobs:
     - julia: nightly
 
   include:
-    - stage: "Tests"
     - stage: "Documentation"
       julia: 1.3
       os: linux
@@ -72,3 +71,11 @@ jobs:
                                     Pkg.instantiate()'
         - julia --project=docs/ docs/make.jl
       after_success: skip
+    - stage: "Coverage"
+      julia: 1.3
+      os: linux
+      after_success:
+        - julia -e 'using Pkg; cd(Pkg.dir("NeuralQuantum"));
+                                Pkg.add("Coverage");
+                                using Coverage;
+                                Codecov.submit(Codecov.process_folder())'
