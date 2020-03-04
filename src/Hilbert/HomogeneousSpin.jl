@@ -13,7 +13,7 @@ end
 
 Constructs the Hilbert space of `N` identical spins-S (by default 1//2).
 """
-function HomogeneousSpin(n_sites, S::Rational=1//2; total_Sz::Union{Nothing,Rational}=nothing)
+function HomogeneousSpin(n_sites, S::Rational=1//2; total_Sz::Union{Nothing,Rational,Int}=nothing)
     n_sites = n_sites isa AbstractGraph ? nv(n_sites) : n_sites
 
     @assert S.den == 2 || S.den == 1

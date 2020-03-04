@@ -18,7 +18,7 @@ mutable struct BatchedGradSampler{BN, P, S, Sc, Sv, Pv, Gv, Gvv, Gva, LC, Lv, Lg
     local_vals::Lv
     ∇local_vals::Lgv
 
-    precond_algo::Pa
+    precond_alg::Pa
     precond_cache::Pc
 
     observables_sampler

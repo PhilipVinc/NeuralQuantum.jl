@@ -29,6 +29,6 @@ end
 
 function gradient(is::AbstractIterativeSampler, iter; kwargs...)
     loss, grad_before_precond = sample!(is; kwargs...)
-    grad = precondition!(grad_before_precond, is.precond_algo, iter)
+    grad = precondition!(grad_before_precond, is.precond_alg, iter)
     return loss, grad
 end
