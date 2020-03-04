@@ -12,18 +12,13 @@ julia:
 env:
   - MPI_IMPL=mpich
 
-matrix:
-    allow_failures:
-        - julia: 1.4
-        - julia: nightly
-
 notifications:
     email: false
 
 cache:
   directories:
   - $HOME/.ccache
-  - $HOME/.julia/artifacts 
+  - $HOME/.julia/artifacts
   - $HOME/.julia/registries # can we cache all of .julia?
 
 before_install:
@@ -60,6 +55,10 @@ after_success:
 
 
 jobs:
+  allow_failures:
+    - julia: 1.4
+    - julia: nightly
+
   include:
     - stage: "Tests"
     - stage: "Documentation"
@@ -73,11 +72,3 @@ jobs:
                                     Pkg.instantiate()'
         - julia --project=docs/ docs/make.jl
       after_success: skip
-    - stage: "Coverage"
-      julia: 1.3
-      os: linux
-      after_success:
-        - julia -e 'using Pkg; cd(Pkg.dir("NeuralQuantum"));
-                                Pkg.add("Coverage");
-                                using Coverage;
-                                Codecov.submit(Codecov.process_folder())'
