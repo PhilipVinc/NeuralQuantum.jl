@@ -131,14 +131,15 @@ function samplenext!(σ_out::T, σ_in::T, s::MetropolisSampler,
     logψ_σp = c.logψ_σp
 
     # Copy the old state in the output and tmp cache
-    statecopy!(c.σ_old, σ_in)
-    statecopy!(σ_out, c.σ_old) # equivalent to σ_in but evades problem with aliasing
-    # when input === ouput
+    # Only do this when when input is not same as ouput
+    # to avoid aliasing issues (especially on GPU)
+    σ_out === σ_in || statecopy!(σ_out, σ_in)
 
     # Compute the old value
     ψtmp     = log_prob_ψ!(logψ_σ, c.ψtmp, net, σ_in)
 
     for i=1:s.passes
+        statecopy!(c.σ_old, σ_out)
         # Apply the transition rule
         propose_step!(σ_out, s, net, c, rule_cache(c))
 
