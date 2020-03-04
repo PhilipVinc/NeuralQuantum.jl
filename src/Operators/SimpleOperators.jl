@@ -1,3 +1,5 @@
+export quantum_ising_hamiltonian, lattice_average_operator
+
 """
     sigmax(hilbert::AbstractHilbert, site::Int)
 
@@ -142,4 +144,42 @@ function QuantumOpticsBase.number(h::AbstractHilbert, i::Int)
     mat = diagm(0 => D)
 
     return KLocalOperatorRow(h, [i], mat)
+end
+
+quantum_ising_hamiltonian(lattice, hilb; kwargs...) =
+    quantum_ising_hamiltonian(STD_REAL_PREC, lattice, hilb; kwargs...)
+"""
+    quantum_ising_hamiltonian(lattice, g, V)
+
+Constructs the Quantum Ising Hamiltonian defined as
+
+```math
+H = \\sum_i g/2 σ_i^{(x)} + \\V/4 sum_{i,j} σ_i^{z}σ_j^{z}
+```
+"""
+function quantum_ising_hamiltonian(T::Type, lattice, hilb::AbstractHilbert; g, V)
+    H = LocalOperator(T, hilb)
+
+    for i=vertices(lattice)
+        H += g/2.0 * sigmax(hilb, i)
+    end
+    for e=edges(lattice)
+        i = src(e)
+        j = dst(e)
+        H += V/4.0 * sigmaz(hilb, i) * sigmaz(hilb, j)
+    end
+
+    return H
+end
+
+lattice_average_operator(lattice, hilb, op) =
+    lattice_average_operator(STD_REAL_PREC, lattice, hilb, op)
+function lattice_average_operator(T::Type, lattice, hilb::AbstractHilbert, op::Function)
+    O = LocalOperator(T, hilb)
+    for i=vertices(lattice)
+        O += op(hilb, i)
+    end
+    O = O/nv(lattice)
+
+    return O
 end
