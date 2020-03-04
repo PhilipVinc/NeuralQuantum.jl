@@ -5,6 +5,28 @@ struct NagyRule{T<:Vector} <: MCMCRule
     adjacency_list::T
 end
 
+function NagyRule(H::AbsLinearOperator)
+    N_sites = nsites(basis(H))
+
+    all_sites = sites(H)
+    if !(eltype(all_sites) <: Vector)
+        all_sites = [all_sites]
+    end
+
+    couplings = Vector{Tuple{Int,Int}}()
+    for coupling=all_sites
+        length(coupling) == 1 && continue
+        if length(coupling) > 2
+            @warn "Can't exchange between 3-site couplings. This coupling is ignored"
+            continue
+        end
+        push!(couplings, (coupling[1], coupling[2]))
+    end
+
+    return NagyRule{typeof(couplings)}(couplings)
+end
+
+
 struct NagyRuleCache
 end
 

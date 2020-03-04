@@ -10,7 +10,7 @@ function densitymatrix(net::NeuralNetwork, hilb::AbstractSuperOpBasis, norm=true
     if !(net isa CachedNet)
         net = cached(net)
     end
-    
+
     v = state(hilb, net)
 
     p_hilb = physical(hilb)
@@ -44,6 +44,10 @@ Returns the state (ket) encoded by the neural network `net`, and normalizes
 it if `norm==true`.
 """
 function ket(net, hilb::AbstractHilbert, norm=true)
+    if !(net isa CachedNet)
+        net = cached(net)
+    end
+
     psi = zeros(out_type(net), spacedimension(hilb))
 
     v = state(hilb, net)
@@ -68,4 +72,9 @@ Base.Vector(net::NeuralNetwork, hilb, norm=true) = ket(net, hilb, norm)
 QuantumOpticsBase.DenseOperator(net::NeuralNetwork, hilb::AbstractHilbert, norm=true) =
     DenseOperator(convert(CompositeBasis, hilb), Matrix(net, hilb, norm))
 
+QuantumOpticsBase.Ket(hilb::AbstractHilbert, net::KetNeuralNetwork, norm=true) =
+    Ket(convert(CompositeBasis, hilb), ket(net, hilb, norm))
+
+QuantumOpticsBase.expect(Ô::AbsLinearOperator, state) =
+    expect(SparseOperator(Ô), state)
 ##

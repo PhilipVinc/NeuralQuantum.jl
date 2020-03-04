@@ -83,6 +83,8 @@ end
 # showing
 function Base.show(io::IO, c::SuperOpConnection)
     print(io, "$(length(c))-elements - SuperOpConnection{...}:\n")
-    Base.print_matrix(IOContext(io, :compact=>true), collect(c))
+    if length(c) > 0
+        Base.print_matrix(IOContext(io, :compact=>true), collect(c))
+    end
     return io
 end
