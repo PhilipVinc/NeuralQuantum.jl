@@ -50,7 +50,7 @@ function compute_observable(is::BatchedObsKetSampler, Ô::AbsLinearOperator)
             σv = unsafe_get_el(is.samples, j, i)
             init!(is.accum, σv, is.logψ_vals[1,j,i])
             accumulate_connections!(is.accum, Ô, σv)
-            O_loc = NeuralQuantum.finalize!(is.accum)
+            O_loc = finalize!(is.accum)
             is.Oloc_vals[j, i] = O_loc
         end
     end
