@@ -14,7 +14,7 @@ function _sr_iterative_cache(algo::SR, prob, net, par_cache)
     if algo.use_fullmat
         S = tuple([similar(gv, T, length(gv), length(gv))
                         for gv in vec_data(g)]...)
-        if T isa Real
+        if T <: Real
             Sc = tuple([similar(gv, Complex{T}, length(gv), length(gv))
                             for gv in vec_data(g)]...)
         else
