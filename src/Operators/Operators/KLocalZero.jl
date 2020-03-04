@@ -4,11 +4,18 @@
 A simple KLocalOperator representing zero, but holding informations
 about the hilbert basis.
 """
-struct KLocalOperatorZero{H<:AbstractHilbert} <: AbsLinearOperator
+struct KLocalOperatorZero{H<:AbstractHilbert,T} <: AbsLinearOp{T}
     hilb::H
 end
 
+KLocalOperatorZero(T::Type{<:Number}, hilb) =
+    KLocalOperatorZero{typeof(hilb), T}(hilb)
+
+KLocalOperatorZero(hilb) = KLocalOperatorZero(ComplexF64, hilb)
+
 LocalOperator(hilb) = KLocalOperatorZero(hilb)
+LocalOperator(T, hilb) = KLocalOperatorZero(T, hilb)
+
 export LocalOperator
 
 sites(op::KLocalOperatorZero) = []

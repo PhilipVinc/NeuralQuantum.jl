@@ -4,14 +4,14 @@
 A KLocalOperator representing the sum of several KLocalOperator-s. Internally,
 the sum is stored as a vector of local operators acting on some sites.
 """
-struct KLocalOperatorSum{H<:AbstractHilbert, VS<:AbstractVector,VOp} <: AbsLinearOperator
+struct KLocalOperatorSum{H<:AbstractHilbert, T, N, VS<:AbstractVector, Op<:AbsLinearOperator{T,N}} <: AbsLinearOperator{T,N}
     hilb::H
 
     # list of sites in this sum
     sites::VS
 
     # List of operators
-    operators::VOp
+    operators::Vector{Op}
 end
 
 KLocalOperatorSum(op::KLocalOperator) = KLocalOperatorSum(basis(op), [sites(op)], [op])
@@ -22,7 +22,7 @@ KLocalOperatorSum(op::KLocalOperatorSum) = duplicate(op)
 QuantumOpticsBase.basis(op::KLocalOperatorSum) = op.hilb
 operators(op::KLocalOperatorSum) = op.operators
 conn_type(op::KLocalOperatorSum) = conn_type(eltype(operators(op)))
-conn_type(op::Type{KLocalOperatorSum{H,Vs,VOp}}) where {H,Vs,VOp} = conn_type(eltype(VOp))
+conn_type(op::Type{KLocalOperatorSum{H,T,N,Vs,Op}}) where {H,T,N,Vs,Op} = conn_type(Op)
 sites(op::KLocalOperatorSum) = op.sites
 
 # Copy
@@ -162,8 +162,8 @@ Base.show(io::IO, op::KLocalOperatorSum) = print(io,
     "KLocalOperatorSum: on sites: $(op.sites)")
 
 Base.eltype(::T) where {T<:KLocalOperatorSum} = eltype(T)
-Base.eltype(T::Type{KLocalOperatorSum{H,Vec,VOp}}) where {H,Vec,VOp} =
-    eltype(eltype(VOp))
+Base.eltype(::Type{KLocalOperatorSum{H,T,N,Vec,Op}}) where {H,T,N,Vec,Op} =
+    eltype(Op)
 
 Base.:*(a::Number, b::KLocalOperatorSum) =
     _op_alpha_prod(b,a)

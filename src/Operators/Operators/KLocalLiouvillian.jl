@@ -1,6 +1,6 @@
-struct KLocalLiouvillian{H,T,A,B,C} <: AbsLinearOperator
+struct KLocalLiouvillian{H,T,Vs,A<:AbsLinearSuperOperator{T},B,C} <: AbsLinearSuperOperator{T}
     hilb::H
-    sites::T
+    sites::Vs
     HnH_l::A
     HnH_r::B
     LLdag::C
@@ -9,8 +9,8 @@ end
 function KLocalLiouvillian(HnH, Lops)
     hilb = basis(HnH)
     T = eltype(HnH)
-    HnH_l = T(-1.0im) * KLocalOperatorTensor(HnH, nothing)
-    HnH_r = T(1.0im) * KLocalOperatorTensor(nothing, HnH')
+    HnH_l = T(-1.0im) * KLocalOperatorTensor(HnH, KLocalIdentity(T, hilb))
+    HnH_r = T(1.0im) * KLocalOperatorTensor(KLocalIdentity(T, hilb), HnH')
 
     LLdag_list = [KLocalOperatorTensor(L, conj(L)) for L=Lops]
     LLdag = isempty(LLdag_list) ? LocalOperator(SuperOpSpace(basis(HnH))) : sum(LLdag_list)
@@ -40,7 +40,7 @@ sites(op::KLocalLiouvillian) = op.sites
 QuantumOpticsBase.basis(op::KLocalLiouvillian) = op.hilb
 
 conn_type(op::KLocalLiouvillian) = conn_type(typeof(op))
-conn_type(::Type{KLocalLiouvillian{H,T,A,B,C}}) where {H,T,A,B,C}  =
+conn_type(::Type{KLocalLiouvillian{H,T,Vs,A,B,C}}) where {H,T,Vs,A,B,C}  =
     SuperOpConnection{conn_type(A), conn_type(B), conn_type(C)}
 
 accumulate_connections!(a, b::Vector, c) = nothing

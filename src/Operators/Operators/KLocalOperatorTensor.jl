@@ -4,7 +4,7 @@
 A KLocalOperator representing the sum of several KLocalOperator-s. Internally,
 the sum is stored as a vector of local operators acting on some sites.
 """
-struct KLocalOperatorTensor{H,T,O1,O2} <: AbsLinearOperator
+struct KLocalOperatorTensor{H,T,O1,O2} <: AbsLinearSuperOperator{T}
     hilb::H
     sites::T
 
@@ -17,10 +17,10 @@ end
     Builds the tensor product of two operators
 """
 function KLocalOperatorTensor(op_l, op_r)
-    if isnothing(op_l)
+    if op_l isa KLocalIdentity
         st = (Int[],       sites(op_r))
         hilb = basis(op_r)
-    elseif isnothing(op_r)
+    elseif op_r isa KLocalIdentity
         st = (sites(op_l), Int[])
         hilb = basis(op_l)
     else
@@ -32,12 +32,12 @@ function KLocalOperatorTensor(op_l, op_r)
     KLocalOperatorTensor(SuperOpSpace(hilb), st, op_l, op_r)
 end
 
-function KLocalOperatorTensor(op_l::KLocalOperatorSum, op_r::Nothing)
+function KLocalOperatorTensor(op_l::KLocalOperatorSum, op_r::KLocalIdentity)
     ops = [KLocalOperatorTensor(op, op_r) for op=operators(op_l)]
     return sum(ops)
 end
 
-function KLocalOperatorTensor(op_l::Nothing, op_r::KLocalOperatorSum)
+function KLocalOperatorTensor(op_l::KLocalIdentity, op_r::KLocalOperatorSum)
     ops = [KLocalOperatorTensor(op_l, op) for op=operators(op_r)]
     return sum(ops)
 end
@@ -65,6 +65,10 @@ conn_type(::Type{KLocalOperatorTensor{H,T,O1,Nothing}}) where{H,T,O1} = #conn_ty
     OpConnectionTensor{conn_type(O1), eye_conn_type(O1)}
 conn_type(::Type{KLocalOperatorTensor{H,T,Nothing,O2}}) where{H,T,O2} = #conn_type(O2)
     OpConnectionTensor{eye_conn_type(O2), conn_type(O2)}
+conn_type(::Type{KLocalOperatorTensor{H,T,O1,<:KLocalIdentity}}) where{H,T,O1} = #conn_type(O1)
+    OpConnectionTensor{conn_type(O1), eye_conn_type(O1)}
+conn_type(::Type{KLocalOperatorTensor{H,T,<:KLocalIdentity,O2}}) where{H,T,O2} = #conn_type(O2)
+    OpConnectionTensor{eye_conn_type(O2), conn_type(O2)}
 
 duplicate(::Nothing) = nothing
 
@@ -75,10 +79,10 @@ end
 function _row_valdiff!(conn::AbsOpConnection, op::KLocalOperatorTensor, v::ADoubleState)
     op_r = op.op_r
     op_l = op.op_l
-    if op_r === nothing
+    if op_r isa KLocalIdentity
         r_r = local_index(row(v), basis(op_l), sites(op_l))
         append!(conn, (op_l.op_conns[r_r], nothing))
-    elseif op_l === nothing
+    elseif op_l isa KLocalIdentity
         r_c = local_index(col(v), basis(op_r), sites(op_r))
         append!(conn, (nothing, op_r.op_conns[r_c]))
     else
@@ -94,14 +98,14 @@ function map_connections(fun::Function, op::KLocalOperatorTensor, v::ADoubleStat
     op_r = op.op_r
     op_l = op.op_l
     hilb_ph = physical(basis(op))
-    if op_r === nothing
+    if op_r isa KLocalIdentity
         r = local_index(row(v), hilb_ph, sites(op_l))
 
         for (mel,changes)=op_l.op_conns[r]
             #fun(mel, 1.0, changes, nothing, v)
             fun(mel, (changes, nothing), v)
         end
-    elseif op_l === nothing
+    elseif op_l isa KLocalIdentity
         r = local_index(col(v), hilb_ph, sites(op_r))
 
         for (mel,changes)=op_r.op_conns[r]
@@ -125,14 +129,14 @@ end
 function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperatorTensor, v::ADoubleState)
     op_l = op.op_l; op_r = op.op_r
 
-    if op_r === nothing
+    if op.op_r isa KLocalIdentity
         r = local_index(row(v), basis(op_l), sites(op_l))
 
         for (mel,changes)=op_l.op_conns[r]
             #fun(mel, 1.0, changes, nothing, v)
             acc(mel, changes, nothing, v)
         end
-    elseif op_l === nothing
+    elseif op.op_l isa KLocalIdentity
         r = local_index(col(v), basis(op_r), sites(op_r))
 
         for (mel,changes)=op_r.op_conns[r]
@@ -189,10 +193,10 @@ Base.:*(a::Number, b::KLocalOperatorTensor) =
     _op_alpha_prod(b,a)
 
 function _op_alpha_prod(op::KLocalOperatorTensor, a::Number)
-    if isnothing(op.op_l)
-        return KLocalOperatorTensor(nothing, a*op.op_r)
-    elseif isnothing(op.op_r)
-        return KLocalOperatorTensor(a*op.op_l, nothing)
+    if op.op_l isa KLocalIdentity
+        return KLocalOperatorTensor(op.op_l, a*op.op_r)
+    elseif op.op_r isa KLocalIdentity
+        return KLocalOperatorTensor(a*op.op_l, op.op_r)
     else
         a = sqrt(a)
         return KLocalOperatorTensor(a*op.op_l, a*op.op_r)

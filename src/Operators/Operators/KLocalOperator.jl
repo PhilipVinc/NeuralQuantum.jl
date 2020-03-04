@@ -7,7 +7,7 @@ basis as `mat`. For every row of `mat` there are several non-zero values contain
 in `mel`, and to each of those, `to_change` contains the sites that must change the basis
 new value, contained in `new_value`
 """
-struct KLocalOperator{H<:AbstractHilbert,T,SV,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOperator
+struct KLocalOperator{H<:AbstractHilbert,T,SV,Vel,Vti,Vtc,Vtv,OC} <: AbsLinearOp{T}
     hilb::H
 
     # list of sites on which this operator acts

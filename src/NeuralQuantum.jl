@@ -110,6 +110,7 @@ include("Operators/OpConnections/SuperOpConnection.jl")
 include("Operators/OpConnectionIndex.jl")
 
 include("Operators/Operators/KLocalOperator.jl")
+include("Operators/Operators/KLocalIdentity.jl")
 include("Operators/Operators/KLocalOperatorSum.jl")
 include("Operators/Operators/KLocalOperatorTensor.jl")
 include("Operators/Operators/KLocalZero.jl")

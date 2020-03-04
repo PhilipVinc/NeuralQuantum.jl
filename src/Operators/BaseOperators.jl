@@ -1,4 +1,7 @@
-abstract type AbsLinearOperator end
+abstract type AbsLinearOperator{T,N} end
+const AbsLinearOp{T} = AbsLinearOperator{T,2}
+const AbsLinearSuperOperator{T} = AbsLinearOperator{T,4}
+
 abstract type AbsOpConnection end
 
 """
@@ -44,3 +47,4 @@ Base.:*(op::AbsLinearOperator, α::Number) = α*op
 Base.:/(op::AbsLinearOperator, α::Number) = inv(α)*op
 
 conn_type(op::AbsLinearOperator) = conn_type(typeof(op))
+## AbstractArray Interface
