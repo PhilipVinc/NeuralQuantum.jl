@@ -10,9 +10,7 @@ function statecollect(s::Union{gpuADoubleStateBatchVec,gpuADoubleStateBatch,gpuA
     return (statecollect(row(s)), statecollect(col(s)))
 end
 
-function statecollect(s::Union{gpuAStateBatchVec,gpuAStateBatch,gpuAState})
-    return collect(s)
-end
+statecollect(s::Union{gpuAStateBatchVec,gpuAStateBatch,gpuAState}) = collect(s)
 
 # efficient state generation for homogeneous spaces on gpu
 # could be improved with a custom kernel...

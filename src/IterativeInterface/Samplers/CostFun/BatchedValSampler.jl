@@ -107,7 +107,7 @@ function _compute_gradient!(is::BatchedValSampler)
     Ĉr  = reshape(is.local_vals, 1, :)
 
     if typeof(is.ψvals) <: GPUArray
-        Ĉr = CuArrays.adapt(CuArray, Ĉr)
+        Ĉr = adapt(typeof(is.ψvals), Ĉr)
     end
 
     # Compute the gradient

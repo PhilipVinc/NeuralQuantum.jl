@@ -1,6 +1,6 @@
 export @MT
 
-struct MTBatchSampler{A}
+struct MTBatchSampler{A} <: AbstractIterativeSampler
     samplers::A
 end
 

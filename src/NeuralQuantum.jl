@@ -5,9 +5,9 @@ using Requires
 using MacroTools: @forward
 using SpecializeVarargs
 
+# Packages to support (mostly) GPUs
 using GPUArrays
-using CuArrays
-const use_cuda = Ref(false)
+using Adapt: adapt
 
 using MPI
 include("External/TPI/TPI.jl")
@@ -231,40 +231,19 @@ include("Parallel/Threads/threads_base.jl")
 include("Parallel/Threads/threads_wrappers.jl")
 
 # gpu stuff
-include("GPU/gpustates.jl")
-include("GPU/LocalRuleGPU.jl")
-include("GPU/AccumulatorLogPsi.jl")
-include("GPU/AccumulatorObsScalar.jl")
+include("GPU/Base/GPUstates.jl")
+include("GPU/Base/JLstates.jl")
+include("GPU/IterativeInterface/AccumulatorLogPsi.jl")
+include("GPU/IterativeInterface/AccumulatorObsScalar.jl")
+include("GPU/Samplers/LocalRuleGPU.jl")
 
-include("GPU/gpuarrays.jl")
+include("GPU/gpu.jl")
 
 # Extra
 include("Extra/RecipesBase.jl")
 include("Extra/ValueHistories.jl")
+
 function __init__()
-
-  # cuda stuff
-  precompiling = ccall(:jl_generating_output, Cint, ()) != 0
-
-  # we don't want to include the CUDA module when precompiling,
-  # or we could end up replacing it at run time (triggering a warning)
-  precompiling && return
-
-  if !CuArrays.functional()
-    # nothing to do here, and either CuArrays or one of its dependencies will have warned
-  else
-    use_cuda[] = true
-    include(joinpath(@__DIR__, "GPU/cuda.jl"))
-
-    # FIXME: this functionality should be conditional at run time by checking `use_cuda`
-    #        (or even better, get moved to CuArrays.jl as much as possible)
-    if CuArrays.has_cudnn()
-      #include(joinpath(@__DIR__, "cuda/cuda.jl"))
-    else
-      @warn "CuArrays.jl did not find libcudnn. Some functionality will not be available."
-    end
-  end
-
   @require TensorBoardLogger="899adc3e-224a-11e9-021f-63837185c80f" begin
     include("Extra/Optionals/TensorBoardLogger.jl")
   end
@@ -272,7 +251,6 @@ function __init__()
   @require Measurements="eff96d63-e80a-5855-80a2-b1b0885c5ab7" begin
     include("Extra/Optionals/Measurements.jl")
   end
-
 end
 
 end # module
