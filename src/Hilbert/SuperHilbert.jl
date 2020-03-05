@@ -9,8 +9,8 @@ abstract type AbstractSuperOpBasis <: AbstractHilbert end
 @inline indexable(h::AbstractSuperOpBasis) = spacedimension(h) != 0
 @inline is_homogeneous(h::AbstractSuperOpBasis) = is_homogeneous(physical(h))
 
-state(arrT::AbstractArray, T::Type{<:Number}, h::AbstractSuperOpBasis, dims::Vararg{Int,n}) where n =
-    (state(arrT, T, physical(h), dims...), state(arrT, T, physical(h), dims...))#DoubleState(state(physical(h)))
+state(arrT::AbstractArray, T::Type{<:Number}, h::AbstractSuperOpBasis, dims::Dims) =
+    (state(arrT, T, physical(h), dims), state(arrT, T, physical(h), dims))#DoubleState(state(physical(h)))
 
 @inline nsites_physical(h::AbstractSuperOpBasis)         = nsites(physical(h))
 @inline spacedimension_physical(h::AbstractSuperOpBasis) = spacedimension(physical(h))
@@ -61,7 +61,7 @@ function set!(σ::ADoubleState, h::SuperOpSpace, i_r::Integer, i_c::Integer)
     return σ
 end
 
-function Random.rand!(rng::AbstractRNG, σ::Union{ADoubleState,ADoubleStateBatch}, h::SuperOpSpace)
+function Random.rand!(rng::AbstractRNG, σ::AbstractDoubled, h::SuperOpSpace)
     rand!(rng, row(σ), physical(h))
     rand!(rng, col(σ), physical(h))
     return σ

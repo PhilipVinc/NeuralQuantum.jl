@@ -50,7 +50,7 @@ end
 @inline is_contrained(h::HomogeneousSpin{H,C}) where {H,C} = C
 @inline constraint_limit(h::HomogeneousSpin) = h.Sz_total
 
-state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousSpin{N}, dims::Vararg{Int,n}) where {n,N} =
+state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousSpin{N}, dims::Dims) where {N} =
     similar(arrT, T, nsites(h), dims...) .= -(N-1)
 
 Base.show(io::IO, ::MIME"text/plain", h::HomogeneousSpin{N}) where N =
@@ -105,7 +105,7 @@ end
 add!(σ::AState, h::HomogeneousSpin, val::Integer) =
     set!(σ, h, val+toint(σ, h))
 
-function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::HomogeneousSpin{N,false}) where N
+function Random.rand!(rng::AbstractRNG, σ::AbstractArray, h::HomogeneousSpin{N,false}) where N
     T = eltype(σ)
     rand!(rng, σ)
     σ .= floor.(σ.*N).*2 .- (N-1)

@@ -90,9 +90,14 @@ Constructs a state for the `hilbert` space with precision `T` and array type
 `arrT`. By default that's the lowest state, otherwise if the hilbert space it's
 indexable you can specify with a second argument.
 """
-state(h::AbstractHilbert, dims...) = state(STD_REAL_PREC, h, dims...)
-state(T::Type{<:Number}, h::AbstractHilbert, dims...) = state(zeros(1), T, h, dims...)
-state(arrT::AbstractArray, h::AbstractHilbert, dims...) = state(arrT, STD_REAL_PREC, h, dims...)
+state(arrT::AbstractArray,  T::Type, h::AbstractHilbert, dims::Integer...) = state(arrT, T, h, dims)
+state(arrT::AbstractArray,           h::AbstractHilbert, dims::Integer...) = state(arrT, STD_REAL_PREC, h, dims)
+state(                      T::Type, h::AbstractHilbert, dims::Integer...) = state(zeros(0), T, h, dims)
+state(                               h::AbstractHilbert, dims::Integer...) = state(STD_REAL_PREC, h, dims)
+
+state(arrT::AbstractArray,  h::AbstractHilbert, dims::Dims) = state(arrT, STD_REAL_PREC, h, dims)
+state(   T::Type{<:Number}, h::AbstractHilbert, dims::Dims) = state(zeros(0), T, h, dims)
+state(                      h::AbstractHilbert, dims::Dims) = state(STD_REAL_PREC, h, dims)
 
 state_i(h::AbstractHilbert, i::Int) = state_i(STD_REAL_PREC, h, i)
 state_i(T::Type{<:Number}, h::AbstractHilbert, i::Int) = set!(state(T, h), h, i)
@@ -103,43 +108,7 @@ function apply!(σ::ADoubleState, h::AbstractHilbert, cngs_l, cngs_r) 
     return σ
 end
 
-"""
-    apply!(state, changes, [changes_r] )
-
-Apply the changes `changes` to the `state`. If state is a double
-state and changes is a tuple, then the first element of the tuple
-is the row-changes and the second element is the column-changes.
-Optionally the two elements of the tuple can be passed separately.
-
-If the state is double but there is only 1 element of changes,
-it's applied to the rows.
-"""
-@inline function apply!(σ::ADoubleState, cngs_l::Union{StateChanges,Nothing}) 
-    apply!(row(σ), cngs_l)
-    return σ
-end
-
-@inline function apply!(σ::ADoubleState, (cngs_l, cngs_r)) 
-    apply!(row(σ), cngs_l)
-    apply!(col(σ), cngs_r)
-    return σ
-end
-
-function apply!(σ::ADoubleState, cngs_l, cngs_r) 
-    apply!(row(σ), cngs_l)
-    apply!(col(σ), cngs_r)
-    return σ
-end
-
 function apply!(σ::AbstractVector, h::AbstractHilbert, cngs) 
-    for (site, val)=cngs
-        σ[site] = val
-    end
-    return σ
-end
-
-@inline apply!(σ::AbstractVector, cngs::Nothing) = σ
-function apply!(σ::AbstractVector, cngs) 
     for (site, val)=cngs
         σ[site] = val
     end
@@ -165,12 +134,16 @@ Optionally you can pass the rng.
 @inline Random.rand!(σ::NTuple{2,<:AbstractArray}, h::AbstractHilbert) = rand!(GLOBAL_RNG, σ, h)
 
 """
-    rand([rng=GLOBAL_RNG], hilb)
+    rand([rng=GLOBAL_RNG], hilb, [batch_size, chain_length])
 
 Generates a random state of hilbert space on the state.
-Optionally you can pass the rng.
+Optionally you can pass the rng or the batch size/chain length
 """
-@inline Random.rand(h::AbstractHilbert) = rand!(GLOBAL_RNG, state(h), h)
+@inline Random.rand(rng::AbstractRNG, h::AbstractHilbert, dims::Int...) = rand!(rng, state(h, dims...), h)
+@inline Random.rand(rng::AbstractRNG, h::AbstractHilbert, dims::Dims)   = rand!(rng, state(h, dims), h)
+
+@inline Random.rand(                  h::AbstractHilbert, dims::Int...) = rand(GLOBAL_RNG, h, dims...)
+@inline Random.rand(                  h::AbstractHilbert, dims::Dims)   = rand(GLOBAL_RNG, h, dims)
 
 """
     StateIterator{H,S}
@@ -179,28 +152,4 @@ An iterator for enumerating all the states in a basis
 """
 struct StateIterator{T,H}
     basis::H
-end
-
-"""
-    states(hilb) -> iterator
-
-Returns an iterator to iterate all states in the hilbert space
-"""
-states(T::Type{<:Number}, h::AbstractHilbert) = StateIterator{T, typeof(h)}(h)
-states(h::AbstractHilbert) = states(STD_REAL_PREC, h)
-
-Base.length(iter::StateIterator) = spacedimension(iter.basis)
-Base.eltype(iter::StateIterator) = typeof(state(iter.basis))
-function Base.getindex(iter::StateIterator{T}, i::Int) where T
-    @assert i > 0 && i <= length(iter)
-    state_i(T, iter.basis, i)
-end
-
-function Base.iterate(iter::StateIterator{T}, idx = 1) where T
-    if idx > spacedimension(iter.basis)
-        return nothing
-    end
-
-    σ = state_i(T, iter.basis, idx)
-    return (σ, idx + 1)
 end

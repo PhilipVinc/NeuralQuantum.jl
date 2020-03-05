@@ -1,6 +1,11 @@
-
 abstract type AbstractStateChanges end
 
+"""
+    StateChanges
+
+A structure holding a list of changes to a state as a list of indices (Ints)
+and new values.
+"""
 struct StateChanges{A<:AbstractArray,B<:AbstractArray} <: AbstractStateChanges
     to_change::A
     new_values::B
@@ -59,7 +64,7 @@ function Base.show(io::IO, ch::StateChanges)
     for (id, val)=ch
         content *= "$id->$val, "
     end
-    
+
     length(ch) == 0 && print(io, content)
 
     print(io, content[1:end-2]*"]")

@@ -1,58 +1,93 @@
-export index_to_int, flipped, row, col
+export row, col
 export add!, zero!, apply!, apply
 export setat!, set!, set_index!, rand!
 
-const AState = AbstractVector
-const AStateBatch = AbstractMatrix
-const AStateBatchVec{T} = AbstractArray{T,3}
+const AState{T}         = AbstractVector{T}  where T
+const AStateBatch{T}    = AbstractMatrix{T}  where T
+const AStateBatchVec{T} = AbstractArray{T,3} where T
 
-const ADoubleState{T} = NTuple{2,AState{T}} where T
-const ADoubleStateBatch{T} = NTuple{2,AStateBatch{T}} where T
-const ADoubleStateBatchVec{T} = NTuple{2,AStateBatchVec{T}} where T
+const AbstractDoubled{T,N}    = NTuple{2,AbstractArray{T,N}} where {T,N}
+const ADoubleState{T}         = AbstractDoubled{T,1}         where T
+const ADoubleStateBatch{T}    = AbstractDoubled{T,2}         where T
+const ADoubleStateBatchVec{T} = AbstractDoubled{T,3}         where T
 
-const AStateOrBatch{T} = Union{AState{T},AStateBatch{T}} where T
+const AbstractState{T}         = Union{AState{T}, ADoubleState{T}}                 where T
+const AbstractStateBatch{T}    = Union{AStateBatch{T}, ADoubleStateBatch{T}}       where T
+const AbstractStateBatchVec{T} = Union{AStateBatchVec{T}, ADoubleStateBatchVec{T}} where T
+
+const AStateOrBatch{T}       = Union{AState{T},AStateBatch{T}} where T
 const ADoubleStateOrBatch{T} = Union{ADoubleState{T},ADoubleStateBatch{T}} where T
 
 const AStateOrBatchOrVec{T} = Union{AState{T},AStateBatch{T},AStateBatchVec{T}} where T
 const ADoubleStateOrBatchOrVec{T} = Union{ADoubleState{T},ADoubleStateBatch{T},ADoubleStateBatchVec{T}} where T
 
-@inline row(v::Union{ADoubleState,ADoubleStateBatch,ADoubleStateBatchVec}) = first(v)
-@inline col(v::Union{ADoubleState,ADoubleStateBatch,ADoubleStateBatchVec}) = last(v)
+"""
+    row(v::ADoubleState(orBatch,orVec)) = first(v)
+
+Returns the row indices of the state `v`.
+A doubled state is implemented as a tuple, so this effectively returns the
+first (subject to change) element of the tuple.
+"""
+@inline row(v::ADoubleStateOrBatchOrVec) = first(v)
 
 """
-    apply!(σ, changes)
+    col(v::ADoubleState(orBatch,orVec)) = last(v)
 
-Applies the changes `changes` to the `σ`.
-
-If `state isa DoubleState` then single-value changes
-are applied to the columns of the state (in order to
-compute matrix-operator products). Otherwise it should
-be a tuple with changes of row and columns.
-
-If changes is nothing, does nothing.
+Returns the column indices of the state `v`.
+A doubled state is implemented as a tuple, so this effectively returns the
+last (subject to change) element of the tuple.
 """
-apply!(σ::AbstractArray, cngs::Nothing) = σ
+@inline col(v::ADoubleStateOrBatchOrVec) = last(v)
+
+## utilities similar to base size
 
 """
-    apply(state, cngs)
+    batch_size(σ::BatchedStateOrVec) -> Int
 
-Applies the changes `cngs` to the state `σ`, by allocating a
-copy.
-
-See also @ref(apply!)
+Returns the batch size of an arbitrary state.
+This is the second dimension of the array (but works also on doubled states).
 """
-apply(σ::Union{AState, ADoubleState}, cngs) = apply!(deepcopy(σ), cngs)
+batch_size(σ::Union{AStateBatch,AStateBatchVec}) = size(σ, 2)
+batch_size(σ::Union{ADoubleStateBatch,ADoubleStateBatchVec}) = batch_size(row(σ))
 
+"""
+    chain_length(σ::BatchStateVec)
+
+Returns the length of a chain of states.
+This is the third dimension of the array (but works also on doubled states).
+"""
+chain_length(σ::Union{AStateBatchVec}) = size(σ, 3)
+chain_length(σ::Union{ADoubleStateBatchVec}) = chain_length(row(σ))
+
+"""
+    state_size(σ) -> tuple
+
+Works as `size(σ)` returning the size of an array of states, with the two
+following differences:
+    - It drops the first dimension (as it is the dimension of the hilbert
+    space and is not relevant);
+    - It also works on tuples (Doubled States).
+"""
+state_size(σ::AbstractState) = tuple()
+state_size(σ::AbstractStateBatch) = (batch_size(σ),)
+state_size(σ::AbstractStateBatchVec) = (batch_size(σ),chain_length(σ))
 
 # statesimilar
-state_similar(σ, batches, N) = similar(σ, size(σ, 1), batches, N)
-state_similar(σ, batches) = similar(σ, size(σ, 1), batches)
-state_similar(σ) = similar(σ)
+"""
+    state_similar(σ, [dims...])
 
-@specialize_vararg 3 state_similar(σ::ADoubleStateOrBatchOrVec, args...) =
-    (state_similar(row(σ), args...), state_similar(col(σ), args...))
-state_similar(σ::ADoubleStateOrBatchOrVec) =
-    (state_similar(row(σ)), state_similar(col(σ)))
+Works as `similar(σ, dims...)` but
+    - does not change the first dimension;
+    - Works with tuples (Doubled states).
+"""
+state_similar(σ::AbstractArray, dims::Int...) = similar(σ, size(σ,1), dims...)
+state_similar(σ::AbstractArray, dims::Dims)   = similar(σ, size(σ,1), dims...)
+state_similar(σ::AbstractArray)               = similar(σ)
+
+# Special case for doubled states
+state_similar(σ::AbstractDoubled, dims::Vararg{T,N}) where {T,N} =
+    (state_similar(row(σ), dims...), state_similar(col(σ), dims...))
+
 # Allocating
 statecopy(σ) = statecopy!(state_similar(σ), σ)
 statecopy(σ, σp, mask) = statecopy!(statecopy(σ), σp, mask)
@@ -77,7 +112,6 @@ over, while the others are left unchanged.
     return σp
 end
 
-
 @inline statecopy!(σp::AStateBatch, σ::AState) = σp .= σ
 @inline statecopy!(σp::AStateBatchVec, σ::AStateBatch) = σp .= σ
 @inline statecopy!(σp::ADoubleStateBatch{T}, σ::AState{T}) where T =
@@ -94,7 +128,6 @@ function statecopy!(σp::ADoubleStateOrBatchOrVec,
     statecopy!(col(σp), col(σ), mask)
     return σp
 end
-
 
 
 """
@@ -116,11 +149,6 @@ function statecopy_invertmask!(σp::Union{ADoubleState, ADoubleStateBatch, ADoub
     return σp
 end
 
-# Batches
-vec_of_batches(v::AStateBatch, n) = similar(v, size(v)..., n)
-vec_of_batches(v::ADoubleStateBatch, n) =
-    (similar(row(v), size(row(v))..., n), similar(col(v), size(col(v))..., n))
-
 # TODO add @inbounds
 """
     unsafe_get_el(state, [batch], el)
@@ -135,16 +163,5 @@ matrices correctly and uses unsafe views to prevent allocation on CPU.
 @inline unsafe_get_el(σ::AStateBatchVec, i) = uview(σ, :, :, i)
 @inline unsafe_get_el(σ::AStateBatchVec, batch, el) = uview(σ, :, batch, el)
 
-@inline unsafe_get_el(σ::ADoubleStateBatch, i) = (unsafe_get_el(row(σ), i), unsafe_get_el(col(σ), i))
-@inline unsafe_get_el(σ::ADoubleStateBatchVec, i) = (unsafe_get_el(row(σ), i), unsafe_get_el(col(σ), i))
-@inline unsafe_get_el(σ::ADoubleStateBatchVec, batch, el) = (unsafe_get_el(row(σ), batch, el), unsafe_get_el(col(σ), batch, el))
-
-batch_size(σ::Union{AStateBatch,AStateBatchVec}) = size(σ, 2)
-batch_size(σ::Union{ADoubleStateBatch,ADoubleStateBatchVec}) = batch_size(row(σ))
-
-chain_length(σ::Union{AStateBatchVec}) = size(σ, 3)
-chain_length(σ::Union{ADoubleStateBatchVec}) = chain_length(row(σ))
-
-state_size(σ::Union{AState, ADoubleState}) = (1,)
-state_size(σ::Union{AStateBatch, ADoubleStateBatch}) = (batch_size(σ),)
-state_size(σ::Union{AStateBatchVec, ADoubleStateBatchVec}) = (batch_size(σ),chain_length(σ))
+@inline unsafe_get_el(σ::AbstractDoubled, i::Vararg{T,N}) where {T,N} =
+    (unsafe_get_el(row(σ), i...), unsafe_get_el(col(σ), i...))

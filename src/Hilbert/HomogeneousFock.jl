@@ -42,7 +42,7 @@ end
 @inline is_contrained(h::HomogeneousFock{H,C}) where {H,C} = C
 @inline constraint_limit(h::HomogeneousFock) = h.n_exc
 
-state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousFock, dims::Vararg{Int,n}) where n =
+state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousFock, dims::Dims) =
     similar(arrT, T, nsites(h), dims...) .= 0.0
 
 Base.show(io::IO, ::MIME"text/plain", h::HomogeneousFock) =
@@ -50,7 +50,6 @@ Base.show(io::IO, ::MIME"text/plain", h::HomogeneousFock) =
 
 Base.show(io::IO, h::HomogeneousFock) =
     print(io, "HomogeneousFock($(nsites(h)), $(local_dim(h)))")
-
 
 ## Operations
 
@@ -97,7 +96,7 @@ end
 add!(σ::AState, h::HomogeneousFock, val::Integer) =
     set!(σ, h, val+toint(σ, h))
 
-function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::HomogeneousFock{N}) where N
+function Random.rand!(rng::AbstractRNG, σ::AbstractArray, h::HomogeneousFock{N}) where N
     T = eltype(σ)
 
     #rand!(rng, σ, 0:(N-1))
@@ -108,6 +107,14 @@ function Random.rand!(rng::AbstractRNG, σ::Union{AState,AStateBatch}, h::Homoge
 end
 
 # Specialized for constrained fock spaces
+function Random.rand!(rng::AbstractRNG, σ::AStateBatchVec, h::HomogeneousFock{N, true}) where N
+    for i=1:chain_length(σ)
+        rand!(rng, unsafe_get_el(σ, i), h)
+    end
+
+    return σ
+end
+
 function Random.rand!(rng::AbstractRNG, σ::AStateBatch, h::HomogeneousFock{N, true}) where N
     for i=1:batch_size(σ)
         rand!(rng, unsafe_get_batch(σ, i), h)

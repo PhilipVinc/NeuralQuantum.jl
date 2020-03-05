@@ -1,4 +1,4 @@
-abstract type AbsLinearOperator{T,N} end
+abstract type AbsLinearOperator{T,N} #=<: AbstractArray{T,N} end=# end
 const AbsLinearOp{T} = AbsLinearOperator{T,2}
 const AbsLinearSuperOperator{T} = AbsLinearOperator{T,4}
 

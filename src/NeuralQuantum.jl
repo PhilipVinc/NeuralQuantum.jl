@@ -1,39 +1,40 @@
 module NeuralQuantum
 
-using Reexport
-using Requires
+# Packages required to construct the module
+using Reexport: @reexport
+using Requires: @require
 using MacroTools: @forward
+
+# Packages required to work-around performance issues
 using SpecializeVarargs
+using UnsafeArrays
 
 # Packages to support (mostly) GPUs
 using GPUArrays
 using Adapt: adapt
 
+# Packages for Distributed/Parallelization
 using MPI
 include("External/TPI/TPI.jl")
 using .TPI
 
-# Standard Precision used
-const STD_REAL_PREC = Float32
+# Math stuff
+using LinearMaps
+using Strided # for gradient of batches of networks
+using NNlib
+using Zygote: Zygote, Params, @adjoint, pullback
 
-using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!, randn!
-using Random: shuffle!
+# Standard library
+using Random: Random, AbstractRNG, MersenneTwister, GLOBAL_RNG, rand!
+using Random: shuffle!, randn!
 using LinearAlgebra
 using SparseArrays
-using LinearMaps
-using Strided
-using UnsafeArrays
 using Statistics
-
-using Zygote
-using NNlib
-
 using Printf
 
 @reexport using QuantumOpticsBase
 
-# Support for Colored Graphs
-using LightGraphs
+# Support for Colored Graphs and Lattices
 @reexport using LightGraphs
 include("External/ColoredGraphs/ColoredGraphs.jl")
 using .ColoredGraphs
@@ -50,8 +51,10 @@ using .Optimisers
 import .Optimisers: update, update!
 export Optimisers
 
+# Standard Precision used
+const STD_REAL_PREC = Float32
+
 # Abstract Types
-abstract type AbstractHilbert end
 abstract type NeuralNetwork end
 abstract type Sampler end
 abstract type AbstractAccumulator end
@@ -73,12 +76,20 @@ include("utils/views.jl")
 include("utils/stats.jl")
 include("utils/rng.jl")
 
-# Basic states for uniform systems
-include("base_states.jl")
+# Basic states
+include("States/States.jl")
 include("States/StateChanges.jl")
+include("States/ApplyStateChanges.jl")
 
-# Base elements
+# Hilbert spaces
+abstract type AbstractHilbert end
 include("Hilbert/base_basis.jl")
+include("Hilbert/iterator.jl")
+include("Hilbert/DiscreteHilbert.jl")
+include("Hilbert/HomogeneousFock.jl")
+include("Hilbert/HomogeneousSpin.jl")
+include("Hilbert/SuperHilbert.jl")
+include("Hilbert/basis_convert.jl")
 
 # Nets
 include("base_networks.jl")
@@ -90,13 +101,6 @@ include("tuple_logic.jl")
 #AD
 include("AD/base_derivatives.jl")
 include("AD/RealDerivatives.jl")
-
-include("Hilbert/DiscreteHilbert.jl")
-include("Hilbert/HomogeneousFock.jl")
-include("Hilbert/HomogeneousSpin.jl")
-include("Hilbert/SuperHilbert.jl")
-include("Hilbert/basis_convert.jl")
-
 include("base_batched_networks.jl")
 
 # Linear Operators
