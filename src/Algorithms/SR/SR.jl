@@ -48,7 +48,7 @@ mutable struct SR{T1,T2,T3,TP,TT} <: Algorithm
 end
 
 function SR(T::Type=STD_REAL_PREC; ϵ=0.001, precision=10e-5,
-            precondition_type=sr_shift, full_matrix=true, algorithm=sr_cholesky,
+            precondition_type=sr_shift, full_matrix=false, algorithm=sr_cholesky,
             λ0=100.0, b=0.95, λmin=1e-4, time_evo=false)
     return SR(T(ϵ), T(1.0), T(precision), precondition_type,
               algorithm, full_matrix,

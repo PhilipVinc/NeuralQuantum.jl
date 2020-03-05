@@ -27,6 +27,12 @@ function apply(o::Identity, x, x̄, state = nothing)
   x̄, state
 end
 
+"""
+    Nesterov(η)
+
+Classic gradient descent optimiser with learning rate `η` accellerated
+with parameters "μ"
+"""
 mutable struct Nesterov
   lr::AbstractFloat
   μ::AbstractFloat
