@@ -26,13 +26,6 @@ Internally uses the fact that R is a StridedView
                 end
             end
         end
-    #end
-
-    #=@unsafe_strided R vb wb begin
-        for i=1:size(R, 3)
-            BLAS.ger!(1.0, vb[:,i], wb[:,i], R[:,:,i])
-        end
-    end=#
     return R
 end
 

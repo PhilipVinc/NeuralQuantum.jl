@@ -19,7 +19,7 @@ include("External/TPI/TPI.jl")
 using .TPI
 
 # Math stuff
-using LinearMaps
+using LinearMaps: LinearMap
 using Strided # for gradient of batches of networks
 using NNlib
 using Zygote: Zygote, Params, @adjoint, pullback
@@ -51,6 +51,8 @@ using .Optimisers
 import .Optimisers: update, update!
 export Optimisers
 
+# Exports
+
 # Standard Precision used
 const STD_REAL_PREC = Float32
 
@@ -78,6 +80,7 @@ include("utils/rng.jl")
 
 # Basic states
 include("States/States.jl")
+include("States/Iterators.jl")
 include("States/StateChanges.jl")
 include("States/ApplyStateChanges.jl")
 
@@ -127,7 +130,6 @@ include("Operators/OpConversion.jl")
 export OpConnection
 export KLocalOperator, KLocalOperatorTensor, KLocalOperatorRow, operators
 export row_valdiff, col_valdiff, sites, conn_type
-export duplicate
 
 
 # Neural Networks

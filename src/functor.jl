@@ -72,7 +72,6 @@ end
 
 # CPU/GPU movement conveniences
 cpu(m) = fmap(x -> adapt(Array, x), m)
-#gpu(x) = use_cuda[] ? fmap(CuArrays.cu, x) : x
 
 # Precision
 

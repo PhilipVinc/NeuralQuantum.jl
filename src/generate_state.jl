@@ -23,6 +23,7 @@ state(T::Type{<:Number}, hilb::AbstractHilbert, net::NeuralNetwork, cache::NNCac
 state(T::Type{<:Number}, hilb::AbstractHilbert, net::NeuralNetwork, cache::NNBatchedCache, dims::Vararg{Int,n}) where n =
     state(T, hilb, net, batch_size(cache), dims...)
 
+# Those are the inner-most dispatches
 state(T::Type{<:Number}, hilb::AbstractHilbert,
       net::Union{MatrixNeuralNetwork, KetNeuralNetwork},
       dims::Vararg{Int,n}) where n =

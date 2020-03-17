@@ -2,7 +2,7 @@
 # with a preallocated cache (called CachedNetworks). Those are used to greatly
 # improve performance, especially in
 
-export cached, vectorize_gradient, weights, grad_cache
+export cached, weights, grad_cache
 
 """
     NNCache{N}

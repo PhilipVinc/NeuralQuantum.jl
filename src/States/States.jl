@@ -47,8 +47,8 @@ last (subject to change) element of the tuple.
 Returns the batch size of an arbitrary state.
 This is the second dimension of the array (but works also on doubled states).
 """
-batch_size(σ::Union{AStateBatch,AStateBatchVec}) = size(σ, 2)
-batch_size(σ::Union{ADoubleStateBatch,ADoubleStateBatchVec}) = batch_size(row(σ))
+@inline batch_size(σ::Union{AStateBatch,AStateBatchVec}) = size(σ, 2)
+@inline batch_size(σ::Union{ADoubleStateBatch,ADoubleStateBatchVec}) = batch_size(row(σ))
 
 """
     chain_length(σ::BatchStateVec)
@@ -56,8 +56,8 @@ batch_size(σ::Union{ADoubleStateBatch,ADoubleStateBatchVec}) = batch_size(row(�
 Returns the length of a chain of states.
 This is the third dimension of the array (but works also on doubled states).
 """
-chain_length(σ::Union{AStateBatchVec}) = size(σ, 3)
-chain_length(σ::Union{ADoubleStateBatchVec}) = chain_length(row(σ))
+@inline chain_length(σ::Union{AStateBatchVec}) = size(σ, 3)
+@inline chain_length(σ::Union{ADoubleStateBatchVec}) = chain_length(row(σ))
 
 """
     state_size(σ) -> tuple
@@ -68,9 +68,9 @@ following differences:
     space and is not relevant);
     - It also works on tuples (Doubled States).
 """
-state_size(σ::AbstractState) = tuple()
-state_size(σ::AbstractStateBatch) = (batch_size(σ),)
-state_size(σ::AbstractStateBatchVec) = (batch_size(σ),chain_length(σ))
+@inline state_size(σ::AbstractState) = tuple()
+@inline state_size(σ::AbstractStateBatch) = (batch_size(σ),)
+@inline state_size(σ::AbstractStateBatchVec) = (batch_size(σ),chain_length(σ))
 
 # statesimilar
 """
@@ -103,10 +103,11 @@ maps the operation on every element of the tuple.
 If the BitMask `mask` is passed, only the elements where mask has 1s are copied
 over, while the others are left unchanged.
 """
-@inline statecopy!(σp::S, σ::Sp) where {T,N,S<:AbstractArray{T,N}, Sp<:AbstractArray{T,N}}= copyto!(σp, σ)
-@inline statecopy!(σp::S2, σ::S) where {T,N,S<:AbstractArray{T,N},S2<:NTuple{2,AbstractArray{T,N}}} =
+@inline statecopy!(σp::S, σ::Sp) where {T,N,S<:AbstractArray{T,N}, Sp<:AbstractArray{T,N}} =
+    copyto!(σp, σ)
+@inline statecopy!(σp::AbstractDoubled{T}, σ::AbstractArray{T}) where T =
     statecopy!(σp, (σ,σ))
-@inline function statecopy!(σp::S, σ::S2) where {T,N,N2,S<:NTuple{2,AbstractArray{T,N}},S2<:NTuple{2,AbstractArray{T,N2}}}
+@inline function statecopy!(σp::S, σ::S2) where {T,N,N2,S<:AbstractDoubled{T,N},S2<:AbstractDoubled{T,N2}}
     statecopy!(row(σp), row(σ))
     statecopy!(col(σp), col(σ))
     return σp
@@ -114,10 +115,6 @@ end
 
 @inline statecopy!(σp::AStateBatch, σ::AState) = σp .= σ
 @inline statecopy!(σp::AStateBatchVec, σ::AStateBatch) = σp .= σ
-@inline statecopy!(σp::ADoubleStateBatch{T}, σ::AState{T}) where T =
-    statecopy!(σp, (σ, σ))
-@inline statecopy!(σp::ADoubleStateBatchVec{T}, σ::AStateBatch{T}) where T =
-    statecopy!(σp, (σ, σ))
 @inline function statecopy!(σp::Union{AState, AStateBatch, AStateBatchVec}, σ::Union{AState, AStateBatch, AStateBatchVec}, mask)
     σp .= σ .* mask .+ σp .* .! mask
     return σp

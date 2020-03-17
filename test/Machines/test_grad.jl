@@ -119,11 +119,9 @@ end
 
         cder = grad_cache(net)
 
-        v = state(T, hilb, net)
         # compute exact
         grads = [];
-        for i=1:spacedimension(hilb)
-            set!(v, hilb, i)
+        for v=states(T,hilb)
             der_ad = ∇logψ(net,  v)
             ∇logψ!(cder, cnet, v)
             #=for f=propertynames(der_ad)
@@ -133,7 +131,6 @@ end
             end=#
             isgood = isapprox(der_ad, cder, atol=atol)
             push!(grads, isgood)
-
         end
         @test all(grads)
     end

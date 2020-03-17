@@ -70,11 +70,7 @@ b_sz = 3
     v  = state(T, hilb, net)
     vb = state(T, hilb, net, b_sz)
 
-    if vb isa Tuple
-        rand!.(vb)
-    else
-        rand!(vb)
-    end
+    rand!(vb, hilb)
 
     @test net(vb) ≈ cnet(vb)
     if (vb isa Tuple)
@@ -104,11 +100,7 @@ end
     v  = state(T, hilb, net)
     vb = state(T, hilb, net, b_sz)
 
-    if vb isa Tuple
-        rand!.(vb)
-    else
-        rand!(vb)
-    end
+    rand!(vb, hilb)
 
     g1 = grad_cache(net, b_sz)
     g2 = grad_cache(net, b_sz)
