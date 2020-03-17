@@ -15,7 +15,10 @@ machines["NDM_softplus"] = ma
 ma = (T, N) -> NDM(T, N, 2, 3, NeuralQuantum.logℒ2)
 machines["NDM_cosh"] = ma
 
-ma = (T, N) -> NDMSymm(T, N, 1, 2, translational_symm_table(HyperCube([N], periodic=true)), NeuralQuantum.logℒ2)
+ma = (T, hilb) -> begin
+    N = nsites(hilb)
+    NDMSymm(T, N, 1, 2, translational_symm_table(HyperCube([N], periodic=true)), NeuralQuantum.logℒ2)
+end
 machines["NDMSymm_cosh"] = ma
 
 ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ)
@@ -24,25 +27,29 @@ machines["RBM_softplus"] = ma
 ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
 machines["RBM_cosh"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N = nsites(hi)
     ch = Chain(Dense(T, N, N-1, af_softplus), Dense(T, N-1, N-2, af_softplus), WSum(T, N-2))
-    return PureStateAnsatz(ch, N)
+    return PureStateAnsatz(ch, hi)
 end
 machines["chain_pure"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N = nsites(hi)
     ch = Chain(Dense(T, N, 2*N, af_softplus), sum_autobatch)
     return PureStateAnsatz(ch, N)
 end
 machines["chain_pure_softplus"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N = nsites(hi)
     ch = Chain(Dense(T, N, 2*N, af_logcosh), sum_autobatch)
     return PureStateAnsatz(ch, N)
 end
 machines["chain_pure_cosh"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N = nsites(hi)
     ch = Chain(DenseSplit(T, N, 2*N, af_softplus), sum_autobatch)
     return MixedStateAnsatz(ch, N)
 end
@@ -54,9 +61,8 @@ b_sz = 3
 
 @testset "test batched dispatch - values: $name" for name=keys(machines)
     name == "NDMSymm_cosh" && continue
-
-    net = machines[name](T,N)
     hilb = HomogeneousFock(N, 2)
+    net = machines[name](T,hilb)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end
@@ -86,11 +92,11 @@ b_sz = 3
 end
 
 @testset "test cached dispatch - inplace gradients: $name" for name=keys(machines)
-    net = machines[name](T,N)
+    hilb = HomogeneousFock(N, 2)
+    net = machines[name](T,hilb)
 
     snet = cache(net)
     cnet = cached(net, b_sz)
-    hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end
@@ -132,11 +138,12 @@ end
 
 
 @testset "test batched logψ: $name" for name=keys(machines)
-    net = machines[name](T,N)
+    hilb = HomogeneousFock(N, 2)
+
+    net = machines[name](T,hilb)
 
     cnet = cached(net)
     bnet = cached(net, b_sz)
-    hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end
@@ -167,11 +174,12 @@ end
 @testset "test batched ∇ψ: $name" for name=keys(machines)
     name == "NDMSymm_cosh" && continue
 
-    net = machines[name](T,N)
+    hilb = HomogeneousFock(N, 2)
+
+    net = machines[name](T,hilb)
 
     cnet = cached(net)
     bnet = cached(net, b_sz)
-    hilb = HomogeneousFock(N, 2)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end

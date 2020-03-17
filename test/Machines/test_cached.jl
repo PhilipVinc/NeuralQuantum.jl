@@ -5,45 +5,49 @@ atol_types  = [1e-5, 1e-8]
 
 machines = Dict()
 
-ma = (T, N) -> RBMSplit(T, N, 2)
+ma = (T, hi) -> RBMSplit(T, hi, 2)
 machines["RBMSplit"] = ma
 
-ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ)
+ma = (T, hi) -> RBM(T, hi, 2, NeuralQuantum.logℒ)
 machines["RBM_softplus"] = ma
 
-ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
+ma = (T, hi) -> RBM(T, hi, 2, NeuralQuantum.logℒ2)
 machines["RBM_cosh"] = ma
 
-ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ)
+ma = (T, hi) -> NDM(T, hi, 1, 2, NeuralQuantum.logℒ)
 machines["NDM_softplus"] = ma
 
-ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ2)
+ma = (T, hi) -> NDM(T, hi, 1, 2, NeuralQuantum.logℒ2)
 machines["NDM_cosh"] = ma
 
 graph = HyperCube([N], periodic=true)
 symm  = translational_symm_table(graph)
-ma = (T, N) -> NDMSymm(T, N, 1, 2, symm, NeuralQuantum.logℒ2)
+ma = (T, hi) -> NDMSymm(T, hi, 1, 2, symm, NeuralQuantum.logℒ2)
 machines["NDMSymm_cosh"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N = nsites(hi)
     ch = Chain(Dense(T, N, 2*N, af_softplus), sum_autobatch)
-    return PureStateAnsatz(ch, N)
+    return PureStateAnsatz(ch, hi)
 end
 machines["chain_pure_softplus"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N = nsites(hi)
     ch = Chain(Dense(T, N, 2*N, af_logcosh), sum_autobatch)
     return PureStateAnsatz(ch, N)
 end
 machines["chain_pure_cosh"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N = nsites(hi)
     ch = Chain(Dense(T, N, 2*N, af_logcosh), Dense(T, 2*N, N, af_logcosh), sum_autobatch)
     return PureStateAnsatz(ch, N)
 end
 machines["chain_pure_cosh_2"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N = nsites(hi)
     ch = Chain(DenseSplit(T, N, 2*N, af_softplus), sum_autobatch)
     return MixedStateAnsatz(ch, N)
 end
@@ -55,8 +59,9 @@ N = 4
 T = Float32
 
 @testset "test cached dispatch - values: $name" for name=keys(machines)
-    net = machines[name](T,N)
     hilb = HomogeneousFock(N, 2)
+
+    net = machines[name](T,hilb)
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end
@@ -70,9 +75,10 @@ T = Float32
 end
 
 @testset "test cached dispatch - allocating gradients: $name" for name=keys(machines)
-    net = machines[name](T,N)
-
     hilb = HomogeneousFock(N, 2)
+
+    net = machines[name](T,hilb)
+
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end
@@ -83,9 +89,10 @@ end
 end
 
 @testset "test cached dispatch - inplace gradients: $name" for name=keys(machines)
-    net = machines[name](T,N)
-
     hilb = HomogeneousFock(N, 2)
+
+    net = machines[name](T,hilb)
+
     if net isa NeuralQuantum.MatrixNet
         hilb = SuperOpSpace(hilb)
     end

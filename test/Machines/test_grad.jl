@@ -6,42 +6,48 @@ atol_types  = [1e-5, 1e-8]
 re_machines = Dict()
 im_machines = Dict()
 
-ma = (T, N) -> RBMSplit(T, N, 2)
+ma = (T, hi) -> RBMSplit(T, hi, 2)
 im_machines["RBMSplit"] = ma
 
-ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ)
+ma = (T, hi) -> RBM(T, hi, 2, NeuralQuantum.logℒ)
 im_machines["RBM_softplus"] = ma
 
-ma = (T, N) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
+ma = (T, hi) -> RBM(T, N, 2, NeuralQuantum.logℒ2)
 im_machines["RBM_cosh"] = ma
 
-ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ)
+ma = (T, hi) -> NDM(T, hi, 1, 2, NeuralQuantum.logℒ)
 re_machines["NDM_softplus"] = ma
 
-ma = (T, N) -> NDM(T, N, 1, 2, NeuralQuantum.logℒ2)
+ma = (T, hi) -> NDM(T, hi, 1, 2, NeuralQuantum.logℒ2)
 re_machines["NDM_cosh"] = ma
 
-ma = (T, N) -> NDMSymm(T, N, 1, 2, translational_symm_table(HyperCube([N], periodic=true)), NeuralQuantum.logℒ2)
+ma = (T, hi) -> NDMSymm(T, hi, 1, 2, translational_symm_table(HyperCube([N], periodic=true)), NeuralQuantum.logℒ2)
 re_machines["NDMSymm_cosh"] = ma
 
-ma = (T, N) -> PureStateAnsatz(Chain(Dense(T, N, N*2), Dense(T, N*2, N*3), WSum(T, N*3)), N)
+ma = (T, hi) -> begin
+    N = nsites(hi)
+    PureStateAnsatz(Chain(Dense(T, N, N*2), Dense(T, N*2, N*3), WSum(T, N*3)), hi)
+end
 re_machines["ChainKet"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N =nsites(hi)
     ch = Chain(Dense(T, N, 2*N, af_softplus), sum_autobatch)
-    return PureStateAnsatz(ch, N)
+    return PureStateAnsatz(ch, hi)
 end
 im_machines["chain_pure_softplus"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N = nsites(hi)
     ch = Chain(Dense(T, N, 2*N, af_logcosh), Dense(T, 2*N, N, af_logcosh), sum_autobatch)
-    return PureStateAnsatz(ch, N)
+    return PureStateAnsatz(ch, hi)
 end
 im_machines["chain_pure_cosh_2"] = ma
 
-ma = (T, N) -> begin
+ma = (T, hi) -> begin
+    N = nsites(hi)
     ch = Chain(DenseSplit(T, N, 2*N, af_softplus), sum_autobatch)
-    return MixedStateAnsatz(ch, N)
+    return MixedStateAnsatz(ch, hi)
 end
 im_machines["chain_mixed_softplus"] = ma
 
@@ -55,8 +61,9 @@ N = 4
             T = Complex{T}
         end
         name == "ChainKet" && T != Float32 && continue
+        hilb = HomogeneousFock(N, 2)
 
-        net = all_machines[name](T,N)
+        net = all_machines[name](T,hilb)
 
         @test NeuralQuantum.out_type(net) == Complex{real(T)}
         @test NeuralQuantum.is_analytic(net)
@@ -67,11 +74,11 @@ end
 @testset "Test cached evaluation $name" for name=keys(all_machines)
     for T=num_types
         name == "ChainKet" && T != Float32 && continue
+        hilb = HomogeneousFock(N, 2)
 
-        net = all_machines[name](T,N)
+        net = all_machines[name](T, hilb)
         cnet = cached(net)
 
-        hilb = HomogeneousFock(N, 2)
         if net isa NeuralQuantum.MatrixNet
             hilb = SuperOpSpace(hilb)
         end
@@ -103,10 +110,9 @@ end
         name == "ChainKet" && T != Float32 && continue
         name == "NDMSymm_cosh" && continue
 
-        net = all_machines[name](T,N)
+        net = all_machines[name](T, hilb)
         cnet = cached(net)
 
-        hilb = HomogeneousFock(N, 2)
         if net isa NeuralQuantum.MatrixNet
             hilb = SuperOpSpace(hilb)
         end

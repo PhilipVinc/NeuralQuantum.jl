@@ -14,8 +14,10 @@ struct NDMSymm{T,T2,T4} <: MatrixNeuralNetwork
 end
 @functor NDMSymm
 
-NDMSymm(n_in::Int, αh, αa, args...) = NDMSymm(STD_REAL_PREC, n_in, αh, αa, args...)
-function NDMSymm(T::Type{<:Real}, n_in, αh, αa, permutations, σ::Function=logℒ)
+NDMSymm(n_in::Int, args...) = NDMSymm(STD_REAL_PREC, args...)
+NDMSymm(T::Type, hilb::AbstractHilbert, args...) =
+    NDMSymm(T, nsites(hilb), args...)
+function NDMSymm(T::Type{<:Real}, n_in::Int, αh, αa, permutations, σ::Function=logℒ)
     n_symm = length(permutations)
     @assert length(first(permutations)) == n_in
 

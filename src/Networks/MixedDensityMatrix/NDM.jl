@@ -45,7 +45,9 @@ Refs:
 NDM(args...) = NDM(STD_REAL_PREC, args...)
 NDM(T::Type{<:Complex}, args...) =
     NDM(real(T), args...)
-NDM(T::Type{<:Real}, in, αh, αa, σ::Function=logℒ,
+NDM(T::Type{<:Real}, hilb::AbstractHilbert, args...) =
+    NDM(real(T), nsites(hilb), args...)
+NDM(T::Type{<:Real}, in::Int, αh, αa, σ::Function=logℒ,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
     initb=(dims...)->rescaled_normal(T, 0.005, dims...),
     inita=(dims...)->rescaled_normal(T, 0.005, dims...)) =
@@ -189,6 +191,7 @@ function (W::NDM)(c::NDMCache, σr::AState, σc::AState)
         c.θμ_σ_tmp .= W.f.(θμ_σ)
         c.∑logℒ_μ_σ = sum(c.θμ_σ_tmp)
 
+        # TODO remove this bullshit
         c.∂logℒ_λ_σ .= fwd_der.(W.f, θλ_σ)
         c.∂logℒ_μ_σ .= fwd_der.(W.f,θμ_σ)
     end
@@ -331,34 +334,4 @@ function logψ_and_∇logψ!(∇logψ, W::NDM, c::NDMCache, σr, σc)
     logψ = Γ_λ + T(1.0)im * Γ_μ + Π
 
     return logψ
-end
-
-function vectorize_gradient(net::NDM{T}, gradient::NamedTuple) where T
-    fnames_μ = [:b_μ, :h_μ, :w_μ, :u_μ]
-    fnames_λ = [:b_λ, :h_λ, :d_λ, :w_λ, :u_λ]
-    fnames_sets = [fnames_μ, fnames_λ]
-    kvpairs    =Dict{Symbol, Any}()
-    params_vecs = []
-
-    for fnames=fnames_sets
-        lens = Int[1]
-        for f=fnames
-            push!(lens, length(gradient[f]))
-        end
-        n_params   = sum(lens)-1
-        indices    = cumsum(lens)
-
-        params_vec = Vector{Complex{T}}(undef, n_params)
-        push!(params_vecs, params_vec)
-        i=1;
-        for f=fnames
-            @views datavec = params_vec[indices[i]:indices[i+1]-1]
-            reshpd_params  = reshape(datavec, size(gradient[f]))
-            reshpd_params .= gradient[f]
-            push!(kvpairs, f=>reshpd_params)
-            i = i+1
-        end
-    end
-    newgrad = (;kvpairs...)
-    return (newgrad, params_vecs)
 end

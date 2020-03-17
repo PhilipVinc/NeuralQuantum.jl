@@ -24,6 +24,11 @@ function PureStateAnsatz(ansatz, in_size)
     if ansatz isa PureStateAnsatz
         throw("ansatz is already a network!")
     end
+
+    if in_size isa AbstractHilbert
+        in_size = nsites(in_size)
+    end
+    
     # input type
     in_t = real(eltype(trainable_first(ansatz)))
     # output_type

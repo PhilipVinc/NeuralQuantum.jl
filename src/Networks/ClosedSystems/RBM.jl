@@ -35,7 +35,9 @@ Refs:
     https://arxiv.org/abs/1606.02318
 """
 RBM(in, α, args...) = RBM(ComplexF32, in, α, args...)
-RBM(T::Type, in, α, σ::Function=af_softplus,
+RBM(T::Type, hilb::AbstractHilbert, args...) =
+    RBM(T, nsites(hilb), args...)
+RBM(T::Type, in::Int, α, σ::Function=af_softplus,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
     initb=(dims...)->rescaled_normal(T, 0.01, dims...),
     inita=(dims...)->rescaled_normal(T, 0.01, dims...)) =

@@ -34,7 +34,9 @@ Refs:
 """
 NDMComplex(args...) = NDMComplex(STD_REAL_PREC, args...)
 NDMComplex(T::Type{<:Real}, args...) = _NDMComplex(Complex{T}, args...)
-_NDMComplex(T::Type{<:Complex}, in, αh, αa,
+NDMComplex(T::Type{<:Real}, hilb::AbstractHilbert, args...) =
+    _NDMComplex(real(T), nsites(hilb), args...)
+_NDMComplex(T::Type{<:Complex}, in::Int, αh, αa,
     initW=(dims...)->rescaled_normal(T, 0.01, dims...),
     initb=(dims...)->rescaled_normal(T, 0.005, dims...),
     inita=(dims...)->rescaled_normal(T, 0.005, dims...)) =

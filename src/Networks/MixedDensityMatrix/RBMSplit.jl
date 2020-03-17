@@ -31,7 +31,9 @@ Refs:
     https://arxiv.org/abs/1902.07006
 """
 RBMSplit(in::Int, α::Number, args...) = RBMSplit(ComplexF32, in, α, args...)
-RBMSplit(T::Type, in, α,
+RBMSplit(T::Type, hilb::AbstractHilbert, args...) =
+    RBMSplit(T, nsites(hilb), args...)
+RBMSplit(T::Type, in::Int, α,
          initW=(dims...)->rescaled_normal(T, 0.01, dims...),
          initb=(dims...)->rescaled_normal(T, 0.05, dims...),
          inita=(dims...)->rescaled_normal(T, 0.01, dims...)) =
