@@ -88,6 +88,7 @@ include("Hilbert/iterator.jl")
 include("Hilbert/DiscreteHilbert.jl")
 include("Hilbert/HomogeneousFock.jl")
 include("Hilbert/HomogeneousSpin.jl")
+include("Hilbert/DoubledHilbert.jl")
 include("Hilbert/SuperHilbert.jl")
 include("Hilbert/basis_convert.jl")
 

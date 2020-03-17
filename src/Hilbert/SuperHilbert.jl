@@ -1,19 +1,12 @@
-export SuperOpSpace, physical
+export SuperOpSpace
 
-abstract type AbstractSuperOpBasis <: AbstractHilbert end
-
-@inline physical(h::AbstractSuperOpBasis) = h.basis
-
+abstract type AbstractSuperOpBasis <: DoubledBasis end
 @inline nsites(h::AbstractSuperOpBasis) = 2*nsites(physical(h))
 @inline spacedimension(h::AbstractSuperOpBasis) = spacedimension(physical(h))^2
-@inline indexable(h::AbstractSuperOpBasis) = spacedimension(h) != 0
-@inline is_homogeneous(h::AbstractSuperOpBasis) = is_homogeneous(physical(h))
 
 state(arrT::AbstractArray, T::Type{<:Number}, h::AbstractSuperOpBasis, dims::Dims) =
-    (state(arrT, T, physical(h), dims), state(arrT, T, physical(h), dims))#DoubleState(state(physical(h)))
-
-@inline nsites_physical(h::AbstractSuperOpBasis)         = nsites(physical(h))
-@inline spacedimension_physical(h::AbstractSuperOpBasis) = spacedimension(physical(h))
+    (state(arrT, T, physical(h), dims),
+     state(arrT, T, physical(h), dims))
 
 mutable struct SuperOpSpace{H<:AbstractHilbert} <: AbstractSuperOpBasis
     basis::H
@@ -26,21 +19,6 @@ Base.show(io::IO, h::SuperOpSpace) =
     print(io, "SuperOpSpace($(physical(h))))")
 
 ##
-function flipat!(rng::AbstractRNG, σ::ADoubleState, h::SuperOpSpace, i)
-    hp = physical(h)
-    np = nsites_physical(h)
-
-    res = i > np ? flipat!(rng, row(σ), hp, i-np) : flipat!(rng, col(σ), hp, i)
-    return res
-end
-
-function setat!(σ::ADoubleState, h::SuperOpSpace, i::Int, val)
-    hp = physical(h)
-    np = nsites_physical(h)
-
-    old = i > np ? setat!(row(σ), hp, i-np, val) : setat!(col(σ), hp, i, val)
-    return old
-end
 
 function set!(σ::ADoubleState, h::SuperOpSpace, i::Integer)
     hp = physical(h)
@@ -55,13 +33,13 @@ function set!(σ::ADoubleState, h::SuperOpSpace, i::Integer)
     return σ
 end
 
-function set!(σ::ADoubleState, h::SuperOpSpace, i_r::Integer, i_c::Integer)
+@inline function set!(σ::ADoubleState, h::SuperOpSpace, i_r::Integer, i_c::Integer)
     set!(row(σ), physical(h), i_r)
     set!(col(σ), physical(h), i_c)
     return σ
 end
 
-function Random.rand!(rng::AbstractRNG, σ::AbstractDoubled, h::SuperOpSpace)
+@inline function Random.rand!(rng::AbstractRNG, σ::AbstractDoubled, h::SuperOpSpace)
     rand!(rng, row(σ), physical(h))
     rand!(rng, col(σ), physical(h))
     return σ
