@@ -1,6 +1,6 @@
 export HomogeneousSpin
 
-mutable struct HomogeneousSpin{D,C} <: AbstractHilbert
+mutable struct HomogeneousSpin{D,S,C} <: AbstractHilbert
     n_sites::Int
     shape::Vector{Int}
 
@@ -34,20 +34,24 @@ function HomogeneousSpin(n_sites, S::Rational=1//2; total_Sz::Union{Nothing,Rati
         total_Sz = 0
     end
 
-    return HomogeneousSpin{N,constrained}(n_sites, fill(N, n_sites),
+    return HomogeneousSpin{N,S,constrained}(n_sites, fill(N, n_sites),
                                           total_Sz)
 end
+
+Base.similar(hilb::HomogeneousSpin, N::Int) =
+    HomogeneousSpin(N, spin(hilb))
 
 @inline nsites(h::HomogeneousSpin) = h.n_sites
 @inline local_dim(h::HomogeneousSpin{D}) where D = D
 @inline local_dim(h::HomogeneousSpin{D}, i) where D = D
 @inline shape(h::HomogeneousSpin) = h.shape
+@inline spin(h::HomogeneousSpin{D,S}) where {D,S} = S
 
 @inline spacedimension(h::HomogeneousSpin) = local_dim(h)^nsites(h)
 @inline indexable(h::HomogeneousSpin) = spacedimension(h) != 0
 @inline is_homogeneous(h::HomogeneousSpin) = true
 
-@inline is_contrained(h::HomogeneousSpin{H,C}) where {H,C} = C
+@inline is_contrained(h::HomogeneousSpin{H,S,C}) where {H,S,C} = C
 @inline constraint_limit(h::HomogeneousSpin) = h.Sz_total
 
 state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousSpin{N}, dims::Dims) where {N} =
@@ -105,7 +109,7 @@ end
 add!(σ::AState, h::HomogeneousSpin, val::Integer) =
     set!(σ, h, val+toint(σ, h))
 
-function Random.rand!(rng::AbstractRNG, σ::AbstractArray, h::HomogeneousSpin{N,false}) where N
+function Random.rand!(rng::AbstractRNG, σ::AbstractArray, h::HomogeneousSpin{N,S,false}) where {N,S}
     T = eltype(σ)
     rand!(rng, σ)
     σ .= floor.(σ.*N).*2 .- (N-1)
@@ -113,7 +117,7 @@ function Random.rand!(rng::AbstractRNG, σ::AbstractArray, h::HomogeneousSpin{N,
 end
 
 # Specialized for constrained fock spaces
-function Random.rand!(rng::AbstractRNG, σ::AState, hilb::HomogeneousSpin{N,true}) where N
+function Random.rand!(rng::AbstractRNG, σ::AState, hilb::HomogeneousSpin{N,S,true}) where {N,S}
     T = eltype(σ)
 
     if N == 2
@@ -131,7 +135,7 @@ function Random.rand!(rng::AbstractRNG, σ::AState, hilb::HomogeneousSpin{N,true
     return σ
 end
 
-function Random.rand!(rng::AbstractRNG, σ::AStateBatch, h::HomogeneousSpin{N, true}) where N
+function Random.rand!(rng::AbstractRNG, σ::AStateBatch, h::HomogeneousSpin{N, S, true}) where {N,S}
     for i=1:batch_size(σ)
         rand!(rng, unsafe_get_batch(σ, i), h)
     end

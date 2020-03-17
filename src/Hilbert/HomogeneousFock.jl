@@ -30,6 +30,9 @@ function HomogeneousFock(n_sites, hilb_dim; excitations = -1)
                                           excitations)
 end
 
+Base.similar(hilb::HomogeneousFock, N) =
+    HomogeneousFock(N, local_dim(hilb))
+
 @inline nsites(h::HomogeneousFock) = h.n_sites
 @inline local_dim(h::HomogeneousFock{D}) where D = D
 @inline local_dim(h::HomogeneousFock{D}, i) where D = D
