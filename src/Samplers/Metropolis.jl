@@ -122,7 +122,7 @@ chain_length(s::MetropolisSampler, c::MetropolisSamplerCache) = c.loc_chain_leng
 done(s::MetropolisSampler, σ, c) = c.steps_done >= chain_length(s, c)
 
 function samplenext!(σ_out::T, σ_in::T, s::MetropolisSampler,
-                     net::Union{MatrixNet,KetNet}, c) where {T<:Union{AStateBatch, ADoubleStateBatch}}
+                     net::NeuralNetwork, c) where {T<:Union{AStateBatch, ADoubleStateBatch}}
     # Check termination condition, and return if verified
     done(s, σ, c) && return false
 
@@ -171,7 +171,7 @@ end
 @inline function propose_step!(
                        σp::Union{AStateBatch,ADoubleStateBatch},
                        s::MetropolisSampler,
-                       net::Union{MatrixNet,KetNet}, c, rc)
+                       net::NeuralNetwork, c, rc)
     for i=1:num_batches(σp)
         propose_step!(unsafe_get_batch(σp, i), s, net, c, rc)
     end

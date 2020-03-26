@@ -109,6 +109,7 @@ end
     for (T,  atol)=zip(num_types, atol_types)
         name == "ChainKet" && T != Float32 && continue
         name == "NDMSymm_cosh" && continue
+        hilb = HomogeneousFock(N, 2)
 
         net = all_machines[name](T, hilb)
         cnet = cached(net)

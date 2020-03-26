@@ -72,6 +72,19 @@ following differences:
 @inline state_size(σ::AbstractStateBatch) = (batch_size(σ),)
 @inline state_size(σ::AbstractStateBatchVec) = (batch_size(σ),chain_length(σ))
 
+@inline state_length(σ::AbstractState) = 1
+@inline state_length(σ) = prod(state_size(σ))
+
+@inline state_eltype(σ::AbstractState) = typeof(σ)
+@inline state_eltype(σ::AStateBatch) = typeof(σ[:,1])
+@inline state_eltype(σ::AStateBatchVec) = typeof(σ[:,1,1])
+
+@inline batch_eltype(σ::AStateBatch) = typeof(σ)
+@inline batch_eltype(σ::AStateBatchVec) = typeof(σ[:,:,1])
+
+@inline state_eltype(σ::AbstractDoubled) = Tuple{state_eltype(row(σ)), state_eltype(col(σ))}
+@inline batch_eltype(σ::AbstractDoubled) = Tuple{batch_eltype(row(σ)), batch_eltype(col(σ))}
+
 # statesimilar
 """
     state_similar(σ, [dims...])
@@ -162,3 +175,5 @@ matrices correctly and uses unsafe views to prevent allocation on CPU.
 
 @inline unsafe_get_el(σ::AbstractDoubled, i::Vararg{T,N}) where {T,N} =
     (unsafe_get_el(row(σ), i...), unsafe_get_el(col(σ), i...))
+@inline unsafe_get_el(σ::AbstractDoubled, j::AbstractRange, i::Vararg{T,N}) where {T,N} =
+    (unsafe_get_el(row(σ), j, i...), unsafe_get_el(col(σ), j, i...))

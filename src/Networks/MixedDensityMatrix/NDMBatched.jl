@@ -126,6 +126,7 @@ function logψ!(out::AbstractMatrix, W::NDM, c::NDMBatchedCache, σr_r::Abstract
         c.∑logℒ_μ_σ .= 0.0
         Base.mapreducedim!(identity, +, c.∑logℒ_μ_σ, c.θμ_σ_tmp)
 
+        #TODO FIX
         c.∂logℒ_λ_σ .= fwd_der.(W.f, θλ_σ)
         c.∂logℒ_μ_σ .= fwd_der.(W.f, θμ_σ)
     end

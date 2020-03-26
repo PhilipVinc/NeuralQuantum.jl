@@ -14,7 +14,7 @@ function flipat!(rng::AbstractRNG, σ::ADoubleState, h::DoubledBasis, i)
     hp = physical(h)
     np = nsites_physical(h)
 
-    res = i > np ? flipat!(rng, row(σ), hp, i-np) : flipat!(rng, col(σ), hp, i)
+    res = i > np ? flipat!(rng, col(σ), hp, i-np) : flipat!(rng, row(σ), hp, i)
     return res
 end
 
