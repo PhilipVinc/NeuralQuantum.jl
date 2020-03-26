@@ -3,17 +3,15 @@ abstract type AbstractIterativeSampler end
 export gradient
 
 function _sample_state!(is::AbstractIterativeSampler)
-    ch_len         = chain_length(is.sampler, is.sampler_cache)
-    batch_sz       = batch_size(is.samples)
+    samples        = batches(is.samples)
 
     # Monte-Carlo sampling
-    σ_old = unsafe_get_el(is.samples, 1)
+    σ_old = first(samples)
 
     init_sampler!(is.sampler, is.bnet, σ_old, is.sampler_cache)
-    for i=1:ch_len-1
-        σ_next = unsafe_get_el(is.samples, i+1)
+    for σ_next=samples
         !samplenext!(σ_next, σ_old,
-                        is.sampler, is.bnet, is.sampler_cache) && break
+                     is.sampler, is.bnet, is.sampler_cache) && break
         σ_old = σ_next
     end
 end

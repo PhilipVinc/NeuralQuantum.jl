@@ -82,14 +82,10 @@ function _sample_compute_obs!(is::BatchedValSampler)
     end
 
     # Compute terms C^{loc} = ⟨σ|Ĉ|ψ⟩/⟨σ|ψ⟩
-    for i=1:ch_len
-        for j = 1:batch_sz
-            σv = unsafe_get_el(samples, j, i)
-            init!(is.accum, σv, ψvals[1,j,i])
-            accumulate_connections!(is.accum, is.Ĉ, σv)
-            L_loc = NeuralQuantum.finalize!(is.accum)
-            is.local_vals[j, i] = L_loc
-        end
+    for (i,σv)=enumerate(states(is.samples))
+        init!(is.accum, σv, ψvals[i])
+        accumulate_connections!(is.accum, is.Ĉ, σv)
+        is.local_vals[i] = NeuralQuantum.finalize!(is.accum)
     end
 
     # Perform some simple analysis to estimate error and autocorrelations
