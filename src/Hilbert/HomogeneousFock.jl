@@ -112,7 +112,7 @@ end
 # Specialized for constrained fock spaces
 function Random.rand!(rng::AbstractRNG, σ::AStateBatchVec, h::HomogeneousFock{N, true}) where N
     for i=1:chain_length(σ)
-        rand!(rng, unsafe_get_el(σ, i), h)
+        rand!(rng, state_uview(σ, i), h)
     end
 
     return σ

@@ -14,7 +14,7 @@ function AccumulatorLogPsi(net::NeuralNetwork, v::Union{gpuAStateBatch, gpuADoub
     #bnet    = cached(net, batch_sz)
     bnet    = net
 
-    in_buf_cpu  = statecollect(v)
+    in_buf_cpu  = state_collect(v)
     in_buf_gpu  = deepcopy(v)
     out_buf     = out_similar(net)
 
@@ -40,7 +40,7 @@ function init!(c::AccumulatorLogPsiGPU, σ)
     init!(c)
 
     # Reset the state so that later is faster to apply the changes
-    statecopy!(c.in_buf_cpu, σ)
+    state_copy!(c.in_buf_cpu, σ)
 end
 
 function (c::AccumulatorLogPsiGPU)(v::Union{AState, ADoubleState})

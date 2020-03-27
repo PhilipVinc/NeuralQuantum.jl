@@ -27,7 +27,7 @@ function row_valstate(op::AbsLinearOperator, v)
     conns = row_valdiff(op, v)
 
     vp    = state_similar(v, length(conns))
-    statecopy!(vp, v)
+    state_copy!(vp, v)
 
     T     = eltype(conns).parameters[1]
     mels  = zeros(T, length(conns))

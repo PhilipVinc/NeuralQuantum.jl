@@ -8,7 +8,6 @@ function build_rng_generator_T(arrT::GPUArray, seed)
     return GPUArrays.global_rng(c)
 end
 
-@inline unsafe_get_el(σ::gpuAStateBatchVec, i) =
-    view(σ, :, :, i)
-@inline unsafe_get_el(σ::gpuAStateBatchVec, batch, el) =
-    view(σ, :, batch, el)
+@inline state_uview(σ::gpuAStateBatch, i)    = view(σ, :, i)
+@inline state_uview(σ::gpuAStateBatchVec, i) = view(σ, :, :, i)
+@inline state_uview(σ::gpuAStateBatchVec, batch, el) = view(σ, :, batch, el)

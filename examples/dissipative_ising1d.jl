@@ -1,5 +1,4 @@
 using NeuralQuantum, QuantumOpticsBase, ProgressMeter
-using NeuralQuantum: unsafe_get_el
 
 N = 7
 g = 0.4

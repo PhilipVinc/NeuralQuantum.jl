@@ -111,7 +111,7 @@ end
 ## Inplace stuff
 function logψ!(out, net::NeuralNetwork, cache::NNCache, vv::Union{AStateBatch,ADoubleStateBatch})
     for i=1:num_batches(vv)
-        v = unsafe_get_el(vv, i)
+        v = state_uview(vv, i)
         out[i] = logψ(net, cache, v)
     end
     return out
@@ -119,8 +119,8 @@ end
 
 function logψ!(out, net::NeuralNetwork, cache::NNCache, vvl::AStateBatch, vvr::AStateBatch)
     for i=1:num_batches(vvr)
-        vl = unsafe_get_el(vvl, i)
-        vr = unsafe_get_el(vvr, i)
+        vl = state_uview(vvl, i)
+        vr = state_uview(vvr, i)
         out[i] = logψ(net, cache, vl, vr)
     end
     return out

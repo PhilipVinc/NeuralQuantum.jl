@@ -176,9 +176,9 @@ logψ!(out::AbstractArray{T,3}, cnet::CachedNet, σ::NTuple{2,AbstractArray{T2,3
 function logψ!(out::AbstractArray{T,3}, cnet::Union{NeuralNetwork, CachedNet}, σr::AT, σc::AT) where {T, T2, AT<:AbstractArray{T2, 3}}
     n_batches = size(σr, 3)
     for i=1:n_batches
-        σr_i  = unsafe_get_el(σr,  i)
-        σc_i  = unsafe_get_el(σc,  i)
-        out_i = unsafe_get_el(out, i)
+        σr_i  = state_uview(σr,  i)
+        σc_i  = state_uview(σc,  i)
+        out_i = state_uview(out, i)
         logψ!(out_i, cnet, σr_i, σc_i)
     end
     return out
@@ -187,8 +187,8 @@ end
 function logψ!(out::AbstractArray{T,3}, cnet::NeuralNetwork, σ::AT) where {T, T2, AT<:AbstractArray{T2, 3}}
     n_batches = size(σ, 3)
     for i=1:n_batches
-        σ_i   = unsafe_get_el(σ,  i)
-        out_i = unsafe_get_el(out, i)
+        σ_i   = state_uview(σ,  i)
+        out_i = state_uview(out, i)
         logψ!(out_i, cnet, σ_i)
     end
     return out
@@ -201,8 +201,8 @@ function logψ_and_∇logψ!(der::Vector{<:AbstractDerivative}, out::AbstractArr
                          σ::Union{AStateBatchVec, ADoubleStateBatchVec}) where {T}
     n_batches  = length(der)
     for i=1:n_batches
-        σ_i   = unsafe_get_el(σ,  i)
-        out_i = unsafe_get_el(out, i)
+        σ_i   = state_uview(σ,  i)
+        out_i = state_uview(out, i)
         logψ_and_∇logψ!(der[i], out_i, net, σ_i)
     end
     return out
@@ -212,8 +212,8 @@ function logψ!(out::AbstractArray{T,3}, net::Union{NeuralNetwork, CachedNet},
                σ::Union{AStateBatchVec, ADoubleStateBatchVec}) where {T}
     n_batches  = length(der)
     for i=1:n_batches
-        σ_i   = unsafe_get_el(σ,  i)
-        out_i = unsafe_get_el(out, i)
+        σ_i   = state_uview(σ,  i)
+        out_i = state_uview(out, i)
         logψ!(out_i, net, σ_i)
     end
     return out

@@ -58,7 +58,7 @@ function init!(c::AccumulatorLogGradPsi, σ)
     init!(c)
 
     # Reset the state so that later is faster to apply the changes
-    statecopy!(c.in_buf, σ)
+    state_copy!(c.in_buf, σ)
     return nothing
 end
 
@@ -70,7 +70,7 @@ function (c::AccumulatorLogGradPsi)(v::Union{AState, ADoubleState})
     c.buf_n = c.buf_n + 1
 
     buf_i = NeuralQuantum.unsafe_get_batch(c.in_buf, c.buf_n)
-    statecopy!(buf_i, v)
+    state_copy!(buf_i, v)
 
     return nothing
 end

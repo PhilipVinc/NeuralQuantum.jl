@@ -102,12 +102,12 @@ state_similar(σ::AbstractDoubled, dims::Vararg{T,N}) where {T,N} =
     (state_similar(row(σ), dims...), state_similar(col(σ), dims...))
 
 # Allocating
-statecopy(σ) = statecopy!(state_similar(σ), σ)
-statecopy(σ, σp, mask) = statecopy!(statecopy(σ), σp, mask)
-statecopy_invertmask(σ, σp, mask) = statecopy_invertmask(statecopy(σ), σp, mask)
+state_copy(σ) = state_copy!(state_similar(σ), σ)
+state_copy(σ, σp, mask) = state_copy!(state_copy(σ), σp, mask)
+state_copy_invertmask(σ, σp, mask) = state_copy_invertmask(state_copy(σ), σp, mask)
 
 """
-    statecopy!(σp, σ, [mask=nothing])
+    state_copy!(σp, σ, [mask=nothing])
 
 Copies the state `σ` onto `σp`.
 Equivalent to `σp .= σ` in most cases, but if the state is a tuple (double state)
@@ -116,64 +116,78 @@ maps the operation on every element of the tuple.
 If the BitMask `mask` is passed, only the elements where mask has 1s are copied
 over, while the others are left unchanged.
 """
-@inline statecopy!(σp::S, σ::Sp) where {T,N,S<:AbstractArray{T,N}, Sp<:AbstractArray{T,N}} =
+@inline state_copy!(σp::S, σ::Sp) where {T,N,S<:AbstractArray{T,N}, Sp<:AbstractArray{T,N}} =
     copyto!(σp, σ)
-@inline statecopy!(σp::AbstractDoubled{T}, σ::AbstractArray{T}) where T =
-    statecopy!(σp, (σ,σ))
-@inline function statecopy!(σp::S, σ::S2) where {T,N,N2,S<:AbstractDoubled{T,N},S2<:AbstractDoubled{T,N2}}
-    statecopy!(row(σp), row(σ))
-    statecopy!(col(σp), col(σ))
+@inline state_copy!(σp::AbstractDoubled{T}, σ::AbstractArray{T}) where T =
+    state_copy!(σp, (σ,σ))
+@inline function state_copy!(σp::S, σ::S2) where {T,N,N2,S<:AbstractDoubled{T,N},S2<:AbstractDoubled{T,N2}}
+    state_copy!(row(σp), row(σ))
+    state_copy!(col(σp), col(σ))
     return σp
 end
 
-@inline statecopy!(σp::AStateBatch, σ::AState) = σp .= σ
-@inline statecopy!(σp::AStateBatchVec, σ::AStateBatch) = σp .= σ
-@inline function statecopy!(σp::Union{AState, AStateBatch, AStateBatchVec}, σ::Union{AState, AStateBatch, AStateBatchVec}, mask)
+@inline state_copy!(σp::AStateBatch, σ::AState) = σp .= σ
+@inline state_copy!(σp::AStateBatchVec, σ::AStateBatch) = σp .= σ
+@inline function state_copy!(σp::Union{AState, AStateBatch, AStateBatchVec}, σ::Union{AState, AStateBatch, AStateBatchVec}, mask)
     σp .= σ .* mask .+ σp .* .! mask
     return σp
 end
-function statecopy!(σp::ADoubleStateOrBatchOrVec,
+function state_copy!(σp::ADoubleStateOrBatchOrVec,
            σ::ADoubleStateOrBatchOrVec, mask)
-    statecopy!(row(σp), row(σ), mask)
-    statecopy!(col(σp), col(σ), mask)
+    state_copy!(row(σp), row(σ), mask)
+    state_copy!(col(σp), col(σ), mask)
     return σp
 end
 
 
 """
-    statecopy_invertmask!(σp, σ, mask)
+    state_copy_invertmask!(σp, σ, mask)
 
 Copies the state `σ` onto `σp`, but only the elements where `mask` has 0s.
-Equivalent to `statecopy!(σp, σ, !mask)`.
+Equivalent to `state_copy!(σp, σ, !mask)`.
 """
-@inline function statecopy_invertmask!(σp::Union{AState, AStateBatch, AStateBatchVec}, σ::Union{AState, AStateBatch},
+@inline function state_copy_invertmask!(σp::Union{AState, AStateBatch, AStateBatchVec}, σ::Union{AState, AStateBatch},
                    mask)
     σp .= σ .* .! mask .+ σp .* mask
     return σp
 end
 
-function statecopy_invertmask!(σp::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec},
+function state_copy_invertmask!(σp::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec},
            σ::Union{ADoubleState, ADoubleStateBatch, ADoubleStateBatchVec}, mask)
-    statecopy_invertmask!(row(σp), row(σ), mask)
-    statecopy_invertmask!(col(σp), col(σ), mask)
+    state_copy_invertmask!(row(σp), row(σ), mask)
+    state_copy_invertmask!(col(σp), col(σ), mask)
     return σp
 end
 
 # TODO add @inbounds
 """
-    unsafe_get_el(state, [batch], el)
+    state_uview(state, [batch], el)
 
 Given a vector of batches of states with size `size(state) = [:, batches, els]`,
 take the batch group `el`, and if specified also selects one single batch.
 
-It's somewhat equivalent to a `view`, but handles tuples of states for density
-matrices correctly and uses unsafe views to prevent allocation on CPU.
+Returns an UnsafeArrays.UnsafeView object to avoid allocating.
 """
-@inline unsafe_get_el(σ::AStateBatch, i)    = uview(σ, :, i)
-@inline unsafe_get_el(σ::AStateBatchVec, i) = uview(σ, :, :, i)
-@inline unsafe_get_el(σ::AStateBatchVec, batch, el) = uview(σ, :, batch, el)
+@inline state_uview(σ::AStateBatch, i)    = uview(σ, :, i)
+@inline state_uview(σ::AStateBatchVec, i) = uview(σ, :, :, i)
+@inline state_uview(σ::AStateBatchVec, batch, el) = uview(σ, :, batch, el)
 
-@inline unsafe_get_el(σ::AbstractDoubled, i::Vararg{T,N}) where {T,N} =
-    (unsafe_get_el(row(σ), i...), unsafe_get_el(col(σ), i...))
-@inline unsafe_get_el(σ::AbstractDoubled, j::AbstractRange, i::Vararg{T,N}) where {T,N} =
-    (unsafe_get_el(row(σ), j, i...), unsafe_get_el(col(σ), j, i...))
+@inline state_uview(σ::AbstractDoubled, i::Vararg{T,N}) where {T,N} =
+    (state_uview(row(σ), i...), state_uview(col(σ), i...))
+@inline state_uview(σ::AbstractDoubled, j::AbstractRange, i::Vararg{T,N}) where {T,N} =
+    (state_uview(row(σ), j, i...), state_uview(col(σ), j, i...))
+
+"""
+    state_view(state, [batch], el)
+
+Given a vector of batches of states with size `size(state) = [:, batches, els]`,
+take the batch group `el`, and if specified also selects one single batch.
+"""
+@inline state_view(σ::AStateBatch, i)    = view(σ, :, i)
+@inline state_view(σ::AStateBatchVec, i) = view(σ, :, :, i)
+@inline state_view(σ::AStateBatchVec, batch, el) = view(σ, :, batch, el)
+
+@inline state_view(σ::AbstractDoubled, i::Vararg{T,N}) where {T,N} =
+    (state_view(row(σ), i...), state_view(col(σ), i...))
+@inline state_view(σ::AbstractDoubled, j::AbstractRange, i::Vararg{T,N}) where {T,N} =
+    (state_view(row(σ), j, i...), state_view(col(σ), j, i...))

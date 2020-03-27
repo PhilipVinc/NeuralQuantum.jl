@@ -36,7 +36,7 @@ apply!
 NeuralQuantum.flipat!
 NeuralQuantum.setat!
 NeuralQuantum.local_index
-NeuralQuantum.unsafe_get_el
+NeuralQuantum.state_uview
 ```
 
 ## Operators

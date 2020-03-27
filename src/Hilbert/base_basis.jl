@@ -71,12 +71,12 @@ function index(h::AbstractHilbert, s::Union{AStateBatch, AStateBatchVec,ADoubleS
     out = zeros(Int, sz...)
     if out isa AbstractVector
         for i=1:length(out)
-            out[i] = index(h, unsafe_get_el(s, i))
+            out[i] = index(h, state_uview(s, i))
         end
     else
         for i=1:size(out,2)
             for j=1:size(out,1)
-                out[j,i] = index(h, unsafe_get_el(s, j,i))
+                out[j,i] = index(h, state_uview(s, j,i))
             end
         end
     end

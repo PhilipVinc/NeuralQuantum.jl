@@ -6,11 +6,11 @@ const gpuADoubleState{T} = NTuple{2, gpuAState{T}} where T
 const gpuADoubleStateBatch{T} = NTuple{2, gpuAStateBatch{T}} where T
 const gpuADoubleStateBatchVec{T} = NTuple{2, gpuAStateBatchVec{T}} where T
 
-function statecollect(s::Union{gpuADoubleStateBatchVec,gpuADoubleStateBatch,gpuADoubleState})
-    return (statecollect(row(s)), statecollect(col(s)))
+function state_collect(s::Union{gpuADoubleStateBatchVec,gpuADoubleStateBatch,gpuADoubleState})
+    return (state_collect(row(s)), state_collect(col(s)))
 end
 
-statecollect(s::Union{gpuAStateBatchVec,gpuAStateBatch,gpuAState}) = collect(s)
+state_collect(s::Union{gpuAStateBatchVec,gpuAStateBatch,gpuAState}) = collect(s)
 
 # efficient state generation for homogeneous spaces on gpu
 # could be improved with a custom kernel...

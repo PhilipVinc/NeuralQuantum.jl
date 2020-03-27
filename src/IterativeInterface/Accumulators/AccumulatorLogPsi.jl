@@ -57,7 +57,7 @@ function init!(c::AccumulatorLogPsi, σ)
     init!(c)
 
     # Reset the state so that later is faster to apply the changes
-    statecopy!(c.in_buf, σ)
+    state_copy!(c.in_buf, σ)
 end
 
 function (c::AccumulatorLogPsi)(v::Union{AState, ADoubleState})

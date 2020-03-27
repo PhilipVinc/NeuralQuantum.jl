@@ -133,13 +133,13 @@ function samplenext!(σ_out::T, σ_in::T, s::MetropolisSampler,
     # Copy the old state in the output and tmp cache
     # Only do this when when input is not same as ouput
     # to avoid aliasing issues (especially on GPU)
-    σ_out === σ_in || statecopy!(σ_out, σ_in)
+    σ_out === σ_in || state_copy!(σ_out, σ_in)
 
     # Compute the old value
     ψtmp     = log_prob_ψ!(logψ_σ, c.ψtmp, net, σ_in)
 
     for i=1:s.passes
-        statecopy!(c.σ_old, σ_out)
+        state_copy!(c.σ_old, σ_out)
         # Apply the transition rule
         propose_step!(σ_out, s, net, c, rule_cache(c))
 
@@ -154,9 +154,9 @@ function samplenext!(σ_out::T, σ_in::T, s::MetropolisSampler,
         c.mask .= c.prob .>= 0
 
         # Copy the old configurations for chains that did not swithc
-        statecopy!(σ_out, c.σ_old, c.mask)
+        state_copy!(σ_out, c.σ_old, c.mask)
         # Copy the new log_σ values for states that switched
-        statecopy_invertmask!(logψ_σ, logψ_σp, c.mask)
+        state_copy_invertmask!(logψ_σ, logψ_σp, c.mask)
 
         # Store number of accepted moves
         c.passes_accepted += length(c.prob) - sum(c.mask)

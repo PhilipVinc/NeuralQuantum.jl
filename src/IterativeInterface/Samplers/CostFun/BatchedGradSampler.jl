@@ -87,7 +87,7 @@ function sample!(is::BatchedGradSampler; sample=true)
     # Compute LdagL
     for i=1:ch_len
         for j = 1:batch_sz
-            σv = unsafe_get_el(is.samples, j, i)
+            σv = state_uview(is.samples, j, i)
             init!(is.accum, σv, is.ψvals[1,j,i], vec_data(is.∇vals[i])[1][:,j] )
             accumulate_connections!(is.accum, is.Ĉ, σv)
             L_loc, ∇L_loc = NeuralQuantum.finalize!(is.accum)

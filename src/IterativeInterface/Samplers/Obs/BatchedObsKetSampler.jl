@@ -47,7 +47,7 @@ function compute_observable(is::BatchedObsKetSampler, Ô::AbsLinearOperator)
 
     for i=1:ch_len
         for j = 1:batch_sz
-            σv = unsafe_get_el(is.samples, j, i)
+            σv = state_uview(is.samples, j, i)
             init!(is.accum, σv, is.logψ_vals[1,j,i])
             accumulate_connections!(is.accum, Ô, σv)
             O_loc = finalize!(is.accum)
