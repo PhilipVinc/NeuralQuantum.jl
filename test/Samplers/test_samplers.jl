@@ -1,5 +1,5 @@
 using NeuralQuantum
-using NeuralQuantum: unsafe_get_el
+using NeuralQuantum: state_uview
 using Test
 using StatsBase: Histogram, fit
 using HypothesisTests
@@ -41,7 +41,7 @@ H    = quantum_ising_hamiltonian(ComplexF32, lat, hilb, g=-1.0, V=2.0)
 net = RBM(N, 1)
 init_random_pars!(net, sigma=0.2^2)
 
-n_samples = max(10000, 40*spacedimension(hilb))
+n_samples = max(20000, 50*spacedimension(hilb))
 
 @testset "Hamiltonian" begin
     @testset "ExactSampler" begin
