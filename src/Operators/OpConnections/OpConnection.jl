@@ -36,7 +36,7 @@ function Base.resize!(c::OpConnection, n)
     return c
 end
 
-Base.eltype(c::OpConnection{A,B,C}) where {A,B,C} = Tuple{eltype(A), StateChanges{B,C}}
+Base.eltype(::Type{OpConnection{A,B,C}}) where {A,B,C} = Tuple{eltype(A), StateChanges{B,C}}
 Base.length(c::OpConnection) = c.length[]
 Base.size(c::OpConnection) = (length(c), )
 capacity(c::OpConnection) = length(c.mel)

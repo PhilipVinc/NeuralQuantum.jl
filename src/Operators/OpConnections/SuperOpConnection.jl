@@ -12,10 +12,10 @@ SuperOpConnection{A,B,C}() where {A,B,C} = SuperOpConnection(A(), B(), C())
 @inline length_l_r(c::SuperOpConnection)  = length(c.op_conn_l_r)
 @inline Base.length(c::SuperOpConnection) = length_l_id(c) + length_r_id(c) + length_l_r(c)
 @inline Base.size(c::SuperOpConnection) = (length(c), )
-function Base.eltype(c::SuperOpConnection)
-    T1, SC1 = eltype(c.op_conn_l_id).parameters
-    T2, SC2 = eltype(c.op_conn_r_id).parameters
-    T3, SC3 = eltype(c.op_conn_l_r).parameters
+function Base.eltype(::Type{SuperOpConnection{L,R,LR}}) where {L,R,LR}
+    T1, SC1 = eltype(L).parameters
+    T2, SC2 = eltype(R).parameters
+    T3, SC3 = eltype(R).parameters
     T = promote_type(T1, T2, T3)
 
     return Tuple{T, SC1}

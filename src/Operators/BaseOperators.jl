@@ -4,6 +4,17 @@ const AbsLinearSuperOperator{T} = AbsLinearOperator{T,4}
 
 abstract type AbsOpConnection end
 
+Base.eltype(c::AbsOpConnection) = eltype(typeof(c))
+
+function Random.rand(rng::AbstractRNG, sampl::Random.SamplerTrivial{T}) where {T<:NeuralQuantum.AbsOpConnection}
+    conns = sampl[]
+    N = length(conns)
+    i = rand(rng, 1:N)
+    @inbounds res = conns[i]
+    return res
+end
+
+
 """
     row_valdiff(op::AbsLinearOperator, v) -> OpConnection
 

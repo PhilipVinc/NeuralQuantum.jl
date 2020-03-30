@@ -22,7 +22,7 @@ end
 @inline Base.length(c::OpConnectionIdentity) = true
 @inline Base.resize!(c::OpConnectionIdentity, i) = c
 @inline Base.append!(c::OpConnectionIdentity, a::Nothing) = c
-@inline Base.eltype(c::OpConnectionIdentity{B,C}) where {B,C} =
+@inline Base.eltype(::Type{OpConnectionIdentity{B,C}}) where {B,C} =
     Tuple{Bool, StateChanges{B,C}}
 
 Base.:(==)(::OpConnectionIdentity, ::OpConnectionIdentity) = true

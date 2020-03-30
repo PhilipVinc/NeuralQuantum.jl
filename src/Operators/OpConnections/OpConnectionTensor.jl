@@ -9,9 +9,9 @@ OpConnectionTensor{L,R}() where {L,R} = OpConnectionTensor(L(), R())
 @inline length_r(c::OpConnectionTensor) = length(c.conn_r)
 @inline Base.length(c::OpConnectionTensor) = length_l(c) * length_r(c)
 @inline Base.size(c::OpConnectionTensor) = (length(c), )
-function Base.eltype(c::OpConnectionTensor)
-    T1, SC1 = eltype(c.conn_l).parameters
-    T2, SC2 = eltype(c.conn_r).parameters
+function Base.eltype(::Type{OpConnectionTensor{L,R}}) where {L,R}
+    T1, SC1 = eltype(L).parameters
+    T2, SC2 = eltype(R).parameters
     T = promote_type(T1, T2)
 
     return Tuple{T, Tuple{SC1,SC2}}
