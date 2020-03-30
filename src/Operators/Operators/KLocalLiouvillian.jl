@@ -43,9 +43,7 @@ conn_type(op::KLocalLiouvillian) = conn_type(typeof(op))
 conn_type(::Type{KLocalLiouvillian{H,T,Vs,A,B,C}}) where {H,T,Vs,A,B,C}  =
     SuperOpConnection{conn_type(A), conn_type(B), conn_type(C)}
 
-accumulate_connections!(a, b::Vector, c) = nothing
-
-function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian, v::ADoubleState)
+function accumulate_connections!(acc::AbstractAccumulator, op::KLocalLiouvillian, v)
     accumulate_connections!(acc, op.HnH_l, v)
     accumulate_connections!(acc, op.HnH_r, v)
     accumulate_connections!(acc, op.LLdag, v)

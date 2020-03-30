@@ -8,6 +8,7 @@ struct Measurement
 end
 
 value(x::Measurement)       = x.mean
+Statistics.mean(x::Measurement) = x.mean
 uncertainty(x::Measurement) = x.error
 Base.real(x::Measurement) = Measurement(real(x.mean), x.error, x.variance, x.tau, x.R)
 Base.imag(x::Measurement) = Measurement(imag(x.mean), x.error, x.variance, x.tau, x.R)

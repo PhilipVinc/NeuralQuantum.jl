@@ -19,7 +19,6 @@ Alternatively you may activate the project included in the manifest that comes w
 
 
 ## Examples
-*IMPORTANT:* If you want to use multithreaded samplers (identified by a `MT` at the beginning of their name), you will launch one markov chain per julia thread. As such, you will get much better performance if you set `JULIA_NUM_THREADS` environment variable to the number of physical cores in your computer before launching julia.
 
 Check the folder `Examples/` for a few interesting examples.
 

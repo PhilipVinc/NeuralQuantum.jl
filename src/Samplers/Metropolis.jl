@@ -41,7 +41,7 @@ end
 
 ## Show method
 function Base.show(io::IO, s::MetropolisSampler)
-    burn_time = @sprintf "%2.2f" (s.burn_length/s.chain_length)*100
+    burn_time = @sprintf "%2.2f" (s.burn_length/(s.burn_length+s.chain_length))*100
 
     println(io, "Metropolis Sampler:")
     println(io, "\t- chain_length     : $(s.chain_length)")

@@ -31,7 +31,6 @@ function setup_algorithm!(g::SRDirectCache, ∇C, Ô, par_cache)
         T = eltype(S)
         N = size(Ô, 2)
 
-        # TODO MPI Sync Sc
         mul!(Sc, O, O')
 
         if T <: Real

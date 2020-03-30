@@ -50,6 +50,8 @@ function sample!(is::SimpleIterativeSampler)
     return is.samples
 end
 
+samples(is::SimpleIterativeSampler) = is.samples
+chain_length(is::SimpleIterativeSampler) = chain_length(is.sampler, is.sampler_cache)
 
 Base.show(io::IO, is::SimpleIterativeSampler) = print(io,
     "SimpleIterativeSampler for :"*

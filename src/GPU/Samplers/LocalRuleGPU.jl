@@ -5,7 +5,7 @@ end
 
 function RuleSamplerCache(r::LocalRule, s::MetropolisSampler, v::Union{gpuAStateBatch,gpuADoubleStateBatch},
                           net, part)
-    σ_cpu = statecollect(v)
+    σ_cpu = state_collect(v)
     rng = build_rng_generator_T(σ_cpu, s.seed)
     return LocalRuleGPUCache(rng, σ_cpu)
 end
