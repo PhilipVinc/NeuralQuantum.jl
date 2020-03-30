@@ -139,7 +139,8 @@ function init_sampler!(sampler::ExactSampler,
     # Compute the distribution
     for batch_i=Iterators.partition(c.loc_hilb_numbers, batch_sz)
         for (i, h_i)=enumerate(batch_i)
-            set!(unsafe_get_batch(σ, i), c.hilb, h_i)
+            @inbounds σᵢ = state_uview(σ, i)
+            set!(σᵢ, c.hilb, h_i)
         end
         log_prob_ψ!(c.logψ, c.logψ, net, σ)
 
@@ -169,10 +170,10 @@ function samplenext!(σ_out::T, σ_in::T,
     # Check termination condition, and return if verified
     done(s, σ, c) && return false
 
-    for i=1:batch_size(net)
+    for σ=states(σ_out)
         r = rand(c.rng)
         hi = searchsortedfirst(c.pdf, r)
-        set!(unsafe_get_batch(σ_out, i), c.hilb, hi)
+        set!(σ, c.hilb, hi)
     end
 
     c.steps_done += 1

@@ -53,8 +53,7 @@ function propose_step!(σp_b::Union{AStateBatch,ADoubleStateBatch}, s::Metropoli
                        net::Union{MatrixNet,KetNet}, c, rc)
     dist = s.rule.distances
 
-    for i=1:num_batches(σp_b)
-        σp = unsafe_get_batch(σp_b, i)
+    for σp=states(σp_b)
 
         couple_i = rand(c.rng, 1:length(dist))
         i, j = dist[couple_i]

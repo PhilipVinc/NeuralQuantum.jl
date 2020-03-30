@@ -172,8 +172,8 @@ end
                        σp::Union{AStateBatch,ADoubleStateBatch},
                        s::MetropolisSampler,
                        net::NeuralNetwork, c, rc)
-    for i=1:num_batches(σp)
-        propose_step!(unsafe_get_batch(σp, i), s, net, c, rc)
+    for σ=states(σp)
+        propose_step!(σ, s, net, c, rc)
     end
 end
 

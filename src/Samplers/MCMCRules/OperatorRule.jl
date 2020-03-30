@@ -28,9 +28,8 @@ function propose_step!(σp::Union{AState,ADoubleState}, s::MetropolisSampler{<:O
     row_valdiff!(conns, Ô, σp, init=true)
     n_forward = length(conns)
 
-    i = rand(1:n_forward)
-    mel, cngs = conns[i]
-    apply!(σp, cngs)
+    mel, cngs = rand(conns)
+    @inbounds apply!(σp, cngs)
 
     row_valdiff!(conns, Ô, σp, init=true)
     n_back = length(conns)
@@ -45,19 +44,16 @@ function propose_step!(σp::Union{AStateBatch,ADoubleStateBatch}, s::MetropolisS
     Ô     = s.rule.operator
     conns = rc.conns
 
-    for b=1:num_batches(σp)
-        σp_b = unsafe_get_batch(σp, b)
-
-        row_valdiff!(conns, Ô, σp_b, init=true)
+    for (i,σpᵢ)=enumerate(states(σp))
+        row_valdiff!(conns, Ô, σpᵢ, init=true)
         n_forward = length(conns)
 
-        i = rand(1:n_forward)
-        mel, cngs = conns[i]
-        apply!(σp_b, cngs)
+        mel, cngs = rand(conns)
+        @inbounds apply!(σpᵢ, cngs)
 
-        row_valdiff!(conns, Ô, σp_b, init=true)
+        row_valdiff!(conns, Ô, σpᵢ, init=true)
         n_back = length(conns)
 
-        c.log_prob_bias[b] = log(n_forward/n_back)
+        c.log_prob_bias[i] = log(n_forward/n_back)
     end
 end
