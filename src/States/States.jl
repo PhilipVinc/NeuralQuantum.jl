@@ -1,3 +1,5 @@
+using Base: @propagate_inbounds
+
 export row, col
 export add!, zero!, apply!, apply
 export setat!, set!, set_index!, rand!
@@ -28,7 +30,7 @@ Returns the row indices of the state `v`.
 A doubled state is implemented as a tuple, so this effectively returns the
 first (subject to change) element of the tuple.
 """
-@inline row(v::ADoubleStateOrBatchOrVec) = first(v)
+@inline row(v::ADoubleStateOrBatchOrVec) = @inbounds first(v)
 
 """
     col(v::ADoubleState(orBatch,orVec)) = last(v)
@@ -37,7 +39,7 @@ Returns the column indices of the state `v`.
 A doubled state is implemented as a tuple, so this effectively returns the
 last (subject to change) element of the tuple.
 """
-@inline col(v::ADoubleStateOrBatchOrVec) = last(v)
+@inline col(v::ADoubleStateOrBatchOrVec) = @inbounds last(v)
 
 ## utilities similar to base size
 
@@ -47,7 +49,7 @@ last (subject to change) element of the tuple.
 Returns the batch size of an arbitrary state.
 This is the second dimension of the array (but works also on doubled states).
 """
-@inline batch_size(σ::Union{AStateBatch,AStateBatchVec}) = size(σ, 2)
+@inline batch_size(σ::Union{AStateBatch,AStateBatchVec}) = @inbounds size(σ, 2)
 @inline batch_size(σ::Union{ADoubleStateBatch,ADoubleStateBatchVec}) = batch_size(row(σ))
 
 """
@@ -56,8 +58,8 @@ This is the second dimension of the array (but works also on doubled states).
 Returns the length of a chain of states.
 This is the third dimension of the array (but works also on doubled states).
 """
-@inline chain_length(σ::Union{AStateBatchVec}) = size(σ, 3)
-@inline chain_length(σ::Union{ADoubleStateBatchVec}) = chain_length(row(σ))
+@inline chain_length(σ::AStateBatchVec) = @inbounds size(σ, 3)
+@inline chain_length(σ::ADoubleStateBatchVec) = chain_length(row(σ))
 
 """
     state_size(σ) -> tuple
@@ -76,11 +78,11 @@ following differences:
 @inline state_length(σ) = prod(state_size(σ))
 
 @inline state_eltype(σ::AbstractState) = typeof(σ)
-@inline state_eltype(σ::AStateBatch) = typeof(σ[:,1])
-@inline state_eltype(σ::AStateBatchVec) = typeof(σ[:,1,1])
+@inline state_eltype(σ::AStateBatch) = @inbounds typeof(σ[:,1])
+@inline state_eltype(σ::AStateBatchVec) = @inbounds typeof(σ[:,1,1])
 
 @inline batch_eltype(σ::AStateBatch) = typeof(σ)
-@inline batch_eltype(σ::AStateBatchVec) = typeof(σ[:,:,1])
+@inline batch_eltype(σ::AStateBatchVec) = @inbounds typeof(σ[:,:,1])
 
 @inline state_eltype(σ::AbstractDoubled) = Tuple{state_eltype(row(σ)), state_eltype(col(σ))}
 @inline batch_eltype(σ::AbstractDoubled) = Tuple{batch_eltype(row(σ)), batch_eltype(col(σ))}
@@ -93,8 +95,8 @@ Works as `similar(σ, dims...)` but
     - does not change the first dimension;
     - Works with tuples (Doubled states).
 """
-state_similar(σ::AbstractArray, dims::Int...) = similar(σ, size(σ,1), dims...)
-state_similar(σ::AbstractArray, dims::Dims)   = similar(σ, size(σ,1), dims...)
+state_similar(σ::AbstractArray, dims::Int...) = @inbounds similar(σ, size(σ,1), dims...)
+state_similar(σ::AbstractArray, dims::Dims)   = @inbounds similar(σ, size(σ,1), dims...)
 state_similar(σ::AbstractArray)               = similar(σ)
 
 # Special case for doubled states
@@ -168,13 +170,13 @@ take the batch group `el`, and if specified also selects one single batch.
 
 Returns an UnsafeArrays.UnsafeView object to avoid allocating.
 """
-@inline state_uview(σ::AStateBatch, i)    = uview(σ, :, i)
-@inline state_uview(σ::AStateBatchVec, i) = uview(σ, :, :, i)
-@inline state_uview(σ::AStateBatchVec, batch, el) = uview(σ, :, batch, el)
+@propagate_inbounds state_uview(σ::AStateBatch, i)    = uview(σ, :, i)
+@propagate_inbounds state_uview(σ::AStateBatchVec, i) = uview(σ, :, :, i)
+@propagate_inbounds state_uview(σ::AStateBatchVec, batch, el) = uview(σ, :, batch, el)
 
-@inline state_uview(σ::AbstractDoubled, i::Vararg{T,N}) where {T,N} =
+@propagate_inbounds state_uview(σ::AbstractDoubled, i::Vararg{T,N}) where {T,N} =
     (state_uview(row(σ), i...), state_uview(col(σ), i...))
-@inline state_uview(σ::AbstractDoubled, j::AbstractRange, i::Vararg{T,N}) where {T,N} =
+@propagate_inbounds state_uview(σ::AbstractDoubled, j::AbstractRange, i::Vararg{T,N}) where {T,N} =
     (state_uview(row(σ), j, i...), state_uview(col(σ), j, i...))
 
 """
@@ -183,11 +185,11 @@ Returns an UnsafeArrays.UnsafeView object to avoid allocating.
 Given a vector of batches of states with size `size(state) = [:, batches, els]`,
 take the batch group `el`, and if specified also selects one single batch.
 """
-@inline state_view(σ::AStateBatch, i)    = view(σ, :, i)
-@inline state_view(σ::AStateBatchVec, i) = view(σ, :, :, i)
-@inline state_view(σ::AStateBatchVec, batch, el) = view(σ, :, batch, el)
+@propagate_inbounds state_view(σ::AStateBatch, i)    = view(σ, :, i)
+@propagate_inbounds state_view(σ::AStateBatchVec, i) = view(σ, :, :, i)
+@propagate_inbounds state_view(σ::AStateBatchVec, batch, el) = view(σ, :, batch, el)
 
-@inline state_view(σ::AbstractDoubled, i::Vararg{T,N}) where {T,N} =
+@propagate_inbounds state_view(σ::AbstractDoubled, i::Vararg{T,N}) where {T,N} =
     (state_view(row(σ), i...), state_view(col(σ), i...))
-@inline state_view(σ::AbstractDoubled, j::AbstractRange, i::Vararg{T,N}) where {T,N} =
+@propagate_inbounds state_view(σ::AbstractDoubled, j::AbstractRange, i::Vararg{T,N}) where {T,N} =
     (state_view(row(σ), j, i...), state_view(col(σ), j, i...))

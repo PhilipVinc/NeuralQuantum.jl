@@ -25,13 +25,16 @@ Base.lastindex(iter::StatesIterator) = length(iter)
 
 function Base.iterate(it::StatesIterator{false}, state=1)
     state > length(it.sz) && return nothing
+    @inbounds v = state_uview(it.states, it.sz[state].I...)
 
-    return (state_uview(it.states, it.sz[state].I...), state+1)
+    return (v, state+1)
 end
 
 function Base.getindex(it::StatesIterator{false}, i::Integer)
-    @assert i>0 && i <= length(it)
-    return state_uview(it.states, it.sz[i].I...)
+    @boundscheck checkbounds(it.sz, i)
+    @inbounds v = state_uview(it.states, it.sz[i].I...)
+
+    return v
 end
 
 
@@ -62,11 +65,14 @@ Base.lastindex(iter::BatchesIterator) = length(iter)
 
 function Base.iterate(it::BatchesIterator{false}, state=1)
     state > length(it.sz) && return nothing
+    @inbounds v = state_uview(it.states, it.sz[state].I...)
 
-    return (state_uview(it.states, it.sz[state].I...), state+1)
+    return (v, state+1)
 end
 
 function Base.getindex(it::BatchesIterator{false}, i::Integer)
-    @assert i>0 && i <= length(it)
-    return state_uview(it.states, it.sz[i].I...)
+    @boundscheck checkbounds(it.sz, i)
+    @inbounds v = state_uview(it.states, it.sz[i].I...)
+
+    return v
 end
