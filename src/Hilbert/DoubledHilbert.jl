@@ -9,19 +9,29 @@ abstract type DoubledBasis <: AbstractHilbert end
 @inline indexable(h::DoubledBasis) = spacedimension(h) != 0
 @inline is_homogeneous(h::DoubledBasis) = is_homogeneous(physical(h))
 
+@inline function checkbounds_doubled(σ::ADoubleState, i)
+    @inbounds N = length(first(σ)) + length(last(σ))
+    i>= 1 && i<= N || Base.throw_boundserror(σ, i)
+    return nothing
+end
+
 # generalMethods
 function flipat!(rng::AbstractRNG, σ::ADoubleState, h::DoubledBasis, i)
+    @boundscheck checkbounds_doubled(σ, i)
+
     hp = physical(h)
     np = nsites_physical(h)
 
-    res = i > np ? flipat!(rng, col(σ), hp, i-np) : flipat!(rng, row(σ), hp, i)
+    @inbounds res = i > np ? flipat!(rng, col(σ), hp, i-np) : flipat!(rng, row(σ), hp, i)
     return res
 end
 
 function setat!(σ::ADoubleState, h::DoubledBasis, i::Int, val)
+    @boundscheck checkbounds_doubled(σ, i)
+
     hp = physical(h)
     np = nsites_physical(h)
 
-    old = i > np ? setat!(row(σ), hp, i-np, val) : setat!(col(σ), hp, i, val)
+    @inbounds old = i > np ? setat!(row(σ), hp, i-np, val) : setat!(col(σ), hp, i, val)
     return old
 end

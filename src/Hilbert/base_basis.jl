@@ -69,17 +69,10 @@ assuming it's indexable.
 function index(h::AbstractHilbert, s::Union{AStateBatch, AStateBatchVec,ADoubleStateBatch, ADoubleStateBatchVec})
     sz = state_size(s)
     out = zeros(Int, sz...)
-    if out isa AbstractVector
-        for i=1:length(out)
-            out[i] = index(h, state_uview(s, i))
-        end
-    else
-        for i=1:size(out,2)
-            for j=1:size(out,1)
-                out[j,i] = index(h, state_uview(s, j,i))
-            end
-        end
+    for (i,sᵢ)=enumerate(states(s))
+        @inbounds out[i] = index(h, sᵢ)
     end
+
     return out
 end
 
@@ -99,18 +92,20 @@ state(arrT::AbstractArray,  h::AbstractHilbert, dims::Dims) = state(arrT, STD_RE
 state(   T::Type{<:Number}, h::AbstractHilbert, dims::Dims) = state(zeros(0), T, h, dims)
 state(                      h::AbstractHilbert, dims::Dims) = state(STD_REAL_PREC, h, dims)
 
-state_i(h::AbstractHilbert, i::Int) = state_i(STD_REAL_PREC, h, i)
-state_i(T::Type{<:Number}, h::AbstractHilbert, i::Int) = set!(state(T, h), h, i)
+Base.@propagate_inbounds state_i(h::AbstractHilbert, i::Int) = state_i(STD_REAL_PREC, h, i)
+Base.@propagate_inbounds state_i(T::Type{<:Number}, h::AbstractHilbert, i::Int) = set!(state(T, h), h, i)
 
-function apply!(σ::ADoubleState, h::AbstractHilbert, cngs_l, cngs_r) 
+Base.@propagate_inbounds function apply!(σ::ADoubleState, h::AbstractHilbert, cngs_l, cngs_r) 
     apply!(row(σ), h, cngs_l)
     apply!(col(σ), h, cngs_r)
     return σ
 end
 
 function apply!(σ::AbstractVector, h::AbstractHilbert, cngs) 
+    @boundscheck checkbounds(σ, site)
+
     for (site, val)=cngs
-        σ[site] = val
+        @inbounds σ[site] = val
     end
     return σ
 end
@@ -121,7 +116,7 @@ end
 Randomly flips `state[i]` to another available state. Returns the
 old value of `state[i]` and the new value. state is changed in-place.
 """
-@inline flipat!(σ, hilb::AbstractHilbert, i::Int) = flipat!(GLOBAL_RNG, σ, hilb, i)
+Base.@propagate_inbounds flipat!(σ, hilb::AbstractHilbert, i::Int) = flipat!(GLOBAL_RNG, σ, hilb, i)
 
 """
     rand!([rng=GLOBAL_RNG], state, hilb)
@@ -145,11 +140,7 @@ Optionally you can pass the rng or the batch size/chain length
 @inline Random.rand(                  h::AbstractHilbert, dims::Int...) = rand(GLOBAL_RNG, h, dims...)
 @inline Random.rand(                  h::AbstractHilbert, dims::Dims)   = rand(GLOBAL_RNG, h, dims)
 
-"""
-    StateIterator{H,S}
-
-An iterator for enumerating all the states in a basis
-"""
-struct StateIterator{T,H}
-    basis::H
+@inline function checkbounds_hilbert(hilb::AbstractHilbert, i)
+    (i >= 1 && i<= spacedimension(hilb)) || Base.throw_boundserror(hilb, i)
+    return nothing
 end

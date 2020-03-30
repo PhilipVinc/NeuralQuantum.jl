@@ -21,6 +21,8 @@ Base.show(io::IO, h::SuperOpSpace) =
 ##
 
 function set!(σ::ADoubleState, h::SuperOpSpace, i::Integer)
+    @boundscheck checkbounds_hilbert(h, i)
+
     hp = physical(h)
     np = nsites_physical(h)
     i -= 1
@@ -28,12 +30,12 @@ function set!(σ::ADoubleState, h::SuperOpSpace, i::Integer)
     i_r = div(i, spacedimension(hp))
     i_c = i - i_r*spacedimension(hp)
 
-    set!(col(σ), hp, i_r + 1) #i
-    set!(row(σ), hp, i_c + 1) #j
+    @inbounds set!(col(σ), hp, i_r + 1) #i
+    @inbounds set!(row(σ), hp, i_c + 1) #j
     return σ
 end
 
-@inline function set!(σ::ADoubleState, h::SuperOpSpace, i_r::Integer, i_c::Integer)
+Base.@propagate_inbounds function set!(σ::ADoubleState, h::SuperOpSpace, i_r::Integer, i_c::Integer)
     set!(row(σ), physical(h), i_r)
     set!(col(σ), physical(h), i_c)
     return σ
