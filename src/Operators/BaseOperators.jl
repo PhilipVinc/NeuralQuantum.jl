@@ -6,6 +6,7 @@ abstract type AbsOpConnection end
 
 Base.eltype(c::AbsOpConnection) = eltype(typeof(c))
 
+# Random sampler for an abstract OpConnection (assuming it implements getindex and length)
 function Random.rand(rng::AbstractRNG, sampl::Random.SamplerTrivial{T}) where {T<:NeuralQuantum.AbsOpConnection}
     conns = sampl[]
     N = length(conns)

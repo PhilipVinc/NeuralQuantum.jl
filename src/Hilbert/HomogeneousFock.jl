@@ -114,22 +114,6 @@ function Random.rand!(rng::AbstractRNG, σ::AbstractArray, h::HomogeneousFock{N,
 end
 
 # Specialized for constrained fock spaces
-function Random.rand!(rng::AbstractRNG, σ::AStateBatchVec, h::HomogeneousFock{N, true}) where N
-    for i=1:chain_length(σ)
-        rand!(rng, state_uview(σ, i), h)
-    end
-
-    return σ
-end
-
-function Random.rand!(rng::AbstractRNG, σ::AStateBatch, h::HomogeneousFock{N, true}) where N
-    for i=1:batch_size(σ)
-        rand!(rng, unsafe_get_batch(σ, i), h)
-    end
-
-    return σ
-end
-
 function Random.rand!(rng::AbstractRNG, σ::AState, h::HomogeneousFock{N, true}) where N
     T = eltype(σ)
     n_max = constraint_limit(h)

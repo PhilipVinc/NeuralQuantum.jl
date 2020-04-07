@@ -4,8 +4,8 @@ mutable struct HomogeneousSpin{D,S,C} <: AbstractHilbert
     n_sites::Int
     shape::Vector{Int}
 
-    # Constrain on total spin number
-    Sz_total::Int
+    # Constrain on total spin number in units of S
+    constraint::Int
 end
 
 """
@@ -13,29 +13,39 @@ end
 
 Constructs the Hilbert space of `N` identical spins-S (by default 1//2).
 """
-function HomogeneousSpin(n_sites, S::Rational=1//2; total_Sz::Union{Nothing,Rational,Int}=nothing)
+function HomogeneousSpin(n_sites, S::Rational=1//2; total_sz::Union{Nothing,Rational,Int}=nothing)
     n_sites = n_sites isa AbstractGraph ? nv(n_sites) : n_sites
 
     @assert S.den == 2 || S.den == 1
+
+    # N is dimension of local space
     if S.den == 2
         N = S.num +1
     elseif S.den == 1
         N = 2*S.num +1
     end
 
-    constrained = isnothing(total_Sz) ?  false : true
+    constrained = isnothing(total_sz) ?  false : true
     if constrained
-        sz_tot = 2*total_Sz
-        if sz_tot > N
-            throw(ErrorException("tota_Sz is too big"))
+        try
+            constraint = Int(total_sz * inv(S))
+        catch err
+            throw(ErrorException("total_sz is not in units of S"))
         end
-        #throw(ErrorException("Still not implemented!"))
+
+        if constraint > n_sites
+            throw(ErrorException("total_sz is too big"))
+        end
+
+        if N == 2
+            (n_sites + constraint) % N == 0 || error("total_sz not valid")
+        end
     else
-        total_Sz = 0
+        constraint = 0
     end
 
     return HomogeneousSpin{N,S,constrained}(n_sites, fill(N, n_sites),
-                                          total_Sz)
+                                          constraint)
 end
 
 Base.similar(hilb::HomogeneousSpin, N::Int) =
@@ -52,13 +62,17 @@ Base.similar(hilb::HomogeneousSpin, N::Int) =
 @inline is_homogeneous(h::HomogeneousSpin) = true
 
 @inline is_contrained(h::HomogeneousSpin{H,S,C}) where {H,S,C} = C
-@inline constraint_limit(h::HomogeneousSpin) = h.Sz_total
+@inline constraint_limit(h::HomogeneousSpin) = h.constraint
+@inline magnetization(h::HomogeneousSpin{H,S,false}) where {H,S} = false
+@inline magnetization(h::HomogeneousSpin{H,S,true}) where {H,S} = S*h.constraint
 
 state(arrT::AbstractArray, T::Type{<:Number}, h::HomogeneousSpin{N}, dims::Dims) where {N} =
     similar(arrT, T, nsites(h), dims...) .= -(N-1)
 
-Base.show(io::IO, ::MIME"text/plain", h::HomogeneousSpin{N}) where N =
+Base.show(io::IO, ::MIME"text/plain", h::HomogeneousSpin{N}) where N = begin
     print(io, "Hilbert Space with $(nsites(h)) identical spins $(N-1)/2 of dimension $(local_dim(h))")
+    is_contrained(h) && print(io, " with constraint Sz=$(constraint_limit(h)*spin(h))")
+end
 
 Base.show(io::IO, h::HomogeneousSpin) =
     print(io, "HomogeneousSpin($(nsites(h)), $(local_dim(h)))")
@@ -125,12 +139,12 @@ function Random.rand!(rng::AbstractRNG, σ::AState, hilb::HomogeneousSpin{N,S,tr
     T = eltype(σ)
 
     if N == 2
-        m = 2 * constraint_limit(hilb)
+        m = constraint_limit(hilb) # magnetization in units of S
         nup   = (nsites(hilb) + m) ÷ 2
         ndown = (nsites(hilb) - m) ÷ 2
 
         @inbounds uview(σ, 1:nup) .= one(T)
-        @inbounds uview(σ, nup+1:ndown) .= -one(T)
+        @inbounds uview(σ, nup+1:ndown+nup) .= -one(T)
         shuffle!(rng, σ)
     else
         throw(ErrorException("not implemented!"))
@@ -138,15 +152,6 @@ function Random.rand!(rng::AbstractRNG, σ::AState, hilb::HomogeneousSpin{N,S,tr
 
     return σ
 end
-
-function Random.rand!(rng::AbstractRNG, σ::AStateBatch, h::HomogeneousSpin{N, S, true}) where {N,S}
-    for σᵢ=states(σ)
-        rand!(rng, σᵢ, h)
-    end
-
-    return σ
-end
-
 
 function toint(σ::AState, h::HomogeneousSpin{N}) where N
     tot = 0

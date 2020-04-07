@@ -128,6 +128,14 @@ Optionally you can pass the rng.
 @inline Random.rand!(σ::AbstractArray, h::AbstractHilbert) = rand!(GLOBAL_RNG, σ, h)
 @inline Random.rand!(σ::NTuple{2,<:AbstractArray}, h::AbstractHilbert) = rand!(GLOBAL_RNG, σ, h)
 
+# AbstractHilbert implementation for batches/batchvecs of states
+function Random.rand!(rng::AbstractRNG, σ::AbstractArray, h::AbstractHilbert)
+    for σᵢ=states(σ)
+        rand!(rng, σᵢ, h)
+    end
+    return σ
+end
+
 """
     rand([rng=GLOBAL_RNG], hilb, [batch_size, chain_length])
 
