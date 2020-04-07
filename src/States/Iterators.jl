@@ -1,3 +1,5 @@
+export states, batches
+
 struct StatesIterator{Safe,T,S}
     states::T
     sz::S

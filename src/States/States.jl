@@ -4,6 +4,11 @@ export row, col
 export add!, zero!, apply!, apply
 export setat!, set!, set_index!, rand!
 
+export state_similar, state_collect, state_copy, state_copy!
+export state_size, batch_size, chain_length, state_length
+export state_eltype, batch_eltype, state_uview, state_view
+export state_reshape, state_vec
+
 const AState{T}         = AbstractVector{T}  where T
 const AStateBatch{T}    = AbstractMatrix{T}  where T
 const AStateBatchVec{T} = AbstractArray{T,3} where T
@@ -22,6 +27,9 @@ const ADoubleStateOrBatch{T} = Union{ADoubleState{T},ADoubleStateBatch{T}} where
 
 const AStateOrBatchOrVec{T} = Union{AState{T},AStateBatch{T},AStateBatchVec{T}} where T
 const ADoubleStateOrBatchOrVec{T} = Union{ADoubleState{T},ADoubleStateBatch{T},ADoubleStateBatchVec{T}} where T
+
+const AStateBatchOrVec{T}       = Union{AStateBatch{T},AStateBatchVec{T}} where T
+const ADoubleStateBatchOrVec{T} = Union{ADoubleStateBatch{T},ADoubleStateBatchVec{T}} where T
 
 """
     row(v::ADoubleState(orBatch,orVec)) = first(v)
@@ -193,3 +201,13 @@ take the batch group `el`, and if specified also selects one single batch.
     (state_view(row(σ), i...), state_view(col(σ), i...))
 @propagate_inbounds state_view(σ::AbstractDoubled, j::AbstractRange, i::Vararg{T,N}) where {T,N} =
     (state_view(row(σ), j, i...), state_view(col(σ), j, i...))
+
+state_reshape(σ::AbstractStateBatch, i::Colon) = σ
+state_reshape(σ::AStateOrBatchOrVec, i::Union{Int,Colon}) = reshape(σ, size(σ, 1), i)
+state_reshape(σ::AStateOrBatchOrVec, i::Int...) = reshape(σ, size(σ, 1), i...)
+state_reshape(σ::AStateOrBatchOrVec, i::Union{Colon,Int}...) = reshape(σ, size(σ, 1), i...)
+@inline state_reshape(σ::AbstractDoubled, i...) = tuple(state_reshape(row(σ), i...),
+                                                        state_reshape(col(σ), i...))
+
+state_vec(σ::AbstractStateBatchVec) = state_reshape(σ, state_length(σ))
+state_vec(σ::AbstractStateBatch) = σ
