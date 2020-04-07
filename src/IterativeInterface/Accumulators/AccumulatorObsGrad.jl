@@ -73,7 +73,7 @@ function (c::AccumulatorObsGrad)(mel::Number, cngs_l, cngs_r, v)
         c.res += mel
     else
         accum(c)(cngs_l, cngs_r)
-        c.mel_buf[count(c)] = mel
+        @inbounds c.mel_buf[count(c)] = mel
     end
 
     return c
@@ -92,7 +92,7 @@ function (c::AccumulatorObsGrad)(mel::Number, cngs, v)
         c.res += mel
     else
         accum(c)(cngs)
-        c.mel_buf[count(c)] = mel
+        @inbounds c.mel_buf[count(c)] = mel
     end
 
     return c

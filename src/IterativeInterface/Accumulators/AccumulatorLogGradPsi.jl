@@ -80,7 +80,7 @@ function (c::AccumulatorLogGradPsi)(cngs)
     c.buf_n = c.buf_n + 1
 
     σp = unsafe_get_batch(c.in_buf, c.buf_n)
-    apply!(σp, cngs)
+    @inbounds apply!(σp, cngs)
 end
 
 function (c::AccumulatorLogGradPsi)(cngs_l, cngs_r)
@@ -88,7 +88,7 @@ function (c::AccumulatorLogGradPsi)(cngs_l, cngs_r)
     c.buf_n = c.buf_n + 1
 
     σp = unsafe_get_batch(c.in_buf, c.buf_n)
-    apply!(σp, cngs_l, cngs_r)
+    @inbounds apply!(σp, cngs_l, cngs_r)
 end
 
 

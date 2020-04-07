@@ -38,8 +38,10 @@ end
 
 #
 function _row_valdiff!(conn::AbsOpConnection, op::KLocalOperatorSum, v)
+    #@boundscheck checkbounds(v, nsites(basis(op)))
+
     for _op=operators(op)
-        _row_valdiff!(conn, _op, v)
+        @inbounds _row_valdiff!(conn, _op, v)
     end
     return conn
 end
@@ -52,15 +54,19 @@ function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperatorSum, v)
 end
 
 function map_connections(fun::Function, ∑Ô::KLocalOperatorSum, v)
+    #@boundscheck checkbounds(v, nsites(basis(∑Ô)))
+
     for Ô=operators(∑Ô)
-        map_connections(fun, Ô, v)
+        @inbounds map_connections(fun, Ô, v)
     end
     return nothing
 end
 
 function accumulate_connections!(acc::AbstractAccumulator, ∑Ô::KLocalOperatorSum, v)
+    #@boundscheck checkbounds(v, nsites(basis(∑Ô)))
+
     for Ô=operators(∑Ô)
-        accumulate_connections!(acc, Ô, v)
+        @inbounds accumulate_connections!(acc, Ô, v)
     end
     return acc
 end

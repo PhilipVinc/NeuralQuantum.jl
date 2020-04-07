@@ -149,13 +149,17 @@ Base.copy(op::KLocalOperator) =
 
 ##
 function _row_valdiff!(conn::OpConnection, op::KLocalOperator, v::AState)
+    @boundscheck checkbounds(v, nsites(basis(op)))
+
     # Find row index
-    r = local_index(v, basis(op), sites(op))
+    @inbounds r = local_index(v, basis(op), sites(op))
 
     append!(conn, op.op_conns[r])
 end
 
 function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperator, v::AState)
+    @boundscheck checkbounds(v, nsites(basis(op)))
+
     # Find row index
     r = local_index(v, basis(op), sites(op))
 
@@ -167,7 +171,9 @@ function row_valdiff_index!(conn::OpConnectionIndex, op::KLocalOperator, v::ASta
 end
 
 function map_connections(fun::Function, op::KLocalOperator, v::AState)
-    r = local_index(v, basis(op), sites(op))
+    @boundscheck checkbounds(v, nsites(basis(op)))
+
+    @inbounds r = local_index(v, basis(op), sites(op))
     for (mel, changes) = op.op_conns[r]
         fun(mel, changes, v)
     end
@@ -175,12 +181,14 @@ function map_connections(fun::Function, op::KLocalOperator, v::AState)
 end
 
 function accumulate_connections!(acc::AbstractAccumulator, op::KLocalOperator, v::AState)
+    @boundscheck checkbounds(v, nsites(basis(op)))
+
     # If it is a doublestate, we are probably computing Operator x densitymatrix,
     # so we only iterate along the column of v
     if v isa ADoubleState
-        r = local_index(col(v), basis(op), sites(op))
+        @inbounds r = local_index(col(v), basis(op), sites(op))
     else
-        r = local_index(v, basis(op), sites(op))
+        @inbounds r = local_index(v, basis(op), sites(op))
     end
 
     for (mel,changes)=op.op_conns[r]

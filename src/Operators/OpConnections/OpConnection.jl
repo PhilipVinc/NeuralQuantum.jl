@@ -108,7 +108,8 @@ Base.@propagate_inbounds Base.getindex(c::OpConnection, i) = (c.mel[i], c.change
 
 function Base.iterate(iter::OpConnection, state=1)
     state > length(iter) && return nothing
-    return (iter[state], state + 1)
+    @inbounds conn = iter[state]
+    return (conn, state + 1)
 end
 
 function add!(c::OpConnection, mel, cngs::StateChanges)

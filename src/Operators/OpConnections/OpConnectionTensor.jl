@@ -32,27 +32,34 @@ function Base.append!(c::OpConnectionTensor, (conn_l, conn_r))
     return c
 end
 
-function Base.iterate(iter::OpConnectionTensor, state=(1,1))
-    state_l, state_r = state
-
+function Base.iterate(iter::OpConnectionTensor, (state_l, state_r)=(1,1))
     if state_r == length(iter.conn_r) + 1
         state_r = 1
         state_l += 1
     end
 
-    if state_l == length(iter.conn_l) + 1
+    if state_l >= length(iter.conn_l) + 1
         return nothing
     end
 
-    mel_l, changes_l = iter.conn_l[state_l]
-    mel_r, changes_r = iter.conn_r[state_r]
+    @inbounds conn = iter[state_l, state_r]
 
-    return (mel_l*mel_r, (changes_l, changes_r)), (state_l, state_r+1)
+    return conn, (state_l, state_r+1)
+end
+
+Base.@propagate_inbounds function Base.getindex(c::OpConnectionTensor, l, r)
+    mel_l, changes_l = c.conn_l[l]
+    mel_r, changes_r = c.conn_r[r]
+
+    return mel_l*mel_r, (changes_l, changes_r)
 end
 
 function Base.getindex(c::OpConnectionTensor, i)
+    @boundscheck checkbounds(1:length(c), i)
+
     l,r = divrem(i-1, length_r(c))
-    return first(iterate(c, (l+1, r+1)))
+    @inbounds conn = c[l+1,r+1]
+    return conn
 end
 
 # showing
