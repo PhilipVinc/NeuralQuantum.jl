@@ -15,24 +15,26 @@ sum_autobatch(v::AbstractVector) = sum(v)
 Efficiently performs the outer product R[i] .= vb[i] .* wb[i]'
 along the batch dimension i, assuming that the batch dimension
 is the last.
-Internally uses the fact that R is a StridedView
+
+R[i] is a matrix, vb[i] and wb[i] are vectors.
+
+Internally uses the fact that R is a StridedView.
 """
 @inline function _batched_outer_prod!(R::StridedView, vb, wb)
-    #@unsafe_strided R begin
-        @inbounds @simd for i=1:size(R, 3)
-            @inbounds for j=1:size(wb, 1)
-                @inbounds for k=1:size(vb, 1)
-                    @inbounds R[k,j,i] = vb[k,i]*conj(wb[j,i])
-                end
+    @inbounds for i=1:size(R, 3)
+        @inbounds for j=1:size(wb, 1)
+            @simd for k= @inbounds 1:size(vb, 1)
+                @inbounds R[k,j,i] = vb[k,i]*conj(wb[j,i])
             end
         end
+    end
     return R
 end
 
 @inline function _batched_outer_prod_noconj!(R::StridedView, vb, wb)
-    @inbounds @simd for i=1:size(R, 3)
+    @inbounds for i=1:size(R, 3)
         @inbounds for j=1:size(wb, 1)
-            @inbounds for k=1:size(vb, 1)
+            @simd for k= @inbounds 1:size(vb, 1)
                 @inbounds R[k,j,i] = vb[k,i]*wb[j,i]
             end
         end
@@ -42,42 +44,34 @@ end
 
 
 @inline function _batched_outer_prod!(R::StridedView, α, vb, wb)
-    #@unsafe_strided R begin
-        @inbounds @simd for i=1:size(R, 3)
-            @inbounds for j=1:size(wb, 1)
-                @inbounds for k=1:size(vb, 1)
-                    @inbounds R[k,j,i] = α * vb[k,i]*conj(wb[j,i])
-                end
+    @inbounds for i=1:size(R, 3)
+        @inbounds for j=1:size(wb, 1)
+            @simd for k= @inbounds 1:size(vb, 1)
+                @inbounds R[k,j,i] = α * vb[k,i]*conj(wb[j,i])
             end
         end
-    #end
-
-    #=@unsafe_strided R vb wb begin
-        for i=1:size(R, 3)
-            BLAS.ger!(1.0, vb[:,i], wb[:,i], R[:,:,i])
-        end
-    end=#
+    end
     return R
 end
 
 @inline function _batched_outer_prod_∑!(R::StridedView, α, vb, wb, vb2, wb2)
-        @inbounds @simd for i=1:size(R, 3)
-            @inbounds for j=1:size(wb, 1)
-                @inbounds for k=1:size(vb, 1)
-                    @inbounds R[k,j,i] = α * (vb[k,i]*conj(wb[j,i]) + vb2[k,i]*conj(wb2[j,i]))
-                end
+    @inbounds for i=1:size(R, 3)
+        @inbounds for j=1:size(wb, 1)
+            @simd for k= @inbounds 1:size(vb, 1)
+                @inbounds R[k,j,i] = α * (vb[k,i]*conj(wb[j,i]) + vb2[k,i]*conj(wb2[j,i]))
             end
         end
+    end
     return R
 end
 
 @inline function _batched_outer_prod_Δ!(R::StridedView, α, vb, wb, vb2, wb2)
-        @inbounds @simd for i=1:size(R, 3)
-            @inbounds for j=1:size(wb, 1)
-                @inbounds for k=1:size(vb, 1)
-                    @inbounds R[k,j,i] = α * (vb[k,i]*conj(wb[j,i]) - vb2[k,i]*conj(wb2[j,i]))
-                end
+    @inbounds for i=1:size(R, 3)
+        @inbounds for j=1:size(wb, 1)
+            @simd for k= @inbounds 1:size(vb, 1)
+                @inbounds R[k,j,i] = α * (vb[k,i]*conj(wb[j,i]) - vb2[k,i]*conj(wb2[j,i]))
             end
         end
+    end
     return R
 end
